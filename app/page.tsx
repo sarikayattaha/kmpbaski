@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import {
   Menu,
   X,
@@ -130,9 +131,14 @@ export default function Home() {
 
           {/* Logo */}
           <div className="flex items-center gap-2.5">
-            <div className="bg-[#0f75bc] rounded-xl p-2 shadow-md">
-              <Printer size={20} className="text-white" />
-            </div>
+            <Image
+              src="/kmpbaskilogo.png"
+              alt="KMP Baskı Logo"
+              width={40}
+              height={40}
+              className="object-contain"
+              priority
+            />
             <div className="leading-tight">
               <div>
                 <span className="font-black text-xl tracking-tight text-[#07446c]">KMP</span>
@@ -389,9 +395,13 @@ export default function Home() {
       <footer className="bg-[#07446c] text-blue-200 py-10">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <div className="bg-[#0f75bc] rounded-xl p-1.5">
-              <Printer size={16} className="text-white" />
-            </div>
+            <Image
+              src="/kmpbaskilogo.png"
+              alt="KMP Baskı Logo"
+              width={32}
+              height={32}
+              className="object-contain"
+            />
             <span className="font-black text-white text-lg">
               KMP<span className="text-[#25aae1]">BASKI</span>
             </span>
