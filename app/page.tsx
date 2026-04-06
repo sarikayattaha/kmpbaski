@@ -130,7 +130,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
 
           {/* Logo */}
-          <a href="/" className="flex items-center gap-4">
+          <a href="/" className="flex items-center gap-3">
             <Image
               src="/kmpbaskilogo.png"
               alt="KMP Baskı Logo"
@@ -139,12 +139,9 @@ export default function Home() {
               className="object-contain h-11 w-auto"
               priority
             />
-            <div className="flex flex-col items-center">
-              <p className="text-lg font-black tracking-tight leading-none">
-                <span className="text-[#07446c]">KMP</span><span className="text-[#25aae1]">BASKI</span>
-              </p>
-              <p className="text-[10px] font-semibold tracking-widest text-[#0f75bc] uppercase mt-0.5">Online Matbaa</p>
-            </div>
+            <span className="text-2xl font-black tracking-tight">
+              <span className="text-[#07446c]">KMP </span><span className="text-[#25aae1]">BASKI</span>
+            </span>
           </a>
 
           {/* Desktop Mega Menu */}
@@ -391,7 +388,7 @@ export default function Home() {
       {/* ── FOOTER ── */}
       <footer className="bg-[#07446c] text-blue-200 py-10">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <a href="/" className="flex items-center gap-4">
+          <a href="/" className="flex items-center gap-3">
             <Image
               src="/kmpbaskilogo.png"
               alt="KMP Baskı Logo"
@@ -399,12 +396,9 @@ export default function Home() {
               height={44}
               className="object-contain h-11 w-auto"
             />
-            <div className="flex flex-col items-center">
-              <p className="text-base font-black tracking-tight leading-none">
-                <span className="text-white">KMP</span><span className="text-[#25aae1]">BASKI</span>
-              </p>
-              <p className="text-[10px] font-semibold tracking-widest text-[#25aae1] uppercase mt-0.5">Online Matbaa</p>
-            </div>
+            <span className="text-2xl font-black tracking-tight">
+              <span className="text-white">KMP </span><span className="text-[#25aae1]">BASKI</span>
+            </span>
           </a>
           <p className="text-xs text-blue-300 text-center">
             © {new Date().getFullYear()} KMP Baskı — Tüm hakları saklıdır.
