@@ -134,11 +134,15 @@ export default function Home() {
             <Image
               src="/kmpbaskilogo.png"
               alt="KMP Baskı Logo"
-              width={160}
-              height={50}
-              className="object-contain h-10 w-auto"
+              width={44}
+              height={44}
+              className="object-contain h-11 w-auto"
               priority
             />
+            <div className="leading-tight">
+              <p className="text-lg font-black tracking-tight text-[#07446c]">KMPBASKI</p>
+              <p className="text-[10px] font-semibold tracking-widest text-[#25aae1] uppercase">Online Matbaa</p>
+            </div>
           </a>
 
           {/* Desktop Mega Menu */}
@@ -389,10 +393,14 @@ export default function Home() {
             <Image
               src="/kmpbaskilogo.png"
               alt="KMP Baskı Logo"
-              width={120}
+              width={40}
               height={40}
               className="object-contain h-10 w-auto brightness-0 invert"
             />
+            <div className="leading-tight">
+              <p className="text-base font-black tracking-tight text-white">KMPBASKI</p>
+              <p className="text-[10px] font-semibold tracking-widest text-[#25aae1] uppercase">Online Matbaa</p>
+            </div>
           </a>
           <p className="text-xs text-blue-300 text-center">
             © {new Date().getFullYear()} KMP Baskı — Tüm hakları saklıdır.
