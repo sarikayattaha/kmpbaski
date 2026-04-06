@@ -130,13 +130,13 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
 
           {/* Logo */}
-          <a href="/" className="flex items-center">
+          <a href="/" className="flex items-center gap-3">
             <Image
               src="/kmpbaskilogo.png"
               alt="KMP Baskı Logo"
-              width={180}
+              width={160}
               height={50}
-              className="object-contain"
+              className="object-contain h-10 w-auto"
               priority
             />
           </a>
@@ -385,13 +385,13 @@ export default function Home() {
       {/* ── FOOTER ── */}
       <footer className="bg-[#07446c] text-blue-200 py-10">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <a href="/" className="flex items-center">
+          <a href="/" className="flex items-center gap-3">
             <Image
               src="/kmpbaskilogo.png"
               alt="KMP Baskı Logo"
-              width={140}
+              width={120}
               height={40}
-              className="object-contain brightness-0 invert"
+              className="object-contain h-10 w-auto brightness-0 invert"
             />
           </a>
           <p className="text-xs text-blue-300 text-center">
