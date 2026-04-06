@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { supabase, type Banner } from "@/lib/supabase";
