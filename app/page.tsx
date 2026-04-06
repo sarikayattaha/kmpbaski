@@ -130,25 +130,16 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
 
           {/* Logo */}
-          <div className="flex items-center gap-2.5">
+          <a href="/" className="flex items-center">
             <Image
               src="/kmpbaskilogo.png"
               alt="KMP Baskı Logo"
-              width={40}
-              height={40}
+              width={180}
+              height={50}
               className="object-contain"
               priority
             />
-            <div className="leading-tight">
-              <div>
-                <span className="font-black text-xl tracking-tight text-[#07446c]">KMP</span>
-                <span className="font-black text-xl tracking-tight text-[#0f75bc]">BASKI</span>
-              </div>
-              <p className="text-[9px] text-[#25aae1] font-semibold leading-none tracking-[0.2em] uppercase">
-                Online Matbaa
-              </p>
-            </div>
-          </div>
+          </a>
 
           {/* Desktop Mega Menu */}
           <nav className="hidden lg:flex items-center gap-0.5">
@@ -394,18 +385,15 @@ export default function Home() {
       {/* ── FOOTER ── */}
       <footer className="bg-[#07446c] text-blue-200 py-10">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
+          <a href="/" className="flex items-center">
             <Image
               src="/kmpbaskilogo.png"
               alt="KMP Baskı Logo"
-              width={32}
-              height={32}
-              className="object-contain"
+              width={140}
+              height={40}
+              className="object-contain brightness-0 invert"
             />
-            <span className="font-black text-white text-lg">
-              KMP<span className="text-[#25aae1]">BASKI</span>
-            </span>
-          </div>
+          </a>
           <p className="text-xs text-blue-300 text-center">
             © {new Date().getFullYear()} KMP Baskı — Tüm hakları saklıdır.
           </p>
