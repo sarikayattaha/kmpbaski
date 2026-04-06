@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import HeroBanner from "@/app/components/HeroBanner";
 import {
   Menu,
   X,
@@ -429,6 +430,9 @@ export default function Home() {
           </div>
         )}
       </header>
+
+      {/* ── HERO BANNER (Supabase dinamik) ── */}
+      <HeroBanner />
 
       {/* ── HERO ── */}
       <main>
