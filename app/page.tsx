@@ -140,7 +140,9 @@ export default function Home() {
               priority
             />
             <div className="leading-tight">
-              <p className="text-lg font-black tracking-tight text-[#07446c]">KMPBASKI</p>
+              <p className="text-lg font-black tracking-tight">
+                <span className="text-[#07446c]">KMP</span><span className="text-[#25aae1]">BASKI</span>
+              </p>
               <p className="text-[10px] font-semibold tracking-widest text-[#25aae1] uppercase">Online Matbaa</p>
             </div>
           </a>
@@ -393,12 +395,14 @@ export default function Home() {
             <Image
               src="/kmpbaskilogo.png"
               alt="KMP Baskı Logo"
-              width={40}
-              height={40}
-              className="object-contain h-10 w-auto brightness-0 invert"
+              width={44}
+              height={44}
+              className="object-contain h-11 w-auto"
             />
             <div className="leading-tight">
-              <p className="text-base font-black tracking-tight text-white">KMPBASKI</p>
+              <p className="text-base font-black tracking-tight">
+                <span className="text-white">KMP</span><span className="text-[#25aae1]">BASKI</span>
+              </p>
               <p className="text-[10px] font-semibold tracking-widest text-[#25aae1] uppercase">Online Matbaa</p>
             </div>
           </a>
