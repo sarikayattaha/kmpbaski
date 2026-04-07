@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = 'force-dynamic';
-
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react";
@@ -13,14 +11,18 @@ export default function HeroBanner() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase
-      .from("banners")
-      .select("*")
-      .order("order_index", { ascending: true })
-      .then(({ data }) => {
-        if (data && data.length > 0) setBanners(data);
-        setLoading(false);
-      });
+    try {
+      supabase
+        .from("banners")
+        .select("*")
+        .order("order_index", { ascending: true })
+        .then(({ data }: { data: Banner[] | null }) => {
+          if (data && data.length > 0) setBanners(data);
+          setLoading(false);
+        });
+    } catch {
+      setLoading(false);
+    }
   }, []);
 
   const next = useCallback(() => setCurrent((c) => (c + 1) % banners.length), [banners.length]);

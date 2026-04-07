@@ -86,12 +86,17 @@ export default function BannerYonetimi() {
   /* ── Bannerları yükle ── */
   const fetchBanners = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("banners")
-      .select("*")
-      .order("order_index", { ascending: true });
-    setBanners(data ?? []);
-    setLoading(false);
+    try {
+      const { data } = await supabase
+        .from("banners")
+        .select("*")
+        .order("order_index", { ascending: true });
+      setBanners((data as Banner[]) ?? []);
+    } catch {
+      setBanners([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
