@@ -4,74 +4,40 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
   Search, User, ShoppingCart, Phone, Mail, Clock,
-  Menu, X, ChevronDown, AlignJustify, ArrowRight, Loader2,
+  Menu, X, ChevronDown, AlignJustify, Loader2,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
-/* ── Menü veri yapıları ── */
-type NavGroup = {
-  label: string;
-  color: string;
-  image: string; // gruba ait ilk varyant görseli (yoksa ürün görseli)
-  slug: string;  // ait olduğu ürünün slug'ı
-};
-
-type NavProduct = {
-  name: string;
-  slug: string;
-  image_url: string;
-  groups: NavGroup[];
-};
-
-type NavCategory = {
-  name: string;
-  products: NavProduct[];
-};
+type NavProduct = { name: string; slug: string; image_url: string; };
+type NavCategory = { name: string; products: NavProduct[]; };
 
 export default function Navbar() {
-  const [query, setQuery] = useState("");
+  const [query, setQuery]           = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [megaOpen, setMegaOpen] = useState(false);
+  const [megaOpen, setMegaOpen]     = useState(false);
   const [activeCategory, setActiveCategory] = useState(0);
-  const [menuData, setMenuData] = useState<NavCategory[]>([]);
+  const [menuData, setMenuData]     = useState<NavCategory[]>([]);
   const [menuLoading, setMenuLoading] = useState(true);
   const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  /* ── Supabase'den ürün + price_matrix çek ── */
+  /* ── Supabase'den ürünleri çek ── */
   useEffect(() => {
     try {
       supabase
         .from("products")
-        .select("name, slug, image_url, category, price_matrix")
+        .select("name, slug, image_url, category")
         .order("created_at", { ascending: false })
         .then((res) => {
-          const data = res.data as (NavProduct & { category: string; price_matrix: { groups?: { label: string; color: string; rowImages?: string[] }[] } | null })[] | null;
+          const data = res.data as (NavProduct & { category: string })[] | null;
           if (!data) { setMenuLoading(false); return; }
 
           const map: Record<string, NavProduct[]> = {};
-
           for (const p of data) {
             if (!map[p.category]) map[p.category] = [];
-
-            // Her grup için label, color ve ilk görsel
-            const groups: NavGroup[] = (p.price_matrix?.groups ?? []).map((g) => ({
-              label: g.label,
-              color: g.color,
-              image: (g.rowImages?.find((img) => img) ?? "") || p.image_url || "",
-              slug: p.slug,
-            }));
-
-            map[p.category].push({
-              name: p.name,
-              slug: p.slug,
-              image_url: p.image_url,
-              groups,
-            });
+            map[p.category].push({ name: p.name, slug: p.slug, image_url: p.image_url });
           }
 
-          setMenuData(
-            Object.entries(map).map(([name, products]) => ({ name, products }))
-          );
+          setMenuData(Object.entries(map).map(([name, products]) => ({ name, products })));
           setMenuLoading(false);
         });
     } catch {
@@ -82,18 +48,10 @@ export default function Navbar() {
   /* ── Gecikmeli kapama ── */
   const openMega = () => { clearTimeout(closeTimer.current); setMegaOpen(true); };
   const closeMega = () => {
-    closeTimer.current = setTimeout(() => {
-      setMegaOpen(false);
-      setActiveCategory(0);
-    }, 120);
+    closeTimer.current = setTimeout(() => { setMegaOpen(false); setActiveCategory(0); }, 120);
   };
 
   const activeCat = menuData[activeCategory];
-
-  // Aktif kategorinin tüm gruplarını düzleştir (sağ sütun için)
-  const activeCatGroups: NavGroup[] = activeCat
-    ? activeCat.products.flatMap((p) => p.groups)
-    : [];
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
@@ -155,10 +113,7 @@ export default function Navbar() {
       </div>
 
       {/* ── KATEGORİ BARI + MEGA PANEL ── */}
-      <div
-        className="hidden md:block bg-white border-b border-gray-100 relative"
-        onMouseLeave={closeMega}
-      >
+      <div className="hidden md:block bg-white border-b border-gray-100 relative" onMouseLeave={closeMega}>
         <div className="max-w-7xl mx-auto px-6 flex items-center h-11 gap-1">
           <button
             onMouseEnter={openMega}
@@ -186,12 +141,9 @@ export default function Navbar() {
 
         {/* ── MEGA PANEL ── */}
         {megaOpen && (
-          <div
-            className="absolute top-full left-0 right-0 bg-white border-t border-b border-gray-200 shadow-xl"
-            style={{ zIndex: 9999 }}
-            onMouseEnter={openMega}
-          >
-            <div className="max-w-7xl mx-auto flex" style={{ minHeight: 320 }}>
+          <div className="absolute top-full left-0 right-0 bg-white border-t border-b border-gray-200 shadow-xl" style={{ zIndex: 9999 }}
+            onMouseEnter={openMega}>
+            <div className="max-w-7xl mx-auto flex" style={{ minHeight: 280 }}>
 
               {/* SOL — Kategori listesi */}
               <div className="w-56 border-r border-gray-100 py-3 flex-shrink-0">
@@ -204,13 +156,10 @@ export default function Navbar() {
                 ) : (
                   <>
                     {menuData.map((cat, idx) => (
-                      <button key={idx}
-                        onMouseEnter={() => setActiveCategory(idx)}
-                        className={`w-full text-left px-5 py-2.5 text-sm transition-colors
-                          ${activeCategory === idx
-                            ? "bg-blue-50 text-[#0f75bc] font-semibold"
-                            : "text-gray-700 hover:bg-gray-50"}`}
-                      >
+                      <button key={idx} onMouseEnter={() => setActiveCategory(idx)}
+                        className={`w-full text-left px-5 py-2.5 text-sm transition-colors ${
+                          activeCategory === idx ? "bg-blue-50 text-[#0f75bc] font-semibold" : "text-gray-700 hover:bg-gray-50"
+                        }`}>
                         {cat.name}
                         <span className="text-xs text-gray-400 ml-1.5">({cat.products.length})</span>
                       </button>
@@ -224,75 +173,47 @@ export default function Navbar() {
                 )}
               </div>
 
-              {/* ORTA — Ürün + Grup sub-linkleri */}
-              <div className="flex-1 px-8 py-6 overflow-y-auto" style={{ maxHeight: 420 }}>
-                {activeCat ? (
+              {/* ORTA — Ürün linkleri */}
+              <div className="flex-1 px-8 py-6 overflow-y-auto" style={{ maxHeight: 380 }}>
+                {activeCat && (
                   <>
                     <h3 className="text-sm font-black text-gray-800 mb-4 pb-2 border-b border-gray-100">
                       {activeCat.name}
                     </h3>
-                    <div className="grid grid-cols-3 gap-x-6 gap-y-5">
+                    <div className="grid grid-cols-3 gap-x-6 gap-y-2">
                       {activeCat.products.map((product, pi) => (
-                        <div key={pi}>
-                          {/* Ürün adı — küçük başlık */}
-                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
-                            {product.name}
-                          </p>
-
-                          {product.groups.length > 0 ? (
-                            <ul className="space-y-1.5">
-                              {product.groups.map((group, gi) => (
-                                <li key={gi}>
-                                  <a
-                                    href={`/urun/${product.slug}?group=${encodeURIComponent(group.label)}`}
-                                    className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#0f75bc] transition-colors group/link"
-                                  >
-                                    <span
-                                      className="w-2 h-2 rounded-full flex-shrink-0"
-                                      style={{ backgroundColor: group.color }}
-                                    />
-                                    {group.label}
-                                    <ArrowRight size={10} className="ml-auto opacity-0 group-hover/link:opacity-100 transition-opacity text-[#0f75bc]" />
-                                  </a>
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <a href={`/urun/${product.slug}`}
-                              className="text-sm text-[#0f75bc] hover:underline">
-                              İncele →
-                            </a>
-                          )}
-                        </div>
+                        <a key={pi} href={`/urun/${product.slug}`}
+                          className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#0f75bc] transition-colors py-1 group">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#25aae1] flex-shrink-0" />
+                          {product.name}
+                        </a>
                       ))}
                     </div>
+                    <a href={`/tum-urunler?kategori=${encodeURIComponent(activeCat.name)}`}
+                      className="mt-5 inline-flex items-center gap-1 text-xs font-bold text-[#0f75bc] hover:underline">
+                      {activeCat.name} ürünlerini gör →
+                    </a>
                   </>
-                ) : null}
+                )}
               </div>
 
-              {/* SAĞ — Grup görselleri */}
-              <div className="w-64 border-l border-gray-100 py-5 px-4 flex-shrink-0">
-                {activeCatGroups.length > 0 && (
-                  <div className="grid grid-cols-3 gap-2">
-                    {activeCatGroups.slice(0, 6).map((group, gi) => (
-                      <a
-                        key={gi}
-                        href={`/urun/${group.slug}?group=${encodeURIComponent(group.label)}`}
-                        className="flex flex-col items-center gap-1.5 p-1.5 rounded-xl hover:bg-gray-50 transition-colors group"
-                      >
-                        <div
-                          className="w-14 h-14 rounded-lg overflow-hidden relative flex items-center justify-center"
-                          style={{ backgroundColor: group.color + "22" }}
-                        >
-                          {group.image ? (
-                            <Image src={group.image} alt={group.label} fill sizes="56px"
+              {/* SAĞ — Kategori ürün görselleri */}
+              <div className="w-56 border-l border-gray-100 py-5 px-4 flex-shrink-0">
+                {activeCat && (
+                  <div className="grid grid-cols-2 gap-2">
+                    {activeCat.products.slice(0, 6).map((product, pi) => (
+                      <a key={pi} href={`/urun/${product.slug}`}
+                        className="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-gray-50 transition-colors group">
+                        <div className="w-14 h-14 rounded-lg overflow-hidden relative bg-gradient-to-br from-[#e8f4fc] to-[#ddf0fb] flex items-center justify-center">
+                          {product.image_url ? (
+                            <Image src={product.image_url} alt={product.name} fill sizes="56px"
                               className="object-contain p-1 group-hover:scale-110 transition-transform duration-200" />
                           ) : (
                             <span className="text-xl opacity-25">🖨️</span>
                           )}
                         </div>
                         <p className="text-[9px] text-center text-gray-400 group-hover:text-[#0f75bc] leading-tight line-clamp-2 transition-colors font-medium">
-                          {group.label}
+                          {product.name}
                         </p>
                       </a>
                     ))}
@@ -323,27 +244,17 @@ export default function Navbar() {
           ) : (
             menuData.map((cat, ci) => (
               <div key={ci}>
-                <p className="text-[10px] font-bold text-[#25aae1] uppercase tracking-widest px-2 pt-3 pb-1">
+                <a href={`/tum-urunler?kategori=${encodeURIComponent(cat.name)}`}
+                  className="block text-[10px] font-bold text-[#25aae1] uppercase tracking-widest px-2 pt-3 pb-1">
                   {cat.name}
-                </p>
-                {cat.products.flatMap((p) =>
-                  p.groups.length > 0
-                    ? p.groups.map((g, gi) => (
-                        <a key={`${p.slug}-${gi}`}
-                          href={`/urun/${p.slug}?group=${encodeURIComponent(g.label)}`}
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-blue-50 hover:text-[#0f75bc] transition-colors">
-                          <span className="w-2 h-2 rounded-full flex-shrink-0"
-                            style={{ backgroundColor: g.color }} />
-                          {g.label}
-                        </a>
-                      ))
-                    : [
-                        <a key={p.slug} href={`/urun/${p.slug}`}
-                          className="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-blue-50 transition-colors">
-                          {p.name}
-                        </a>,
-                      ]
-                )}
+                </a>
+                {cat.products.map((p) => (
+                  <a key={p.slug} href={`/urun/${p.slug}`}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-blue-50 hover:text-[#0f75bc] transition-colors">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#25aae1] flex-shrink-0" />
+                    {p.name}
+                  </a>
+                ))}
               </div>
             ))
           )}

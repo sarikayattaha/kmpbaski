@@ -1,13 +1,11 @@
 export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
 import Image from "next/image";
 import { getSupabase, type Product } from "@/lib/supabase";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
-import ProductShowcase from "@/app/components/ProductShowcase";
-import { Tag, ArrowLeft, Phone } from "lucide-react";
+import { Tag, ArrowLeft, Phone, MessageCircle, CheckCircle2 } from "lucide-react";
 
 export default async function ProductPage(props: {
   params: Promise<{ slug: string }>;
@@ -27,105 +25,122 @@ export default async function ProductPage(props: {
 
   const product = data as Product;
 
+  // Özellikler: satır satır listele
+  const featureLines = (product.features ?? "")
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  const whatsappMsg = encodeURIComponent(
+    `Merhaba, "${product.name}" ürünü hakkında bilgi almak istiyorum.`
+  );
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <Navbar />
 
-      <main className="flex-1">
-        {/* Breadcrumb */}
-        <div className="bg-gray-50 border-b border-gray-100">
-          <div className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-2 text-xs text-gray-400">
-            <a
-              href="/"
-              className="hover:text-[#0f75bc] transition-colors flex items-center gap-1"
-            >
-              <ArrowLeft size={12} /> Ana Sayfa
-            </a>
-            <span>/</span>
-            <span className="text-gray-500">{product.category}</span>
-            <span>/</span>
-            <span className="text-[#07446c] font-semibold">{product.name}</span>
-          </div>
+      {/* Breadcrumb */}
+      <div className="bg-gray-50 border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-2 text-xs text-gray-400">
+          <a href="/" className="hover:text-[#0f75bc] transition-colors flex items-center gap-1">
+            <ArrowLeft size={12} /> Ana Sayfa
+          </a>
+          <span>/</span>
+          <a href={`/tum-urunler?kategori=${encodeURIComponent(product.category)}`}
+            className="hover:text-[#0f75bc] transition-colors">
+            {product.category}
+          </a>
+          <span>/</span>
+          <span className="text-[#07446c] font-semibold">{product.name}</span>
         </div>
+      </div>
 
-        <div className="max-w-7xl mx-auto px-6 py-10 space-y-12">
+      <main className="flex-1">
+        <div className="max-w-5xl mx-auto px-6 py-12">
+          <div className="grid md:grid-cols-2 gap-12 items-start">
 
-          {/* ── ÜST BÖLÜM: görsel + bilgi ── */}
-          <div className="grid md:grid-cols-2 gap-10">
-            {/* Görsel */}
-            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-br from-[#e0f2fe] to-[#bae6fd]">
+            {/* ── GÖRSEL ── */}
+            <div className="relative aspect-square rounded-3xl overflow-hidden bg-gradient-to-br from-[#e0f2fe] to-[#bae6fd] shadow-sm">
               {product.image_url ? (
                 <Image
                   src={product.image_url}
                   alt={product.name}
                   fill
-                  className="object-contain p-8"
+                  className="object-contain p-10"
                   priority
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-8xl opacity-10">
-                  🖨️
-                </div>
+                <div className="w-full h-full flex items-center justify-center text-9xl opacity-10">🖨️</div>
               )}
             </div>
 
-            {/* Bilgiler */}
-            <div className="flex flex-col justify-center">
-              <span className="inline-flex items-center gap-1.5 bg-[#e0f2fe] text-[#0f75bc] text-xs font-bold px-3 py-1.5 rounded-full w-fit mb-4">
+            {/* ── BİLGİLER ── */}
+            <div className="flex flex-col gap-5">
+              {/* Kategori etiketi */}
+              <span className="inline-flex items-center gap-1.5 bg-[#e0f2fe] text-[#0f75bc] text-xs font-bold px-3 py-1.5 rounded-full w-fit">
                 <Tag size={11} /> {product.category}
               </span>
 
-              <h1 className="text-3xl md:text-4xl font-black text-[#07446c] leading-tight mb-4">
+              {/* Ürün adı */}
+              <h1 className="text-3xl md:text-4xl font-black text-[#07446c] leading-tight">
                 {product.name}
               </h1>
 
-              {product.description && (
-                <p className="text-gray-500 leading-relaxed mb-8 text-base">
-                  {product.description}
-                </p>
+              {/* Fiyat */}
+              {product.price && (
+                <div className="bg-[#f0fdf4] border border-green-100 rounded-2xl px-5 py-4 inline-block">
+                  <p className="text-xs text-green-600 font-semibold mb-0.5">Başlayan Fiyat</p>
+                  <p className="text-3xl font-black text-[#07446c] leading-none">
+                    {product.price}
+                    <span className="text-sm font-normal text-gray-400 ml-2">+KDV</span>
+                  </p>
+                </div>
               )}
 
-              <div className="flex flex-col sm:flex-row gap-3">
+              {/* Özellikler listesi */}
+              {featureLines.length > 0 && (
+                <div>
+                  <h2 className="text-sm font-black text-[#07446c] uppercase tracking-wide mb-3">
+                    Ürün Özellikleri
+                  </h2>
+                  <ul className="space-y-2">
+                    {featureLines.map((line, i) => (
+                      <li key={i} className="flex items-start gap-2.5 text-sm text-gray-600">
+                        <CheckCircle2 size={16} className="text-[#25aae1] flex-shrink-0 mt-0.5" />
+                        {line}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Aksiyon butonları */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <a
-                  href="tel:08500000000"
-                  className="inline-flex items-center justify-center gap-2 bg-[#e30613] hover:bg-red-700 text-white font-bold px-7 py-3.5 rounded-2xl transition-colors shadow-lg shadow-red-600/20 text-sm"
+                  href={`https://wa.me/908500000000?text=${whatsappMsg}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-[#25d366] hover:bg-[#1da851] text-white font-black px-6 py-4 rounded-2xl transition-colors shadow-lg shadow-green-400/20 text-sm"
                 >
-                  <Phone size={16} /> Hemen Ara
+                  <MessageCircle size={18} /> WhatsApp&apos;tan Sor
                 </a>
                 <a
-                  href="/"
-                  className="inline-flex items-center justify-center gap-2 border-2 border-[#07446c] text-[#07446c] hover:bg-[#07446c] hover:text-white font-bold px-7 py-3.5 rounded-2xl transition-colors text-sm"
+                  href="tel:08500000000"
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-[#e30613] hover:bg-red-700 text-white font-black px-6 py-4 rounded-2xl transition-colors shadow-lg shadow-red-500/20 text-sm"
                 >
-                  Teklif Al
+                  <Phone size={18} /> Hemen Ara
                 </a>
               </div>
 
-              <div className="flex flex-wrap gap-5 mt-8 text-xs text-gray-400 font-medium">
+              {/* Güvence ikonları */}
+              <div className="flex flex-wrap gap-4 pt-2 border-t border-gray-100 text-xs text-gray-400 font-medium">
                 <span>✓ Hızlı Teslimat</span>
                 <span>✓ Kalite Garantisi</span>
                 <span>✓ Güvenli Ödeme</span>
+                <span>✓ Ücretsiz Kargo</span>
               </div>
             </div>
           </div>
-
-          {/* ── ÜRÜN KARTLARı: filtreli vitrin ── */}
-          {product.price_matrix && product.price_matrix.groups?.length > 0 && (
-            <div>
-              <h2 className="text-xl font-black text-[#07446c] mb-6">
-                Seçenekler ve Fiyatlar
-              </h2>
-              <Suspense fallback={
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {[...Array(4)].map((_, i) => (
-                    <div key={i} className="bg-gray-100 rounded-2xl h-72 animate-pulse" />
-                  ))}
-                </div>
-              }>
-                <ProductShowcase product={product} />
-              </Suspense>
-            </div>
-          )}
-
         </div>
       </main>
 

@@ -34,26 +34,14 @@ export type Banner = {
   created_at: string
 }
 
-export type PriceMatrixGroup = {
-  label: string
-  color: string
-  rows: string[][]
-  rowImages?: string[]   // her satıra özel görsel URL (opsiyonel, geriye dönük uyumlu)
-}
-
-export type PriceMatrix = {
-  columns: string[]
-  groups: PriceMatrixGroup[]
-}
-
 export type Product = {
   id: string
   name: string
-  description: string
   slug: string
   image_url: string
   category: string
-  price_matrix: PriceMatrix | null
+  price: string          // görüntülenecek fiyat metni (Ör: "₺120", "120,00 ₺")
+  features: string       // satır satır özellikler (newline ile ayrılmış)
   is_featured: boolean
   created_at: string
 }
