@@ -33,3 +33,26 @@ export type Banner = {
   order_index: number
   created_at: string
 }
+
+export type PriceMatrixGroup = {
+  label: string
+  color: string
+  rows: string[][]
+}
+
+export type PriceMatrix = {
+  columns: string[]
+  groups: PriceMatrixGroup[]
+}
+
+export type Product = {
+  id: string
+  name: string
+  description: string
+  slug: string
+  image_url: string
+  category: string
+  price_matrix: PriceMatrix | null
+  is_featured: boolean
+  created_at: string
+}
