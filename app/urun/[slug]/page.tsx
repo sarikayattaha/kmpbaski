@@ -126,7 +126,7 @@ export default async function ProductPage(props: {
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 {product.is_price_on_request ? (
                   <a
-                    href={`https://wa.me/908500000000?text=${whatsappPriceMsg}`}
+                    href={`https://wa.me/905541630031?text=${whatsappPriceMsg}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-1 inline-flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-black px-6 py-4 rounded-2xl transition-colors shadow-lg shadow-orange-400/20 text-sm"
@@ -135,7 +135,7 @@ export default async function ProductPage(props: {
                   </a>
                 ) : (
                   <a
-                    href={`https://wa.me/908500000000?text=${whatsappMsg}`}
+                    href={`https://wa.me/905541630031?text=${whatsappMsg}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-1 inline-flex items-center justify-center gap-2 bg-[#25d366] hover:bg-[#1da851] text-white font-black px-6 py-4 rounded-2xl transition-colors shadow-lg shadow-green-400/20 text-sm"
