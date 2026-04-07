@@ -6,35 +6,88 @@ import Image from "next/image";
 import { Tag, ChevronRight, LayoutGrid, List, Flame, Sparkles, Star } from "lucide-react";
 import type { Product } from "@/lib/supabase";
 
-const FILTERS = [
-  { key: "tumu", label: "Tümü", icon: null },
-  { key: "yeni", label: "Yeni Ürünler", icon: Sparkles },
-  { key: "firsat", label: "Fırsat Ürünü", icon: Flame },
-  { key: "populer", label: "Popüler", icon: Star },
-];
+/* ── Düzleştirilmiş varyant tipi ── */
+type VariantCard = {
+  key: string;           // benzersiz anahtar
+  productName: string;
+  productSlug: string;
+  productCategory: string;
+  productIsFeatured: boolean;
+  groupLabel: string;
+  groupColor: string;
+  code: string;          // matris satırı[0]
+  price: string;         // matris satırı[son]
+  features: { col: string; val: string }[];
+  image: string;         // varyanta özel görsel → yoksa ürün görseli
+};
 
-/* Ürünün en düşük fiyatını price_matrix'ten çek */
-function getStartingPrice(product: Product): string | null {
-  const groups = product.price_matrix?.groups;
-  if (!groups?.length) return null;
+/* ── price_matrix'i varyant kartlarına düzleştir ── */
+function flattenToVariants(products: Product[]): VariantCard[] {
+  const cards: VariantCard[] = [];
 
-  const prices: number[] = [];
-  const colLen = product.price_matrix!.columns.length;
+  for (const p of products) {
+    const matrix = p.price_matrix;
 
-  for (const g of groups) {
-    for (const row of g.rows) {
-      const raw = row[colLen - 1] ?? "";
-      // "₺420,00" / "420" / "₺1.200,00" formatlarını parse et
-      const cleaned = raw.replace(/[₺\s.]/g, "").replace(",", ".");
-      const num = parseFloat(cleaned);
-      if (!isNaN(num) && num > 0) prices.push(num);
+    // price_matrix yoksa ya da hiç grup yoksa → tek kart olarak ekle (fiyatsız)
+    if (!matrix?.groups?.length) {
+      cards.push({
+        key: p.id,
+        productName: p.name,
+        productSlug: p.slug,
+        productCategory: p.category,
+        productIsFeatured: p.is_featured,
+        groupLabel: "",
+        groupColor: "#07446c",
+        code: "",
+        price: "",
+        features: [],
+        image: p.image_url || "",
+      });
+      continue;
+    }
+
+    const cols = matrix.columns;
+    const priceIdx = cols.length - 1;
+
+    for (const g of matrix.groups) {
+      for (let ri = 0; ri < g.rows.length; ri++) {
+        const row = g.rows[ri];
+        cards.push({
+          key: `${p.id}-${g.label}-${ri}`,
+          productName: p.name,
+          productSlug: p.slug,
+          productCategory: p.category,
+          productIsFeatured: p.is_featured,
+          groupLabel: g.label,
+          groupColor: g.color,
+          code: row[0] ?? "",
+          price: row[priceIdx] ?? "",
+          features: cols
+            .slice(1, priceIdx)
+            .map((col, i) => ({ col, val: row[i + 1] ?? "" }))
+            .filter((f) => f.val),
+          image: (g.rowImages?.[ri] ?? "") || p.image_url || "",
+        });
+      }
     }
   }
 
-  if (!prices.length) return null;
-  const min = Math.min(...prices);
-  return min.toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  return cards;
 }
+
+/* ── Fiyat string'ini sayıya dönüştür ── */
+function parsePrice(raw: string): number {
+  const cleaned = raw.replace(/[₺\s.]/g, "").replace(",", ".");
+  const n = parseFloat(cleaned);
+  return isNaN(n) ? 0 : n;
+}
+
+const FILTERS = [
+  { key: "tumu",   label: "Tümü",        icon: null      },
+  { key: "yeni",   label: "Yeni Ürünler", icon: Sparkles  },
+  { key: "firsat", label: "Fırsat Ürünü", icon: Flame     },
+  { key: "populer",label: "Popüler",      icon: Star      },
+];
 
 export default function CatalogClient({
   products,
@@ -47,9 +100,9 @@ export default function CatalogClient({
   activeCategory: string | null;
   activeFilter: string | null;
 }) {
-  const router = useRouter();
+  const router   = useRouter();
   const pathname = usePathname();
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode]       = useState<"grid" | "list">("grid");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const updateQuery = (key: string, value: string | null) => {
@@ -59,15 +112,27 @@ export default function CatalogClient({
     router.push(`${pathname}?${params.toString()}`);
   };
 
+  /* Tüm varyantlar (kategori filtresi uygulanmamış) — sidebar sayaçları için */
+  const allVariants = useMemo(() => flattenToVariants(products), [products]);
+
+  /* Kategori + filtre uygula */
   const filtered = useMemo(() => {
-    let result = [...products];
-    if (activeCategory) result = result.filter((p) => p.category === activeCategory);
-    // Filtreler: şimdilik sıralama/etiket mantığı (ileride is_new, is_featured vb. alanlarla genişletilebilir)
-    if (activeFilter === "yeni") result = result.slice(0, Math.ceil(result.length * 0.4));
-    if (activeFilter === "firsat") result = result.filter((_, i) => i % 3 === 0);
-    if (activeFilter === "populer") result = result.filter((p) => p.is_featured);
+    let result = allVariants;
+    if (activeCategory) result = result.filter((v) => v.productCategory === activeCategory);
+    if (activeFilter === "yeni")    result = result.slice(0, Math.ceil(result.length * 0.4) || result.length);
+    if (activeFilter === "firsat")  result = result.filter((_, i) => i % 3 === 0);
+    if (activeFilter === "populer") result = result.filter((v) => v.productIsFeatured);
     return result;
-  }, [products, activeCategory, activeFilter]);
+  }, [allVariants, activeCategory, activeFilter]);
+
+  /* Sidebar sayaçları: kategoriye göre varyant adedi */
+  const variantCountByCategory = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const v of allVariants) {
+      map[v.productCategory] = (map[v.productCategory] ?? 0) + 1;
+    }
+    return map;
+  }, [allVariants]);
 
   return (
     <div className="flex gap-8 items-start">
@@ -97,14 +162,14 @@ export default function CatalogClient({
               <span className={`text-xs px-2 py-0.5 rounded-full ${
                 !activeCategory ? "bg-[#0f75bc] text-white" : "bg-gray-100 text-gray-500"
               }`}>
-                {products.length}
+                {allVariants.length}
               </span>
             </button>
 
             <div className="h-px bg-gray-100 mx-3 my-1" />
 
             {categories.map((cat) => {
-              const count = products.filter((p) => p.category === cat).length;
+              const count   = variantCountByCategory[cat] ?? 0;
               const isActive = activeCategory === cat;
               return (
                 <button
@@ -133,7 +198,6 @@ export default function CatalogClient({
             })}
           </nav>
 
-          {/* Alt bilgi kutusu */}
           <div className="border-t border-gray-100 bg-[#f0fdf4] px-5 py-4 mt-1">
             <p className="text-[11px] text-green-700 font-semibold leading-relaxed">
               ✓ Hızlı teslimat<br />
@@ -147,19 +211,18 @@ export default function CatalogClient({
       {/* ── SAĞ İÇERİK ── */}
       <div className="flex-1 min-w-0">
 
-        {/* Başlık satırı */}
+        {/* Başlık */}
         <div className="mb-5">
           <h1 className="text-2xl font-black text-[#07446c] leading-tight">
-            {activeCategory ? activeCategory : "Tüm Matbaa ve Baskı Ürünleri"}
+            {activeCategory ?? "Tüm Matbaa ve Baskı Ürünleri"}
           </h1>
           <p className="text-sm text-gray-400 mt-1">
-            <span className="font-semibold text-[#0f75bc]">{filtered.length}</span> ürün listeleniyor
+            <span className="font-semibold text-[#0f75bc]">{filtered.length}</span> varyant listeleniyor
           </p>
         </div>
 
         {/* Filtre + görünüm çubuğu */}
         <div className="bg-white rounded-2xl border border-gray-100 px-4 py-3 mb-6 flex flex-wrap items-center gap-3 shadow-sm">
-          {/* Mobil kategori toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden flex items-center gap-1.5 text-xs font-bold text-[#07446c] bg-[#e0f2fe] px-3 py-1.5 rounded-lg"
@@ -189,7 +252,6 @@ export default function CatalogClient({
             })}
           </div>
 
-          {/* Grid / List toggle */}
           <div className="hidden md:flex items-center gap-1 bg-gray-100 rounded-lg p-1">
             <button
               onClick={() => setViewMode("grid")}
@@ -208,40 +270,38 @@ export default function CatalogClient({
 
         {/* Mobil kategori listesi */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white rounded-2xl border border-gray-100 shadow-sm mb-5 py-2 overflow-x-auto">
-            <div className="flex gap-2 px-4 pb-1">
+          <div className="md:hidden bg-white rounded-2xl border border-gray-100 shadow-sm mb-5 overflow-x-auto">
+            <div className="flex gap-2 p-4">
               <button
                 onClick={() => { updateQuery("kategori", null); setMobileMenuOpen(false); }}
-                className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold border transition-all ${
+                className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold border transition-all flex-shrink-0 ${
                   !activeCategory ? "bg-[#07446c] text-white border-[#07446c]" : "border-gray-200 text-gray-600"
                 }`}
               >
-                Tümü ({products.length})
+                Tümü ({allVariants.length})
               </button>
               {categories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => { updateQuery("kategori", cat); setMobileMenuOpen(false); }}
-                  className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold border transition-all ${
+                  className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold border transition-all flex-shrink-0 ${
                     activeCategory === cat
                       ? "bg-[#07446c] text-white border-[#07446c]"
-                      : "border-gray-200 text-gray-600 hover:border-[#07446c]"
+                      : "border-gray-200 text-gray-600"
                   }`}
                 >
-                  {cat} ({products.filter((p) => p.category === cat).length})
+                  {cat} ({variantCountByCategory[cat] ?? 0})
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        {/* Ürün yok */}
+        {/* Boş durum */}
         {filtered.length === 0 && (
           <div className="bg-white rounded-2xl border border-gray-100 py-20 flex flex-col items-center gap-4 text-center">
             <div className="text-6xl opacity-20">🖨️</div>
-            <p className="text-gray-400 text-sm font-medium">
-              Bu kategoride henüz ürün bulunmuyor.
-            </p>
+            <p className="text-gray-400 text-sm font-medium">Bu kategoride henüz ürün bulunmuyor.</p>
             <button
               onClick={() => updateQuery("kategori", null)}
               className="text-[#0f75bc] text-sm font-bold hover:underline"
@@ -251,20 +311,20 @@ export default function CatalogClient({
           </div>
         )}
 
-        {/* IZGARA görünümü */}
+        {/* IZGARA */}
         {viewMode === "grid" && filtered.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
-            {filtered.map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {filtered.map((v) => (
+              <VariantGridCard key={v.key} variant={v} />
             ))}
           </div>
         )}
 
-        {/* LİSTE görünümü */}
+        {/* LİSTE */}
         {viewMode === "list" && filtered.length > 0 && (
           <div className="space-y-3">
-            {filtered.map((product) => (
-              <ProductRow key={product.id} product={product} />
+            {filtered.map((v) => (
+              <VariantListRow key={v.key} variant={v} />
             ))}
           </div>
         )}
@@ -273,39 +333,43 @@ export default function CatalogClient({
   );
 }
 
-/* ── KART bileşeni ── */
-function ProductCard({ product }: { product: Product }) {
-  const startingPrice = getStartingPrice(product);
-  const groupCount = product.price_matrix?.groups?.length ?? 0;
+/* ── IZGARA KARTI ── */
+function VariantGridCard({ variant: v }: { variant: VariantCard }) {
+  const priceNum = parsePrice(v.price);
+  const href = `/urun/${v.productSlug}${v.groupLabel ? `?group=${encodeURIComponent(v.groupLabel)}` : ""}`;
 
   return (
     <a
-      href={`/urun/${product.slug}`}
+      href={href}
       className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-[#bae6fd] hover:-translate-y-1 transition-all duration-200 flex flex-col overflow-hidden"
     >
       {/* Görsel */}
       <div className="relative h-48 bg-gradient-to-br from-[#e8f4fc] to-[#ddf0fb] overflow-hidden">
-        {product.image_url ? (
+        {v.image ? (
           <Image
-            src={product.image_url}
-            alt={product.name}
+            src={v.image}
+            alt={`${v.productName} ${v.code}`}
             fill
             sizes="(max-width:768px) 50vw, 33vw"
             className="object-contain p-6 group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-5xl opacity-10">
-            🖨️
-          </div>
+          <div className="w-full h-full flex items-center justify-center text-5xl opacity-10">🖨️</div>
         )}
-        {product.is_featured && (
-          <span className="absolute top-2.5 left-2.5 bg-[#e30613] text-white text-[9px] font-black px-2 py-1 rounded-full uppercase tracking-wide">
-            Popüler
+
+        {/* Grup rozeti */}
+        {v.groupLabel && (
+          <span
+            className="absolute top-2.5 left-2.5 text-white text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-wide shadow-sm"
+            style={{ backgroundColor: v.groupColor }}
+          >
+            {v.groupLabel}
           </span>
         )}
-        {groupCount > 0 && (
-          <span className="absolute top-2.5 right-2.5 bg-white/90 text-[#07446c] text-[9px] font-black px-2 py-1 rounded-full border border-gray-100">
-            {groupCount} grup
+
+        {v.productIsFeatured && (
+          <span className="absolute top-2.5 right-2.5 bg-[#e30613] text-white text-[9px] font-black px-2 py-1 rounded-full uppercase tracking-wide">
+            Popüler
           </span>
         )}
       </div>
@@ -313,27 +377,43 @@ function ProductCard({ product }: { product: Product }) {
       {/* İçerik */}
       <div className="p-4 flex flex-col flex-1">
         <span className="inline-flex items-center gap-1 text-[9px] font-bold text-[#25aae1] uppercase tracking-wider mb-1.5">
-          <Tag size={8} /> {product.category}
+          <Tag size={8} /> {v.productCategory}
         </span>
-        <h3 className="text-sm font-bold text-[#07446c] leading-snug mb-3 group-hover:text-[#0f75bc] transition-colors">
-          {product.name}
+
+        <h3 className="text-sm font-bold text-[#07446c] leading-snug group-hover:text-[#0f75bc] transition-colors">
+          {v.productName}
+          {v.code && (
+            <span className="text-[#25aae1] font-black"> — {v.code}</span>
+          )}
         </h3>
+
+        {/* Özellik etiketleri */}
+        {v.features.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {v.features.map((f, i) => (
+              <span key={i} className="text-[9px] text-gray-400 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-full">
+                {f.val}
+              </span>
+            ))}
+          </div>
+        )}
 
         <div className="mt-auto pt-3 border-t border-gray-50 flex items-end justify-between">
           <div>
-            {startingPrice ? (
+            {priceNum > 0 ? (
               <>
-                <p className="text-[10px] text-gray-400 font-medium">başlayan fiyatlarla</p>
+                <p className="text-[9px] text-gray-400 font-medium">+KDV</p>
                 <p className="text-lg font-black text-[#07446c] leading-none">
-                  ₺{startingPrice}
-                  <span className="text-xs font-normal text-gray-400 ml-1">+KDV</span>
+                  {v.price}
                 </p>
               </>
+            ) : v.price ? (
+              <p className="text-base font-black text-[#07446c]">{v.price}</p>
             ) : (
               <p className="text-xs text-gray-400 font-medium">Fiyat için arayın</p>
             )}
           </div>
-          <span className="text-[10px] font-bold text-[#0f75bc] bg-[#e0f2fe] px-2.5 py-1 rounded-lg group-hover:bg-[#0f75bc] group-hover:text-white transition-colors">
+          <span className="text-[10px] font-bold text-[#0f75bc] bg-[#e0f2fe] px-2.5 py-1 rounded-lg group-hover:bg-[#0f75bc] group-hover:text-white transition-colors whitespace-nowrap">
             İncele →
           </span>
         </div>
@@ -342,44 +422,53 @@ function ProductCard({ product }: { product: Product }) {
   );
 }
 
-/* ── LİSTE SATIRI bileşeni ── */
-function ProductRow({ product }: { product: Product }) {
-  const startingPrice = getStartingPrice(product);
+/* ── LİSTE SATIRI ── */
+function VariantListRow({ variant: v }: { variant: VariantCard }) {
+  const href = `/urun/${v.productSlug}${v.groupLabel ? `?group=${encodeURIComponent(v.groupLabel)}` : ""}`;
 
   return (
     <a
-      href={`/urun/${product.slug}`}
+      href={href}
       className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-[#bae6fd] transition-all duration-200 flex items-center gap-5 p-4"
     >
       <div className="relative w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-gradient-to-br from-[#e8f4fc] to-[#ddf0fb]">
-        {product.image_url ? (
-          <Image
-            src={product.image_url}
-            alt={product.name}
-            fill
-            sizes="80px"
-            className="object-contain p-2 group-hover:scale-110 transition-transform duration-300"
-          />
+        {v.image ? (
+          <Image src={v.image} alt={`${v.productName} ${v.code}`} fill sizes="80px"
+            className="object-contain p-2 group-hover:scale-110 transition-transform duration-300" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-2xl opacity-10">🖨️</div>
         )}
       </div>
 
       <div className="flex-1 min-w-0">
-        <span className="text-[9px] font-bold text-[#25aae1] uppercase tracking-wider">{product.category}</span>
-        <h3 className="text-sm font-bold text-[#07446c] group-hover:text-[#0f75bc] transition-colors leading-snug mt-0.5 truncate">
-          {product.name}
+        <div className="flex items-center gap-2 mb-0.5">
+          <span className="text-[9px] font-bold text-[#25aae1] uppercase tracking-wider">{v.productCategory}</span>
+          {v.groupLabel && (
+            <span
+              className="text-[9px] font-black text-white px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: v.groupColor }}
+            >
+              {v.groupLabel}
+            </span>
+          )}
+        </div>
+        <h3 className="text-sm font-bold text-[#07446c] group-hover:text-[#0f75bc] transition-colors leading-snug truncate">
+          {v.productName}{v.code && <span className="text-[#25aae1] font-black"> — {v.code}</span>}
         </h3>
-        {product.description && (
-          <p className="text-xs text-gray-400 mt-1 line-clamp-1">{product.description}</p>
+        {v.features.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-1">
+            {v.features.slice(0, 3).map((f, i) => (
+              <span key={i} className="text-[9px] text-gray-400 bg-gray-50 border border-gray-100 px-1.5 py-0.5 rounded-full">{f.val}</span>
+            ))}
+          </div>
         )}
       </div>
 
       <div className="flex-shrink-0 text-right">
-        {startingPrice ? (
+        {v.price ? (
           <>
-            <p className="text-[10px] text-gray-400">başlayan fiyatlarla</p>
-            <p className="text-base font-black text-[#07446c]">₺{startingPrice}<span className="text-xs font-normal text-gray-400 ml-0.5">+KDV</span></p>
+            <p className="text-base font-black text-[#07446c]">{v.price}</p>
+            <p className="text-[10px] text-gray-400">+KDV</p>
           </>
         ) : (
           <p className="text-xs text-gray-400">Fiyat için arayın</p>
