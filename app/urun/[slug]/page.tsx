@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import Image from "next/image";
 import { getSupabase, type Product } from "@/lib/supabase";
 import Navbar from "@/app/components/Navbar";
@@ -113,7 +114,15 @@ export default async function ProductPage(props: {
               <h2 className="text-xl font-black text-[#07446c] mb-6">
                 Seçenekler ve Fiyatlar
               </h2>
-              <ProductShowcase product={product} />
+              <Suspense fallback={
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="bg-gray-100 rounded-2xl h-72 animate-pulse" />
+                  ))}
+                </div>
+              }>
+                <ProductShowcase product={product} />
+              </Suspense>
             </div>
           )}
 

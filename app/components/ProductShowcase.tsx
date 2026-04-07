@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
 import type { Product } from "@/lib/supabase";
@@ -39,7 +40,14 @@ function buildCards(product: Product): ProductCard[] {
 }
 
 export default function ProductShowcase({ product }: { product: Product }) {
-  const [activeGroup, setActiveGroup] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const [activeGroup, setActiveGroup] = useState<string | null>(
+    searchParams.get("group")
+  );
+
+  useEffect(() => {
+    setActiveGroup(searchParams.get("group"));
+  }, [searchParams]);
 
   const allCards = buildCards(product);
   const groups = product.price_matrix?.groups ?? [];
