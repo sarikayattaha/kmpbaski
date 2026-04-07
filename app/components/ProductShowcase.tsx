@@ -5,13 +5,13 @@ import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
 import type { Product } from "@/lib/supabase";
 
-/* ── Her matris satırından türetilen kart ── */
 type ProductCard = {
   groupLabel: string;
   groupColor: string;
-  code: string;       // columns[0] değeri
-  price: string;      // columns[last] değeri
-  features: { col: string; val: string }[]; // aradaki sütunlar
+  code: string;
+  price: string;
+  features: { col: string; val: string }[];
+  variantImage: string; // varyanta özel görsel — yoksa ürün ana görseli
 };
 
 function buildCards(product: Product): ProductCard[] {
@@ -22,7 +22,7 @@ function buildCards(product: Product): ProductCard[] {
   const priceIdx = cols.length - 1;
 
   return matrix.groups.flatMap((group) =>
-    group.rows.map((row) => ({
+    group.rows.map((row, ri) => ({
       groupLabel: group.label,
       groupColor: group.color,
       code: row[0] ?? "",
@@ -31,6 +31,9 @@ function buildCards(product: Product): ProductCard[] {
         .slice(1, priceIdx)
         .map((col, i) => ({ col, val: row[i + 1] ?? "" }))
         .filter((f) => f.val),
+      // Varyanta özel görsel → yoksa ürünün ana görseli
+      variantImage:
+        (group.rowImages?.[ri] ?? "") || product.image_url || "",
     }))
   );
 }
@@ -72,16 +75,12 @@ export default function ProductShowcase({ product }: { product: Product }) {
               className={`px-4 py-2 rounded-full text-sm font-bold border transition-all ${
                 isActive
                   ? "text-white border-transparent"
-                  : "bg-white text-gray-600 border-gray-200 hover:text-white hover:border-transparent"
+                  : "bg-white text-gray-600 border-gray-200"
               }`}
-              style={
-                isActive
-                  ? { backgroundColor: g.color }
-                  : undefined
-              }
+              style={{ backgroundColor: isActive ? g.color : undefined }}
               onMouseEnter={(e) => {
                 if (!isActive)
-                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = g.color;
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = g.color + "22";
               }}
               onMouseLeave={(e) => {
                 if (!isActive)
@@ -103,9 +102,9 @@ export default function ProductShowcase({ product }: { product: Product }) {
           >
             {/* Görsel */}
             <div className="relative h-44 bg-gradient-to-br from-[#e8f4fc] to-[#ddf0fb] overflow-hidden">
-              {product.image_url ? (
+              {card.variantImage ? (
                 <Image
-                  src={product.image_url}
+                  src={card.variantImage}
                   alt={`${product.name} ${card.code}`}
                   fill
                   sizes="(max-width:768px) 50vw, 25vw"
@@ -116,7 +115,6 @@ export default function ProductShowcase({ product }: { product: Product }) {
                   🖨️
                 </div>
               )}
-
               {/* Grup rozeti */}
               <span
                 className="absolute top-2.5 left-2.5 text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wide shadow-sm"
@@ -128,7 +126,6 @@ export default function ProductShowcase({ product }: { product: Product }) {
 
             {/* İçerik */}
             <div className="p-4 flex flex-col flex-1">
-              {/* Başlık */}
               <h3 className="text-sm font-bold text-[#07446c] leading-snug mb-2">
                 {product.name}
                 {card.code && (
@@ -136,21 +133,17 @@ export default function ProductShowcase({ product }: { product: Product }) {
                 )}
               </h3>
 
-              {/* Özellikler */}
               {card.features.length > 0 && (
                 <div className="flex flex-wrap gap-1 mb-3">
                   {card.features.map((f, fi) => (
-                    <span
-                      key={fi}
-                      className="text-[10px] text-gray-400 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-full"
-                    >
+                    <span key={fi}
+                      className="text-[10px] text-gray-400 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-full">
                       {f.val}
                     </span>
                   ))}
                 </div>
               )}
 
-              {/* Fiyat + Buton */}
               <div className="mt-auto pt-2">
                 <p className="text-xl font-black text-[#07446c] mb-3 leading-none">
                   {card.price}

@@ -38,6 +38,7 @@ export type PriceMatrixGroup = {
   label: string
   color: string
   rows: string[][]
+  rowImages?: string[]   // her satıra özel görsel URL (opsiyonel, geriye dönük uyumlu)
 }
 
 export type PriceMatrix = {
