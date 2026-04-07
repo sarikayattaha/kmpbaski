@@ -217,7 +217,9 @@ function ProductGridCard({ product: p }: { product: Product }) {
         </h3>
         <div className="mt-3 pt-3 border-t border-gray-50 flex items-end justify-between">
           <div>
-            {p.price ? (
+            {p.is_price_on_request ? (
+              <p className="text-sm font-black text-orange-500 tracking-wide">Fiyat Alınız</p>
+            ) : p.price ? (
               <>
                 <p className="text-[9px] text-gray-400 font-medium">başlayan fiyat</p>
                 <p className="text-lg font-black text-[#07446c] leading-none">
@@ -260,7 +262,9 @@ function ProductListRow({ product: p }: { product: Product }) {
         {firstFeature && <p className="text-xs text-gray-400 mt-1 truncate">{firstFeature}</p>}
       </div>
       <div className="flex-shrink-0 text-right">
-        {p.price ? (
+        {p.is_price_on_request ? (
+          <p className="text-sm font-black text-orange-500 tracking-wide">Fiyat Alınız</p>
+        ) : p.price ? (
           <>
             <p className="text-base font-black text-[#07446c]">{p.price}</p>
             <p className="text-[10px] text-gray-400">+KDV</p>

@@ -34,6 +34,9 @@ export default async function ProductPage(props: {
   const whatsappMsg = encodeURIComponent(
     `Merhaba, "${product.name}" ürünü hakkında bilgi almak istiyorum.`
   );
+  const whatsappPriceMsg = encodeURIComponent(
+    `Merhaba, ${product.name} ürünü hakkında fiyat teklifi almak istiyorum.`
+  );
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -87,7 +90,12 @@ export default async function ProductPage(props: {
               </h1>
 
               {/* Fiyat */}
-              {product.price && (
+              {product.is_price_on_request ? (
+                <div className="bg-orange-50 border border-orange-200 rounded-2xl px-5 py-4 inline-block">
+                  <p className="text-xs text-orange-500 font-semibold mb-0.5">Fiyat Bilgisi</p>
+                  <p className="text-3xl font-black text-orange-500 leading-none tracking-wide">Fiyat Alınız</p>
+                </div>
+              ) : product.price ? (
                 <div className="bg-[#f0fdf4] border border-green-100 rounded-2xl px-5 py-4 inline-block">
                   <p className="text-xs text-green-600 font-semibold mb-0.5">Başlayan Fiyat</p>
                   <p className="text-3xl font-black text-[#07446c] leading-none">
@@ -95,7 +103,7 @@ export default async function ProductPage(props: {
                     <span className="text-sm font-normal text-gray-400 ml-2">+KDV</span>
                   </p>
                 </div>
-              )}
+              ) : null}
 
               {/* Özellikler listesi */}
               {featureLines.length > 0 && (
@@ -116,14 +124,25 @@ export default async function ProductPage(props: {
 
               {/* Aksiyon butonları */}
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                <a
-                  href={`https://wa.me/908500000000?text=${whatsappMsg}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 inline-flex items-center justify-center gap-2 bg-[#25d366] hover:bg-[#1da851] text-white font-black px-6 py-4 rounded-2xl transition-colors shadow-lg shadow-green-400/20 text-sm"
-                >
-                  <MessageCircle size={18} /> WhatsApp&apos;tan Sor
-                </a>
+                {product.is_price_on_request ? (
+                  <a
+                    href={`https://wa.me/908500000000?text=${whatsappPriceMsg}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 inline-flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-black px-6 py-4 rounded-2xl transition-colors shadow-lg shadow-orange-400/20 text-sm"
+                  >
+                    <MessageCircle size={18} /> Teklif Al
+                  </a>
+                ) : (
+                  <a
+                    href={`https://wa.me/908500000000?text=${whatsappMsg}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 inline-flex items-center justify-center gap-2 bg-[#25d366] hover:bg-[#1da851] text-white font-black px-6 py-4 rounded-2xl transition-colors shadow-lg shadow-green-400/20 text-sm"
+                  >
+                    <MessageCircle size={18} /> WhatsApp&apos;tan Sor
+                  </a>
+                )}
                 <a
                   href="tel:08500000000"
                   className="flex-1 inline-flex items-center justify-center gap-2 bg-[#e30613] hover:bg-red-700 text-white font-black px-6 py-4 rounded-2xl transition-colors shadow-lg shadow-red-500/20 text-sm"

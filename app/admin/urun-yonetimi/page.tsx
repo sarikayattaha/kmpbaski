@@ -52,7 +52,7 @@ const inputCls = "w-full border border-blue-100 rounded-xl px-4 py-2.5 text-sm f
 
 /* Boş form state */
 const emptyForm = () => ({
-  name: "", slug: "", price: "", features: "", category: CATEGORIES[0], isFeatured: false,
+  name: "", slug: "", price: "", features: "", category: CATEGORIES[0], isFeatured: false, isPriceOnRequest: false,
 });
 
 export default function UrunYonetimi() {
@@ -120,7 +120,7 @@ export default function UrunYonetimi() {
   /* ── Düzenlemeye aç ── */
   const startEdit = (p: Product) => {
     setEditId(p.id);
-    setForm({ name: p.name, slug: p.slug, price: p.price ?? "", features: p.features ?? "", category: p.category, isFeatured: p.is_featured });
+    setForm({ name: p.name, slug: p.slug, price: p.price ?? "", features: p.features ?? "", category: p.category, isFeatured: p.is_featured, isPriceOnRequest: p.is_price_on_request ?? false });
     setPreview(p.image_url || null);
     setFile(null);
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
@@ -151,12 +151,13 @@ export default function UrunYonetimi() {
     }
 
     const payload: Record<string, unknown> = {
-      name:        form.name.trim(),
-      slug:        form.slug.trim(),
-      price:       form.price.trim(),
-      features:    form.features.trim(),
-      category:    form.category,
-      is_featured: form.isFeatured,
+      name:                 form.name.trim(),
+      slug:                 form.slug.trim(),
+      price:                form.isPriceOnRequest ? "" : form.price.trim(),
+      features:             form.features.trim(),
+      category:             form.category,
+      is_featured:          form.isFeatured,
+      is_price_on_request:  form.isPriceOnRequest,
     };
     if (imageUrl) payload.image_url = imageUrl;
 
@@ -281,7 +282,12 @@ export default function UrunYonetimi() {
                       </td>
                       <td className="py-3 pr-4 font-semibold text-[#07446c] max-w-[180px] truncate">{p.name}</td>
                       <td className="py-3 pr-4 text-gray-500 whitespace-nowrap">{p.category}</td>
-                      <td className="py-3 pr-4 font-bold text-[#07446c] whitespace-nowrap">{p.price || "—"}</td>
+                      <td className="py-3 pr-4 whitespace-nowrap">
+                        {p.is_price_on_request
+                          ? <span className="text-xs font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">Fiyat Alınız</span>
+                          : <span className="font-bold text-[#07446c]">{p.price || "—"}</span>
+                        }
+                      </td>
                       <td className="py-3 pr-4">
                         <a href={`/urun/${p.slug}`} target="_blank"
                           className="flex items-center gap-1 text-[#0f75bc] hover:underline text-xs font-mono">
@@ -339,10 +345,26 @@ export default function UrunYonetimi() {
               </Field>
 
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Fiyat">
-                  <input value={form.price} onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
-                    placeholder="Ör: ₺120" className={inputCls} />
-                </Field>
+                <div>
+                  <Field label="Fiyat">
+                    <input
+                      value={form.price}
+                      onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
+                      placeholder="Ör: ₺120"
+                      disabled={form.isPriceOnRequest}
+                      className={`${inputCls} ${form.isPriceOnRequest ? "opacity-40 cursor-not-allowed bg-gray-50" : ""}`}
+                    />
+                  </Field>
+                  <label className="flex items-center gap-2 cursor-pointer mt-2">
+                    <input
+                      type="checkbox"
+                      checked={form.isPriceOnRequest}
+                      onChange={(e) => setForm((f) => ({ ...f, isPriceOnRequest: e.target.checked, price: e.target.checked ? "" : f.price }))}
+                      className="w-4 h-4 rounded accent-orange-500"
+                    />
+                    <span className="text-xs font-semibold text-orange-600">Fiyat Alınız yazsın</span>
+                  </label>
+                </div>
                 <Field label="Kategori">
                   <select value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} className={inputCls}>
                     {CATEGORIES.map((c) => <option key={c}>{c}</option>)}

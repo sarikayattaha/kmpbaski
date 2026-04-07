@@ -43,5 +43,6 @@ export type Product = {
   price: string          // görüntülenecek fiyat metni (Ör: "₺120", "120,00 ₺")
   features: string       // satır satır özellikler (newline ile ayrılmış)
   is_featured: boolean
+  is_price_on_request: boolean  // true ise fiyat yerine "Fiyat Alınız" gösterilir
   created_at: string
 }
