@@ -172,7 +172,7 @@ export default function Navbar() {
 
           <nav className="flex items-center gap-0.5 overflow-x-auto scrollbar-none flex-1 ml-1">
             {menuData.slice(0, 8).map((cat, i) => (
-              <a key={i} href="#"
+              <a key={i} href={`/tum-urunler?kategori=${encodeURIComponent(cat.name)}`}
                 className="whitespace-nowrap px-3 py-1.5 text-sm rounded-lg font-medium text-gray-600 hover:text-[#0f75bc] hover:bg-blue-50 transition-colors">
                 {cat.name}
               </a>
@@ -216,8 +216,8 @@ export default function Navbar() {
                       </button>
                     ))}
                     <div className="border-t border-gray-100 mt-1 pt-1">
-                      <a href="/" className="block px-5 py-2.5 text-sm text-gray-500 hover:bg-gray-50 transition-colors">
-                        Tüm Ürünler
+                      <a href="/tum-urunler" className="block px-5 py-2.5 text-sm text-[#0f75bc] font-semibold hover:bg-blue-50 transition-colors">
+                        → Tüm Ürünleri Gör
                       </a>
                     </div>
                   </>
