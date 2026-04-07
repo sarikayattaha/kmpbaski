@@ -12,10 +12,75 @@ import {
   Menu,
   X,
   ChevronDown,
+  AlignJustify,
+  ArrowRight,
+  Layers,
+  BookOpen,
+  Printer,
+  ImageIcon,
+  Package,
+  Gift,
 } from "lucide-react";
 
-const categories = [
-  { label: "Tüm Ürünler", href: "#", bold: true },
+/* ── MEGA MENÜ VERİSİ ── */
+const megaCategories = [
+  {
+    category: "Kartvizitler",
+    icon: <Layers size={15} />,
+    subgroups: [
+      { title: "Standart", items: ["Selofanlı", "Mat Selofanlı", "Lak Baskı", "Ekonomik"] },
+      { title: "Özel", items: ["Kabartma Laklı", "Sıvama Altın", "Spot Selofan", "Plastik"] },
+      { title: "Özel Kesim", items: ["Oval", "Köşe Yuvarlak", "Özel Şekil", "Mini"] },
+    ],
+  },
+  {
+    category: "Broşür & Katalog",
+    icon: <BookOpen size={15} />,
+    subgroups: [
+      { title: "Broşürler", items: ["2'li Katlama", "3'lü Katlama", "4'lü Katlama", "Z Katlama"] },
+      { title: "Kataloglar", items: ["Tel Zımbalı", "Dikişli Ciltli", "Spiralli", "Lüks"] },
+      { title: "Kitap & Dergi", items: ["Kitap Baskı", "Dergi Baskı", "Ajanda", "Yıllık Rapor"] },
+    ],
+  },
+  {
+    category: "Kurumsal",
+    icon: <Printer size={15} />,
+    subgroups: [
+      { title: "Evrak", items: ["Antetli Kağıt", "Zarflar", "Klasör", "Bloknot"] },
+      { title: "Sunum", items: ["Dosya Kapağı", "Karton Kutu", "Teklif Dosyası", "Kartvizit Kutusu"] },
+      { title: "Formlar", items: ["Fatura Formu", "İrsaliye", "Sipariş Formu", "Anket"] },
+    ],
+  },
+  {
+    category: "Reklam",
+    icon: <ImageIcon size={15} />,
+    subgroups: [
+      { title: "Büyük Format", items: ["Branda", "Afiş & Poster", "Germe Branda", "Mesh"] },
+      { title: "Sunum", items: ["Roll-Up", "X-Banner", "Fuar Standı", "Pop-Up"] },
+      { title: "Araç & Cam", items: ["Araç Giydirme", "Cam Folyo", "Duvar Kağıdı", "Zemin"] },
+    ],
+  },
+  {
+    category: "Ambalaj",
+    icon: <Package size={15} />,
+    subgroups: [
+      { title: "Kutular", items: ["Karton Kutu", "Kraft Kutu", "Oluklu Mukavva", "Hediye"] },
+      { title: "Poşet", items: ["Kağıt Torba", "Bez Çanta", "Kraft Kese", "Plastik"] },
+      { title: "Etiket", items: ["Rulo Etiket", "Şeffaf Etiket", "Kontur Kesim", "QR"] },
+    ],
+  },
+  {
+    category: "Promosyon",
+    icon: <Gift size={15} />,
+    subgroups: [
+      { title: "Yazı", items: ["Logolu Kalem", "Defter", "Ajanda", "Post-it"] },
+      { title: "Tekstil", items: ["Bez Çanta", "T-Shirt", "Şapka", "Yelek"] },
+      { title: "Takvim", items: ["Masa Takvimi", "Duvar Takvimi", "Bayrak", "Magnet"] },
+    ],
+  },
+];
+
+const quickLinks = [
   { label: "Ekspres Baskı", href: "#" },
   { label: "Kartvizitler", href: "#" },
   { label: "Broşür & Katalog", href: "#" },
@@ -29,6 +94,8 @@ const categories = [
 export default function Navbar() {
   const [query, setQuery] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [megaOpen, setMegaOpen] = useState(false);
+  const [activeCategory, setActiveCategory] = useState(0);
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
@@ -117,17 +184,89 @@ export default function Navbar() {
       <div className="bg-white border-b border-gray-100 hidden md:block">
         <div className="max-w-7xl mx-auto px-4">
           <nav className="flex items-center gap-0.5 h-10 overflow-x-auto scrollbar-none">
-            {categories.map((cat, i) => (
+
+            {/* TÜM ÜRÜNLER — mega menü tetikleyici */}
+            <div
+              className="relative flex-shrink-0"
+              onMouseEnter={() => setMegaOpen(true)}
+              onMouseLeave={() => { setMegaOpen(false); setActiveCategory(0); }}
+            >
+              <button
+                className={`flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 text-sm rounded-lg font-bold transition-colors
+                  ${megaOpen ? "bg-[#0f75bc] text-white" : "bg-[#e0f2fe] text-[#07446c] hover:bg-[#bae6fd]"}`}
+              >
+                <AlignJustify size={14} />
+                Tüm Ürünler
+                <ChevronDown size={13} className={`transition-transform duration-200 ${megaOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              {/* MEGA PANEL */}
+              {megaOpen && (
+                <div
+                  className="absolute top-full left-0 mt-1 w-[820px] bg-white rounded-2xl shadow-2xl border border-blue-100 z-50 flex overflow-hidden"
+                  style={{ minHeight: 380 }}
+                >
+                  {/* Sol — Kategori listesi */}
+                  <div className="w-48 bg-[#f0f8ff] border-r border-blue-100 py-2 flex-shrink-0">
+                    <p className="px-4 pt-1 pb-2 text-[10px] font-bold text-[#25aae1] uppercase tracking-widest">
+                      Kategoriler
+                    </p>
+                    {megaCategories.map((cat, idx) => (
+                      <button
+                        key={idx}
+                        onMouseEnter={() => setActiveCategory(idx)}
+                        className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-left transition-colors
+                          ${activeCategory === idx ? "bg-[#0f75bc] text-white" : "text-[#07446c] hover:bg-blue-100"}`}
+                      >
+                        <span className={activeCategory === idx ? "text-white" : "text-[#25aae1]"}>
+                          {cat.icon}
+                        </span>
+                        {cat.category}
+                        {activeCategory === idx && <ArrowRight size={12} className="ml-auto" />}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Orta — Alt ürünler */}
+                  <div className="flex-1 p-5 overflow-y-auto">
+                    <p className="text-xs font-bold text-[#25aae1] uppercase tracking-widest mb-4">
+                      {megaCategories[activeCategory].category}
+                    </p>
+                    <div className="grid grid-cols-3 gap-4">
+                      {megaCategories[activeCategory].subgroups.map((group, gi) => (
+                        <div key={gi}>
+                          <p className="text-[11px] font-bold text-[#07446c] uppercase tracking-wide mb-2 border-b border-blue-100 pb-1">
+                            {group.title}
+                          </p>
+                          <ul className="space-y-1">
+                            {group.items.map((item, ii) => (
+                              <li key={ii}>
+                                <a
+                                  href="#"
+                                  className="text-sm text-slate-500 hover:text-[#0f75bc] hover:translate-x-0.5 inline-block transition-all"
+                                >
+                                  {item}
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Hızlı linkler */}
+            {quickLinks.map((cat, i) => (
               <a
                 key={i}
                 href={cat.href}
-                className={`flex items-center gap-1 whitespace-nowrap px-3 py-1.5 text-sm rounded-lg transition-colors
-                  ${cat.bold ? "font-bold text-[#07446c] bg-[#e0f2fe] hover:bg-[#bae6fd]" : ""}
-                  ${cat.highlight ? "font-semibold text-[#0f75bc] hover:bg-blue-50" : ""}
-                  ${!cat.bold && !cat.highlight ? "text-gray-600 hover:text-[#0f75bc] hover:bg-blue-50 font-medium" : ""}
+                className={`whitespace-nowrap px-3 py-1.5 text-sm rounded-lg transition-colors font-medium
+                  ${cat.highlight ? "text-[#0f75bc] font-semibold hover:bg-blue-50" : "text-gray-600 hover:text-[#0f75bc] hover:bg-blue-50"}
                 `}
               >
-                {cat.bold && <ChevronDown size={13} />}
                 {cat.label}
               </a>
             ))}
@@ -146,7 +285,7 @@ export default function Navbar() {
             />
             <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
           </div>
-          {categories.map((cat, i) => (
+          {quickLinks.map((cat, i) => (
             <a
               key={i}
               href={cat.href}
