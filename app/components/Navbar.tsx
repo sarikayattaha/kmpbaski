@@ -183,82 +183,81 @@ export default function Navbar() {
       {/* ── KATEGORİ BARI ── */}
       <div className="bg-white border-b border-gray-100 hidden md:block">
         <div className="max-w-7xl mx-auto px-4">
-          <nav className="flex items-center gap-0.5 h-10 overflow-x-auto scrollbar-none">
-
-            {/* TÜM ÜRÜNLER — mega menü tetikleyici */}
-            <div
-              className="relative flex-shrink-0"
-              onMouseEnter={() => setMegaOpen(true)}
-              onMouseLeave={() => { setMegaOpen(false); setActiveCategory(0); }}
+          {/* TÜM ÜRÜNLER — overflow-x:auto'nun DIŞINDA, yoksa panel clip'lenir */}
+          <div
+            className="relative flex-shrink-0"
+            onMouseEnter={() => setMegaOpen(true)}
+            onMouseLeave={() => { setMegaOpen(false); setActiveCategory(0); }}
+          >
+            <button
+              className={`flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 text-sm rounded-lg font-bold transition-colors h-10
+                ${megaOpen ? "bg-[#0f75bc] text-white" : "bg-[#e0f2fe] text-[#07446c] hover:bg-[#bae6fd]"}`}
             >
-              <button
-                className={`flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 text-sm rounded-lg font-bold transition-colors
-                  ${megaOpen ? "bg-[#0f75bc] text-white" : "bg-[#e0f2fe] text-[#07446c] hover:bg-[#bae6fd]"}`}
-              >
-                <AlignJustify size={14} />
-                Tüm Ürünler
-                <ChevronDown size={13} className={`transition-transform duration-200 ${megaOpen ? "rotate-180" : ""}`} />
-              </button>
+              <AlignJustify size={14} />
+              Tüm Ürünler
+              <ChevronDown size={13} className={`transition-transform duration-200 ${megaOpen ? "rotate-180" : ""}`} />
+            </button>
 
-              {/* MEGA PANEL */}
-              {megaOpen && (
-                <div
-                  className="absolute top-full left-0 mt-1 w-[820px] bg-white rounded-2xl shadow-2xl border border-blue-100 z-50 flex overflow-hidden"
-                  style={{ minHeight: 380 }}
-                >
-                  {/* Sol — Kategori listesi */}
-                  <div className="w-48 bg-[#f0f8ff] border-r border-blue-100 py-2 flex-shrink-0">
-                    <p className="px-4 pt-1 pb-2 text-[10px] font-bold text-[#25aae1] uppercase tracking-widest">
-                      Kategoriler
-                    </p>
-                    {megaCategories.map((cat, idx) => (
-                      <button
-                        key={idx}
-                        onMouseEnter={() => setActiveCategory(idx)}
-                        className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-left transition-colors
-                          ${activeCategory === idx ? "bg-[#0f75bc] text-white" : "text-[#07446c] hover:bg-blue-100"}`}
-                      >
-                        <span className={activeCategory === idx ? "text-white" : "text-[#25aae1]"}>
-                          {cat.icon}
-                        </span>
-                        {cat.category}
-                        {activeCategory === idx && <ArrowRight size={12} className="ml-auto" />}
-                      </button>
+            {/* MEGA PANEL — header'ın dışına taşar, z-[9999] ile her şeyin üstünde */}
+            {megaOpen && (
+              <div
+                className="absolute top-full left-0 mt-1 w-[820px] bg-white rounded-2xl shadow-2xl border border-blue-100 flex overflow-hidden"
+                style={{ minHeight: 380, zIndex: 9999 }}
+              >
+                {/* Sol — Kategori listesi */}
+                <div className="w-48 bg-[#f0f8ff] border-r border-blue-100 py-2 flex-shrink-0">
+                  <p className="px-4 pt-1 pb-2 text-[10px] font-bold text-[#25aae1] uppercase tracking-widest">
+                    Kategoriler
+                  </p>
+                  {megaCategories.map((cat, idx) => (
+                    <button
+                      key={idx}
+                      onMouseEnter={() => setActiveCategory(idx)}
+                      className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-left transition-colors
+                        ${activeCategory === idx ? "bg-[#0f75bc] text-white" : "text-[#07446c] hover:bg-blue-100"}`}
+                    >
+                      <span className={activeCategory === idx ? "text-white" : "text-[#25aae1]"}>
+                        {cat.icon}
+                      </span>
+                      {cat.category}
+                      {activeCategory === idx && <ArrowRight size={12} className="ml-auto" />}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Orta — Alt ürünler */}
+                <div className="flex-1 p-5">
+                  <p className="text-xs font-bold text-[#25aae1] uppercase tracking-widest mb-4">
+                    {megaCategories[activeCategory].category}
+                  </p>
+                  <div className="grid grid-cols-3 gap-4">
+                    {megaCategories[activeCategory].subgroups.map((group, gi) => (
+                      <div key={gi}>
+                        <p className="text-[11px] font-bold text-[#07446c] uppercase tracking-wide mb-2 border-b border-blue-100 pb-1">
+                          {group.title}
+                        </p>
+                        <ul className="space-y-1">
+                          {group.items.map((item, ii) => (
+                            <li key={ii}>
+                              <a
+                                href="#"
+                                className="text-sm text-slate-500 hover:text-[#0f75bc] hover:translate-x-0.5 inline-block transition-all"
+                              >
+                                {item}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     ))}
                   </div>
-
-                  {/* Orta — Alt ürünler */}
-                  <div className="flex-1 p-5 overflow-y-auto">
-                    <p className="text-xs font-bold text-[#25aae1] uppercase tracking-widest mb-4">
-                      {megaCategories[activeCategory].category}
-                    </p>
-                    <div className="grid grid-cols-3 gap-4">
-                      {megaCategories[activeCategory].subgroups.map((group, gi) => (
-                        <div key={gi}>
-                          <p className="text-[11px] font-bold text-[#07446c] uppercase tracking-wide mb-2 border-b border-blue-100 pb-1">
-                            {group.title}
-                          </p>
-                          <ul className="space-y-1">
-                            {group.items.map((item, ii) => (
-                              <li key={ii}>
-                                <a
-                                  href="#"
-                                  className="text-sm text-slate-500 hover:text-[#0f75bc] hover:translate-x-0.5 inline-block transition-all"
-                                >
-                                  {item}
-                                </a>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+          </div>
 
-            {/* Hızlı linkler */}
+          {/* Hızlı linkler — overflow-x:auto içinde kalabilir */}
+          <nav className="flex items-center gap-0.5 h-10 overflow-x-auto scrollbar-none flex-1 ml-1">
             {quickLinks.map((cat, i) => (
               <a
                 key={i}
