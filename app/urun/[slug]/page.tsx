@@ -5,6 +5,7 @@ import Image from "next/image";
 import { getSupabase, type Product } from "@/lib/supabase";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
+import AddToCartButton from "./AddToCartButton";
 import { Tag, ArrowLeft, Phone, MessageCircle, CheckCircle2 } from "lucide-react";
 
 export default async function ProductPage(props: {
@@ -124,6 +125,7 @@ export default async function ProductPage(props: {
 
               {/* Aksiyon butonları */}
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <AddToCartButton product={product} />
                 {product.is_price_on_request ? (
                   <a
                     href={`https://wa.me/905541630031?text=${whatsappPriceMsg}`}

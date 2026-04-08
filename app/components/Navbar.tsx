@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
   Search, User, ShoppingCart, Phone, Mail, Clock,
-  Menu, X, ChevronDown, AlignJustify, Loader2,
+  Menu, X, ChevronDown, AlignJustify, Loader2, LogOut,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { useCart } from "@/lib/cart-context";
 
 type NavProduct = { name: string; slug: string; image_url: string; };
 type NavCategory = { name: string; products: NavProduct[]; };
@@ -19,6 +20,46 @@ export default function Navbar() {
   const [menuData, setMenuData]     = useState<NavCategory[]>([]);
   const [menuLoading, setMenuLoading] = useState(true);
   const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const { totalCount } = useCart();
+
+  const [userFullName, setUserFullName] = useState<string | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (data.session?.user) {
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", data.session.user.id)
+          .single();
+        setUserFullName((prof as { full_name?: string } | null)?.full_name ?? data.session.user.email ?? "Hesabım");
+      }
+      setAuthReady(true);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", session.user.id)
+          .single();
+        setUserFullName((prof as { full_name?: string } | null)?.full_name ?? session.user.email ?? "Hesabım");
+      } else {
+        setUserFullName(null);
+      }
+    });
+
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUserFullName(null);
+    window.location.href = "/";
+  };
 
   /* ── Supabase'den ürünleri çek ── */
   useEffect(() => {
@@ -95,14 +136,30 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-1 flex-shrink-0">
-            <a href="#" className="hidden md:flex items-center gap-2 px-3 py-2 text-[#07446c] hover:text-[#0f75bc] transition-colors">
-              <User size={20} />
-              <span className="text-sm font-medium">Giriş Yap</span>
-            </a>
-            <a href="#" className="flex items-center gap-2 bg-[#0f75bc] hover:bg-[#07446c] text-white px-4 py-2 rounded-xl transition-colors">
+            {authReady && (
+              userFullName ? (
+                <div className="hidden md:flex items-center gap-1">
+                  <a href="/hesabim" className="flex items-center gap-2 px-3 py-2 text-[#07446c] hover:text-[#0f75bc] transition-colors">
+                    <User size={18} />
+                    <span className="text-sm font-semibold max-w-[120px] truncate">{userFullName.split(" ")[0]}</span>
+                  </a>
+                  <button onClick={handleLogout} className="p-2 text-gray-400 hover:text-red-500 transition-colors" title="Çıkış Yap">
+                    <LogOut size={16} />
+                  </button>
+                </div>
+              ) : (
+                <a href="/login" className="hidden md:flex items-center gap-2 px-3 py-2 text-[#07446c] hover:text-[#0f75bc] transition-colors">
+                  <User size={20} />
+                  <span className="text-sm font-medium">Giriş Yap</span>
+                </a>
+              )
+            )}
+            <a href="/sepet" className="flex items-center gap-2 bg-[#0f75bc] hover:bg-[#07446c] text-white px-4 py-2 rounded-xl transition-colors">
               <ShoppingCart size={18} />
               <span className="text-sm font-bold hidden md:block">Sepetim</span>
-              <span className="bg-white text-[#0f75bc] text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center">0</span>
+              <span className="bg-white text-[#0f75bc] text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center">
+                {totalCount}
+              </span>
             </a>
             <button className="md:hidden p-2 rounded-lg text-[#07446c] hover:bg-blue-50 ml-1"
               onClick={() => setMobileOpen(!mobileOpen)}>

@@ -46,3 +46,11 @@ export type Product = {
   is_price_on_request: boolean  // true ise fiyat yerine "Fiyat Alınız" gösterilir
   created_at: string
 }
+
+export type Profile = {
+  id: string
+  full_name: string
+  phone: string
+  sector: string
+  created_at: string
+}
