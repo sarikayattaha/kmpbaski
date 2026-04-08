@@ -37,7 +37,18 @@ export default function RegisterPage() {
 
     setLoading(true);
 
-    const { data, error: authErr } = await supabase.auth.signUp({ email, password });
+    const formattedPhone = `+90${phone.replace(/\D/g, "")}`;
+
+    const { error: authErr } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName.trim(),
+          phone: formattedPhone,
+        },
+      },
+    });
 
     if (authErr) {
       setLoading(false);
@@ -49,15 +60,8 @@ export default function RegisterPage() {
       return;
     }
 
-    // Profil kaydı
-    if (data.user) {
-      await supabase.from("profiles").upsert({
-        id: data.user.id,
-        full_name: fullName.trim(),
-        phone: `+90${phone.replace(/\D/g, "")}`,
-      });
-    }
-
+    // Profil satırı trigger ile otomatik açılıyor.
+    // E-posta onayı kapalıysa session gelir ve anında giriş yapılır.
     setLoading(false);
     router.replace("/");
   };
