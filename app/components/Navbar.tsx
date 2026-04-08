@@ -3,11 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
-  Search, User, ShoppingCart, Phone, Mail, Clock,
+  Search, User, Phone, Mail, Clock,
   Menu, X, ChevronDown, AlignJustify, Loader2,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { useCart } from "@/lib/cart-context";
 
 type NavProduct  = { name: string; slug: string; image_url: string; };
 type NavCategory = { name: string; products: NavProduct[]; };
@@ -21,14 +20,12 @@ export default function Navbar() {
   const [menuLoading, setMenuLoading]       = useState(true);
   const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  const { totalCount } = useCart();
-
-  // null = henüz bilinmiyor | "" = giriş yok | string = giriş yapılmış
+  // null = bilgi yok | "" = giriş yok | string = giriş yapılmış (user id)
   const [authUser, setAuthUser] = useState<string | null>(null);
 
-  /* ── Auth durumu: onAuthStateChange yeterli ── */
+  /* ── Auth ── */
   useEffect(() => {
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
       setAuthUser(session?.user?.id ?? "");
     });
     return () => listener.subscription.unsubscribe();
@@ -57,8 +54,8 @@ export default function Navbar() {
     closeTimer.current = setTimeout(() => { setMegaOpen(false); setActiveCategory(0); }, 120);
   };
 
-  const activeCat  = menuData[activeCategory];
-  const isLoggedIn = authUser !== null && authUser !== "";
+  const activeCat   = menuData[activeCategory];
+  const isLoggedIn  = authUser !== null && authUser !== "";
   const profileHref = isLoggedIn ? "/profile" : "/login";
 
   return (
@@ -105,31 +102,18 @@ export default function Navbar() {
             </button>
           </div>
 
-          {/* Sağ: Profil ikonu + Sepet */}
+          {/* Sağ: sadece profil ikonu */}
           <div className="flex items-center gap-2 flex-shrink-0">
-
-            {/* Profil ikonu — tek tıkla /profile veya /login */}
             <a href={profileHref}
-              className={`p-2 rounded-xl transition-colors ${
+              className={`p-2.5 rounded-xl transition-colors ${
                 isLoggedIn
                   ? "bg-[#e0f2fe] text-[#0f75bc] hover:bg-[#bae6fd]"
                   : "text-gray-400 hover:bg-gray-100"
               }`}
               title={isLoggedIn ? "Profilim" : "Giriş Yap"}>
-              <User size={20} />
+              <User size={21} />
             </a>
 
-            {/* Sepet */}
-            <a href="/sepet"
-              className="flex items-center gap-2 bg-[#0f75bc] hover:bg-[#07446c] text-white px-4 py-2 rounded-xl transition-colors">
-              <ShoppingCart size={18} />
-              <span className="text-sm font-bold hidden md:block">Sepetim</span>
-              <span className="bg-white text-[#0f75bc] text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center">
-                {totalCount}
-              </span>
-            </a>
-
-            {/* Mobil menü */}
             <button className="md:hidden p-2 rounded-lg text-[#07446c] hover:bg-blue-50"
               onClick={() => setMobileOpen(!mobileOpen)}>
               {mobileOpen ? <X size={20} /> : <Menu size={20} />}
@@ -148,7 +132,6 @@ export default function Navbar() {
             Tüm Ürünler
             <ChevronDown size={13} className={`transition-transform duration-200 ${megaOpen ? "rotate-180" : ""}`} />
           </button>
-
           <nav className="flex items-center gap-0.5 overflow-x-auto scrollbar-none flex-1 ml-1">
             {menuData.slice(0, 8).map((cat, i) => (
               <a key={i} href={`/tum-urunler?kategori=${encodeURIComponent(cat.name)}`}
@@ -194,9 +177,7 @@ export default function Navbar() {
               <div className="flex-1 px-8 py-6 overflow-y-auto" style={{ maxHeight: 380 }}>
                 {activeCat && (
                   <>
-                    <h3 className="text-sm font-black text-gray-800 mb-4 pb-2 border-b border-gray-100">
-                      {activeCat.name}
-                    </h3>
+                    <h3 className="text-sm font-black text-gray-800 mb-4 pb-2 border-b border-gray-100">{activeCat.name}</h3>
                     <div className="grid grid-cols-3 gap-x-6 gap-y-2">
                       {activeCat.products.map((product, pi) => (
                         <a key={pi} href={`/urun/${product.slug}`}
@@ -236,7 +217,6 @@ export default function Navbar() {
                   </div>
                 )}
               </div>
-
             </div>
           </div>
         )}
@@ -250,17 +230,11 @@ export default function Navbar() {
               className="w-full h-10 pl-4 pr-10 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f75bc]" />
             <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
           </div>
-
           <a href={profileHref}
             className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-[#07446c] hover:bg-blue-50 transition-colors">
             <User size={16} /> {isLoggedIn ? "Profilim" : "Giriş Yap"}
           </a>
-
-          {menuLoading ? (
-            <div className="flex items-center justify-center py-6 text-gray-300">
-              <Loader2 size={20} className="animate-spin" />
-            </div>
-          ) : menuData.map((cat, ci) => (
+          {menuData.map((cat, ci) => (
             <div key={ci}>
               <a href={`/tum-urunler?kategori=${encodeURIComponent(cat.name)}`}
                 className="block text-[10px] font-bold text-[#25aae1] uppercase tracking-widest px-2 pt-3 pb-1">
