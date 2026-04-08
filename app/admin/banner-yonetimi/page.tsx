@@ -17,8 +17,7 @@ import {
   ArrowUp,
   ArrowDown,
 } from "lucide-react";
-
-const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_KEY ?? "kmpbaski2024";
+import AdminGuard from "@/app/admin/_components/AdminGuard";
 
 /* ── Bildirim bileşeni ── */
 function Toast({ msg, type }: { msg: string; type: "success" | "error" }) {
@@ -35,11 +34,10 @@ function Toast({ msg, type }: { msg: string; type: "success" | "error" }) {
 }
 
 export default function BannerYonetimi() {
-  /* ── Auth ── */
-  const [authed, setAuthed] = useState(false);
-  const [pass, setPass] = useState("");
-  const [passErr, setPassErr] = useState(false);
+  return <AdminGuard><BannerYonetimiInner /></AdminGuard>;
+}
 
+function BannerYonetimiInner() {
   /* ── Banner state ── */
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(false);
@@ -63,24 +61,9 @@ export default function BannerYonetimi() {
     setTimeout(() => setToast(null), 3500);
   };
 
-  /* ── Auth check (sessionStorage) ── */
-  useEffect(() => {
-    if (sessionStorage.getItem("kmp_admin") === "1") setAuthed(true);
-  }, []);
-
-  const handleLogin = () => {
-    if (pass === ADMIN_KEY) {
-      sessionStorage.setItem("kmp_admin", "1");
-      setAuthed(true);
-    } else {
-      setPassErr(true);
-      setTimeout(() => setPassErr(false), 1500);
-    }
-  };
-
   const handleLogout = () => {
     sessionStorage.removeItem("kmp_admin");
-    setAuthed(false);
+    window.location.href = "/admin/login";
   };
 
   /* ── Bannerları yükle ── */
@@ -99,9 +82,7 @@ export default function BannerYonetimi() {
     }
   };
 
-  useEffect(() => {
-    if (authed) fetchBanners();
-  }, [authed]);
+  useEffect(() => { fetchBanners(); }, []);
 
   /* ── Dosya seçimi ── */
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -160,7 +141,6 @@ export default function BannerYonetimi() {
   const handleDelete = async (banner: Banner) => {
     if (!confirm(`"${banner.title}" silinsin mi?`)) return;
 
-    // Storage'dan sil
     if (banner.image_url) {
       const path = banner.image_url.split("/").pop();
       if (path) await supabase.storage.from("banner-images").remove([path]);
@@ -181,48 +161,6 @@ export default function BannerYonetimi() {
   };
 
   /* ══════════════════════════
-     GİRİŞ EKRANI
-  ══════════════════════════ */
-  if (!authed) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#07446c] to-[#0f75bc] flex items-center justify-center px-4">
-        <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-sm">
-          <div className="text-center mb-8">
-            <div className="w-14 h-14 bg-[#0f75bc]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <ImageIcon size={28} className="text-[#0f75bc]" />
-            </div>
-            <h1 className="text-xl font-black text-[#07446c]">KMP BASKI</h1>
-            <p className="text-sm text-slate-400 mt-1">Admin Paneli</p>
-          </div>
-
-          <input
-            type="password"
-            placeholder="Yönetici şifresi"
-            value={pass}
-            onChange={(e) => setPass(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-            className={`w-full border rounded-xl px-4 py-3 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-[#0f75bc] transition-all ${
-              passErr ? "border-red-400 bg-red-50 shake" : "border-blue-100"
-            }`}
-          />
-          <button
-            onClick={handleLogin}
-            className="w-full bg-[#0f75bc] hover:bg-[#07446c] text-white font-bold py-3 rounded-xl transition-colors"
-          >
-            Giriş Yap
-          </button>
-          {passErr && (
-            <p className="text-xs text-red-500 text-center mt-2">Hatalı şifre.</p>
-          )}
-          <p className="text-[10px] text-slate-300 text-center mt-4">
-            Varsayılan: NEXT_PUBLIC_ADMIN_KEY değeri
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  /* ══════════════════════════
      ADMIN PANELİ
   ══════════════════════════ */
   return (
@@ -235,7 +173,7 @@ export default function BannerYonetimi() {
           <h1 className="font-black text-lg">
             KMP<span className="text-[#25aae1]">BASKI</span> — Banner Yönetimi
           </h1>
-          <p className="text-blue-200 text-xs mt-0.5">Ana sayfa vitrin banner'larını yönetin</p>
+          <p className="text-blue-200 text-xs mt-0.5">Ana sayfa vitrin banner&apos;larını yönetin</p>
         </div>
         <button
           onClick={handleLogout}
@@ -391,7 +329,6 @@ export default function BannerYonetimi() {
                   key={b.id}
                   className="flex items-center gap-4 p-4 rounded-2xl border border-blue-50 hover:border-blue-200 hover:bg-slate-50 transition-all"
                 >
-                  {/* Küçük resim */}
                   <div className="w-24 h-16 rounded-xl overflow-hidden bg-gradient-to-br from-[#e0f2fe] to-[#bae6fd] flex-shrink-0 relative">
                     {b.image_url ? (
                       <Image src={b.image_url} alt={b.title} fill className="object-cover" />
@@ -402,7 +339,6 @@ export default function BannerYonetimi() {
                     )}
                   </div>
 
-                  {/* Bilgi */}
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-[#07446c] truncate">{b.title}</p>
                     {b.subtitle && (
@@ -413,7 +349,6 @@ export default function BannerYonetimi() {
                     </p>
                   </div>
 
-                  {/* Aksiyonlar */}
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <button
                       onClick={() => moveOrder(b, "up")}
