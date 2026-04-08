@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
   Search, User, ShoppingCart, Phone, Mail, Clock,
-  Menu, X, ChevronDown, AlignJustify, Loader2, LogOut, Settings,
+  Menu, X, ChevronDown, AlignJustify, Loader2,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useCart } from "@/lib/cart-context";
@@ -19,54 +19,20 @@ export default function Navbar() {
   const [activeCategory, setActiveCategory] = useState(0);
   const [menuData, setMenuData]             = useState<NavCategory[]>([]);
   const [menuLoading, setMenuLoading]       = useState(true);
-  const [dropdownOpen, setDropdownOpen]     = useState(false);
-  const closeTimer  = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const { totalCount } = useCart();
 
-  // null = henüz bilinmiyor, "" = giriş yok, string = ad
-  const [userName, setUserName] = useState<string | null>(null);
+  // null = henüz bilinmiyor | "" = giriş yok | string = giriş yapılmış
+  const [authUser, setAuthUser] = useState<string | null>(null);
 
-  /* ── Auth: sadece onAuthStateChange kullan ── */
+  /* ── Auth durumu: onAuthStateChange yeterli ── */
   useEffect(() => {
-    const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        // Profil adını arka planda çek, sayfa render'ını bloklama
-        supabase
-          .from("profiles")
-          .select("full_name")
-          .eq("id", session.user.id)
-          .single()
-          .then(({ data }) => {
-            const name = (data as { full_name?: string } | null)?.full_name;
-            setUserName(name?.trim() || session.user.email || "Hesabım");
-          });
-      } else {
-        setUserName("");
-      }
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthUser(session?.user?.id ?? "");
     });
-
     return () => listener.subscription.unsubscribe();
   }, []);
-
-  /* ── Dropdown dışına tıklayınca kapat ── */
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  const handleLogout = async () => {
-    setDropdownOpen(false);
-    await supabase.auth.signOut();
-    setUserName("");
-    window.location.href = "/";
-  };
 
   /* ── Ürün menüsü ── */
   useEffect(() => {
@@ -91,9 +57,9 @@ export default function Navbar() {
     closeTimer.current = setTimeout(() => { setMegaOpen(false); setActiveCategory(0); }, 120);
   };
 
-  const activeCat   = menuData[activeCategory];
-  const isLoggedIn  = userName !== null && userName !== "";
-  const isAuthReady = userName !== null; // null = henüz bilgi yok
+  const activeCat  = menuData[activeCategory];
+  const isLoggedIn = authUser !== null && authUser !== "";
+  const profileHref = isLoggedIn ? "/profile" : "/login";
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
@@ -131,64 +97,31 @@ export default function Navbar() {
 
           {/* Arama */}
           <div className="flex-1 relative">
-            <input type="text" value={query} onChange={(e) => setQuery(e.target.value)}
+            <input type="text" value={query} onChange={e => setQuery(e.target.value)}
               placeholder="Ne bastırmak istiyorsunuz?"
-              className="w-full h-10 pl-4 pr-12 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0f75bc] focus:border-transparent transition-all" />
+              className="w-full h-10 pl-4 pr-12 rounded-xl border border-gray-200 bg-gray-50 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0f75bc] focus:border-transparent transition-all" />
             <button className="absolute right-0 top-0 h-10 w-12 flex items-center justify-center bg-[#0f75bc] hover:bg-[#07446c] text-white rounded-r-xl transition-colors">
               <Search size={17} />
             </button>
           </div>
 
-          {/* Sağ aksiyonlar */}
-          <div className="flex items-center gap-1 flex-shrink-0">
+          {/* Sağ: Profil ikonu + Sepet */}
+          <div className="flex items-center gap-2 flex-shrink-0">
 
-            {/* Profil ikonu / dropdown */}
-            <div className="relative hidden md:block" ref={dropdownRef}>
-              {isLoggedIn ? (
-                <>
-                  <button
-                    onClick={() => setDropdownOpen((v) => !v)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-[#07446c] hover:bg-blue-50 hover:text-[#0f75bc] transition-colors"
-                  >
-                    <div className="w-7 h-7 rounded-full bg-[#0f75bc] text-white flex items-center justify-center text-xs font-black flex-shrink-0">
-                      {userName.charAt(0).toUpperCase()}
-                    </div>
-                    <span className="text-sm font-semibold max-w-[100px] truncate">
-                      {userName.split(" ")[0]}
-                    </span>
-                    <ChevronDown size={13} className={`transition-transform duration-150 ${dropdownOpen ? "rotate-180" : ""}`} />
-                  </button>
-
-                  {dropdownOpen && (
-                    <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 py-1.5 w-44 z-50">
-                      <a href="/profile"
-                        onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#0f75bc] transition-colors">
-                        <Settings size={15} /> Profilim
-                      </a>
-                      <div className="h-px bg-gray-100 mx-3 my-1" />
-                      <button onClick={handleLogout}
-                        className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors">
-                        <LogOut size={15} /> Çıkış Yap
-                      </button>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <a href="/login"
-                  className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-colors ${
-                    isAuthReady
-                      ? "text-[#07446c] hover:bg-blue-50 hover:text-[#0f75bc]"
-                      : "text-gray-300 pointer-events-none"
-                  }`}>
-                  <User size={20} />
-                  <span className="text-sm font-medium">{isAuthReady ? "Giriş Yap" : ""}</span>
-                </a>
-              )}
-            </div>
+            {/* Profil ikonu — tek tıkla /profile veya /login */}
+            <a href={profileHref}
+              className={`p-2 rounded-xl transition-colors ${
+                isLoggedIn
+                  ? "bg-[#e0f2fe] text-[#0f75bc] hover:bg-[#bae6fd]"
+                  : "text-gray-400 hover:bg-gray-100"
+              }`}
+              title={isLoggedIn ? "Profilim" : "Giriş Yap"}>
+              <User size={20} />
+            </a>
 
             {/* Sepet */}
-            <a href="/sepet" className="flex items-center gap-2 bg-[#0f75bc] hover:bg-[#07446c] text-white px-4 py-2 rounded-xl transition-colors">
+            <a href="/sepet"
+              className="flex items-center gap-2 bg-[#0f75bc] hover:bg-[#07446c] text-white px-4 py-2 rounded-xl transition-colors">
               <ShoppingCart size={18} />
               <span className="text-sm font-bold hidden md:block">Sepetim</span>
               <span className="bg-white text-[#0f75bc] text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center">
@@ -196,8 +129,8 @@ export default function Navbar() {
               </span>
             </a>
 
-            {/* Mobil menü butonu */}
-            <button className="md:hidden p-2 rounded-lg text-[#07446c] hover:bg-blue-50 ml-1"
+            {/* Mobil menü */}
+            <button className="md:hidden p-2 rounded-lg text-[#07446c] hover:bg-blue-50"
               onClick={() => setMobileOpen(!mobileOpen)}>
               {mobileOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -208,11 +141,9 @@ export default function Navbar() {
       {/* ── KATEGORİ BARI + MEGA PANEL ── */}
       <div className="hidden md:block bg-white border-b border-gray-100 relative" onMouseLeave={closeMega}>
         <div className="max-w-7xl mx-auto px-6 flex items-center h-11 gap-1">
-          <button
-            onMouseEnter={openMega}
+          <button onMouseEnter={openMega}
             className={`flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 text-sm rounded-lg font-bold transition-colors flex-shrink-0
-              ${megaOpen ? "bg-[#0f75bc] text-white" : "bg-[#e0f2fe] text-[#07446c] hover:bg-[#bae6fd]"}`}
-          >
+              ${megaOpen ? "bg-[#0f75bc] text-white" : "bg-[#e0f2fe] text-[#07446c] hover:bg-[#bae6fd]"}`}>
             <AlignJustify size={14} />
             Tüm Ürünler
             <ChevronDown size={13} className={`transition-transform duration-200 ${megaOpen ? "rotate-180" : ""}`} />
@@ -225,10 +156,6 @@ export default function Navbar() {
                 {cat.name}
               </a>
             ))}
-            <a href="#"
-              className="whitespace-nowrap px-3 py-1.5 text-sm rounded-lg font-semibold text-[#0f75bc] hover:bg-blue-50 transition-colors ml-auto flex-shrink-0">
-              Kampanyalar
-            </a>
           </nav>
         </div>
 
@@ -273,7 +200,7 @@ export default function Navbar() {
                     <div className="grid grid-cols-3 gap-x-6 gap-y-2">
                       {activeCat.products.map((product, pi) => (
                         <a key={pi} href={`/urun/${product.slug}`}
-                          className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#0f75bc] transition-colors py-1 group">
+                          className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#0f75bc] transition-colors py-1">
                           <span className="w-1.5 h-1.5 rounded-full bg-[#25aae1] flex-shrink-0" />
                           {product.name}
                         </a>
@@ -324,50 +251,30 @@ export default function Navbar() {
             <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
           </div>
 
-          {/* Mobil auth linkleri */}
-          <div className="border-b border-gray-100 pb-3 mb-2">
-            {isLoggedIn ? (
-              <div className="flex items-center justify-between px-2 py-1">
-                <a href="/profile" className="flex items-center gap-2 text-sm font-semibold text-[#07446c]">
-                  <div className="w-7 h-7 rounded-full bg-[#0f75bc] text-white flex items-center justify-center text-xs font-black">
-                    {userName.charAt(0).toUpperCase()}
-                  </div>
-                  {userName.split(" ")[0]}
-                </a>
-                <button onClick={handleLogout} className="text-xs text-red-500 font-semibold flex items-center gap-1">
-                  <LogOut size={13} /> Çıkış
-                </button>
-              </div>
-            ) : (
-              <a href="/login" className="flex items-center gap-2 px-2 py-1 text-sm font-semibold text-[#07446c]">
-                <User size={16} /> Giriş Yap
-              </a>
-            )}
-          </div>
+          <a href={profileHref}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-[#07446c] hover:bg-blue-50 transition-colors">
+            <User size={16} /> {isLoggedIn ? "Profilim" : "Giriş Yap"}
+          </a>
 
           {menuLoading ? (
             <div className="flex items-center justify-center py-6 text-gray-300">
               <Loader2 size={20} className="animate-spin" />
             </div>
-          ) : menuData.length === 0 ? (
-            <p className="text-sm text-gray-400 px-3 py-4">Henüz ürün eklenmemiş.</p>
-          ) : (
-            menuData.map((cat, ci) => (
-              <div key={ci}>
-                <a href={`/tum-urunler?kategori=${encodeURIComponent(cat.name)}`}
-                  className="block text-[10px] font-bold text-[#25aae1] uppercase tracking-widest px-2 pt-3 pb-1">
-                  {cat.name}
+          ) : menuData.map((cat, ci) => (
+            <div key={ci}>
+              <a href={`/tum-urunler?kategori=${encodeURIComponent(cat.name)}`}
+                className="block text-[10px] font-bold text-[#25aae1] uppercase tracking-widest px-2 pt-3 pb-1">
+                {cat.name}
+              </a>
+              {cat.products.map(p => (
+                <a key={p.slug} href={`/urun/${p.slug}`}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-blue-50 hover:text-[#0f75bc] transition-colors">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#25aae1] flex-shrink-0" />
+                  {p.name}
                 </a>
-                {cat.products.map((p) => (
-                  <a key={p.slug} href={`/urun/${p.slug}`}
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-blue-50 hover:text-[#0f75bc] transition-colors">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#25aae1] flex-shrink-0" />
-                    {p.name}
-                  </a>
-                ))}
-              </div>
-            ))
-          )}
+              ))}
+            </div>
+          ))}
         </div>
       )}
     </header>
