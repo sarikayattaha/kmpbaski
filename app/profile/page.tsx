@@ -72,17 +72,34 @@ export default function ProfilePage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userId) return;
     setSaving(true);
     try {
-      const { error } = await supabase.from("profiles").upsert({
-        id: userId,
-        full_name: fullName.trim(),
-        phone: phone.trim(),
-        address: address.trim(),
-      });
-      if (error) showToast("Kayıt hatası: " + error.message, "error");
-      else showToast("Bilgileriniz güncellendi.", "success");
+      // Her kayıtta oturumu taze çek — state'teki userId'ye güvenme
+      const { data: sessionData } = await supabase.auth.getSession();
+      const uid = sessionData.session?.user?.id;
+
+      if (!uid) {
+        showToast("Oturumunuz sona erdi. Lütfen tekrar giriş yapın.", "error");
+        router.replace("/login");
+        return;
+      }
+
+      const { error } = await supabase.from("profiles").upsert(
+        {
+          id: uid,
+          full_name: fullName.trim(),
+          phone: phone.trim(),
+          address: address.trim(),
+        },
+        { onConflict: "id" }
+      );
+
+      if (error) {
+        showToast("Kayıt hatası: " + error.message, "error");
+      } else {
+        setUserId(uid);
+        showToast("Bilgileriniz başarıyla güncellendi.", "success");
+      }
     } catch {
       showToast("Beklenmeyen bir hata oluştu.", "error");
     } finally {
