@@ -4,95 +4,96 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
   Search, User, ShoppingCart, Phone, Mail, Clock,
-  Menu, X, ChevronDown, AlignJustify, Loader2, LogOut,
+  Menu, X, ChevronDown, AlignJustify, Loader2, LogOut, Settings,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useCart } from "@/lib/cart-context";
 
-type NavProduct = { name: string; slug: string; image_url: string; };
+type NavProduct  = { name: string; slug: string; image_url: string; };
 type NavCategory = { name: string; products: NavProduct[]; };
 
 export default function Navbar() {
-  const [query, setQuery]           = useState("");
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [megaOpen, setMegaOpen]     = useState(false);
+  const [query, setQuery]                   = useState("");
+  const [mobileOpen, setMobileOpen]         = useState(false);
+  const [megaOpen, setMegaOpen]             = useState(false);
   const [activeCategory, setActiveCategory] = useState(0);
-  const [menuData, setMenuData]     = useState<NavCategory[]>([]);
-  const [menuLoading, setMenuLoading] = useState(true);
-  const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const [menuData, setMenuData]             = useState<NavCategory[]>([]);
+  const [menuLoading, setMenuLoading]       = useState(true);
+  const [dropdownOpen, setDropdownOpen]     = useState(false);
+  const closeTimer  = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { totalCount } = useCart();
 
-  const [userFullName, setUserFullName] = useState<string | null>(null);
-  const [authReady, setAuthReady] = useState(false);
+  // null = henüz bilinmiyor, "" = giriş yok, string = ad
+  const [userName, setUserName] = useState<string | null>(null);
 
+  /* ── Auth: sadece onAuthStateChange kullan ── */
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (data.session?.user) {
-        const { data: prof } = await supabase
-          .from("profiles")
-          .select("full_name")
-          .eq("id", data.session.user.id)
-          .single();
-        setUserFullName((prof as { full_name?: string } | null)?.full_name ?? data.session.user.email ?? "Hesabım");
-      }
-      setAuthReady(true);
-    });
-
-    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
-        const { data: prof } = await supabase
+        // Profil adını arka planda çek, sayfa render'ını bloklama
+        supabase
           .from("profiles")
           .select("full_name")
           .eq("id", session.user.id)
-          .single();
-        setUserFullName((prof as { full_name?: string } | null)?.full_name ?? session.user.email ?? "Hesabım");
+          .single()
+          .then(({ data }) => {
+            const name = (data as { full_name?: string } | null)?.full_name;
+            setUserName(name?.trim() || session.user.email || "Hesabım");
+          });
       } else {
-        setUserFullName(null);
+        setUserName("");
       }
     });
 
     return () => listener.subscription.unsubscribe();
   }, []);
 
+  /* ── Dropdown dışına tıklayınca kapat ── */
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   const handleLogout = async () => {
+    setDropdownOpen(false);
     await supabase.auth.signOut();
-    setUserFullName(null);
+    setUserName("");
     window.location.href = "/";
   };
 
-  /* ── Supabase'den ürünleri çek ── */
+  /* ── Ürün menüsü ── */
   useEffect(() => {
-    try {
-      supabase
-        .from("products")
-        .select("name, slug, image_url, category")
-        .order("created_at", { ascending: false })
-        .then((res) => {
-          const data = res.data as (NavProduct & { category: string })[] | null;
-          if (!data) { setMenuLoading(false); return; }
-
-          const map: Record<string, NavProduct[]> = {};
-          for (const p of data) {
-            if (!map[p.category]) map[p.category] = [];
-            map[p.category].push({ name: p.name, slug: p.slug, image_url: p.image_url });
-          }
-
-          setMenuData(Object.entries(map).map(([name, products]) => ({ name, products })));
-          setMenuLoading(false);
-        });
-    } catch {
-      setMenuLoading(false);
-    }
+    supabase
+      .from("products")
+      .select("name, slug, image_url, category")
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        if (!data) { setMenuLoading(false); return; }
+        const map: Record<string, NavProduct[]> = {};
+        for (const p of data as (NavProduct & { category: string })[]) {
+          if (!map[p.category]) map[p.category] = [];
+          map[p.category].push({ name: p.name, slug: p.slug, image_url: p.image_url });
+        }
+        setMenuData(Object.entries(map).map(([name, products]) => ({ name, products })));
+        setMenuLoading(false);
+      });
   }, []);
 
-  /* ── Gecikmeli kapama ── */
-  const openMega = () => { clearTimeout(closeTimer.current); setMegaOpen(true); };
+  const openMega  = () => { clearTimeout(closeTimer.current); setMegaOpen(true); };
   const closeMega = () => {
     closeTimer.current = setTimeout(() => { setMegaOpen(false); setActiveCategory(0); }, 120);
   };
 
-  const activeCat = menuData[activeCategory];
+  const activeCat   = menuData[activeCategory];
+  const isLoggedIn  = userName !== null && userName !== "";
+  const isAuthReady = userName !== null; // null = henüz bilgi yok
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
@@ -117,6 +118,8 @@ export default function Navbar() {
       {/* ── ANA HEADER ── */}
       <div className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center gap-5">
+
+          {/* Logo */}
           <a href="/" className="flex items-center gap-2.5 flex-shrink-0">
             <Image src="/kmpbaskilogo.png" alt="KMP Baskı" width={40} height={40}
               className="object-contain h-10 w-auto" priority />
@@ -126,6 +129,7 @@ export default function Navbar() {
             </span>
           </a>
 
+          {/* Arama */}
           <div className="flex-1 relative">
             <input type="text" value={query} onChange={(e) => setQuery(e.target.value)}
               placeholder="Ne bastırmak istiyorsunuz?"
@@ -135,25 +139,55 @@ export default function Navbar() {
             </button>
           </div>
 
+          {/* Sağ aksiyonlar */}
           <div className="flex items-center gap-1 flex-shrink-0">
-            {authReady && (
-              userFullName ? (
-                <div className="hidden md:flex items-center gap-1">
-                  <a href="/profile" className="flex items-center gap-2 px-3 py-2 text-[#07446c] hover:text-[#0f75bc] transition-colors">
-                    <User size={18} />
-                    <span className="text-sm font-semibold max-w-[120px] truncate">{userFullName.split(" ")[0]}</span>
-                  </a>
-                  <button onClick={handleLogout} className="p-2 text-gray-400 hover:text-red-500 transition-colors" title="Çıkış Yap">
-                    <LogOut size={16} />
+
+            {/* Profil ikonu / dropdown */}
+            <div className="relative hidden md:block" ref={dropdownRef}>
+              {isLoggedIn ? (
+                <>
+                  <button
+                    onClick={() => setDropdownOpen((v) => !v)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-[#07446c] hover:bg-blue-50 hover:text-[#0f75bc] transition-colors"
+                  >
+                    <div className="w-7 h-7 rounded-full bg-[#0f75bc] text-white flex items-center justify-center text-xs font-black flex-shrink-0">
+                      {userName.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-sm font-semibold max-w-[100px] truncate">
+                      {userName.split(" ")[0]}
+                    </span>
+                    <ChevronDown size={13} className={`transition-transform duration-150 ${dropdownOpen ? "rotate-180" : ""}`} />
                   </button>
-                </div>
+
+                  {dropdownOpen && (
+                    <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 py-1.5 w-44 z-50">
+                      <a href="/profile"
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#0f75bc] transition-colors">
+                        <Settings size={15} /> Profilim
+                      </a>
+                      <div className="h-px bg-gray-100 mx-3 my-1" />
+                      <button onClick={handleLogout}
+                        className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors">
+                        <LogOut size={15} /> Çıkış Yap
+                      </button>
+                    </div>
+                  )}
+                </>
               ) : (
-                <a href="/login" className="hidden md:flex items-center gap-2 px-3 py-2 text-[#07446c] hover:text-[#0f75bc] transition-colors">
+                <a href="/login"
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-colors ${
+                    isAuthReady
+                      ? "text-[#07446c] hover:bg-blue-50 hover:text-[#0f75bc]"
+                      : "text-gray-300 pointer-events-none"
+                  }`}>
                   <User size={20} />
-                  <span className="text-sm font-medium">Giriş Yap</span>
+                  <span className="text-sm font-medium">{isAuthReady ? "Giriş Yap" : ""}</span>
                 </a>
-              )
-            )}
+              )}
+            </div>
+
+            {/* Sepet */}
             <a href="/sepet" className="flex items-center gap-2 bg-[#0f75bc] hover:bg-[#07446c] text-white px-4 py-2 rounded-xl transition-colors">
               <ShoppingCart size={18} />
               <span className="text-sm font-bold hidden md:block">Sepetim</span>
@@ -161,6 +195,8 @@ export default function Navbar() {
                 {totalCount}
               </span>
             </a>
+
+            {/* Mobil menü butonu */}
             <button className="md:hidden p-2 rounded-lg text-[#07446c] hover:bg-blue-50 ml-1"
               onClick={() => setMobileOpen(!mobileOpen)}>
               {mobileOpen ? <X size={20} /> : <Menu size={20} />}
@@ -196,13 +232,11 @@ export default function Navbar() {
           </nav>
         </div>
 
-        {/* ── MEGA PANEL ── */}
         {megaOpen && (
-          <div className="absolute top-full left-0 right-0 bg-white border-t border-b border-gray-200 shadow-xl" style={{ zIndex: 9999 }}
-            onMouseEnter={openMega}>
+          <div className="absolute top-full left-0 right-0 bg-white border-t border-b border-gray-200 shadow-xl"
+            style={{ zIndex: 9999 }} onMouseEnter={openMega}>
             <div className="max-w-7xl mx-auto flex" style={{ minHeight: 280 }}>
 
-              {/* SOL — Kategori listesi */}
               <div className="w-56 border-r border-gray-100 py-3 flex-shrink-0">
                 {menuLoading ? (
                   <div className="flex items-center justify-center py-8 text-gray-300">
@@ -230,7 +264,6 @@ export default function Navbar() {
                 )}
               </div>
 
-              {/* ORTA — Ürün linkleri */}
               <div className="flex-1 px-8 py-6 overflow-y-auto" style={{ maxHeight: 380 }}>
                 {activeCat && (
                   <>
@@ -254,7 +287,6 @@ export default function Navbar() {
                 )}
               </div>
 
-              {/* SAĞ — Kategori ürün görselleri */}
               <div className="w-56 border-l border-gray-100 py-5 px-4 flex-shrink-0">
                 {activeCat && (
                   <div className="grid grid-cols-2 gap-2">
@@ -290,6 +322,27 @@ export default function Navbar() {
             <input type="text" placeholder="Ne bastırmak istiyorsunuz?"
               className="w-full h-10 pl-4 pr-10 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f75bc]" />
             <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          </div>
+
+          {/* Mobil auth linkleri */}
+          <div className="border-b border-gray-100 pb-3 mb-2">
+            {isLoggedIn ? (
+              <div className="flex items-center justify-between px-2 py-1">
+                <a href="/profile" className="flex items-center gap-2 text-sm font-semibold text-[#07446c]">
+                  <div className="w-7 h-7 rounded-full bg-[#0f75bc] text-white flex items-center justify-center text-xs font-black">
+                    {userName.charAt(0).toUpperCase()}
+                  </div>
+                  {userName.split(" ")[0]}
+                </a>
+                <button onClick={handleLogout} className="text-xs text-red-500 font-semibold flex items-center gap-1">
+                  <LogOut size={13} /> Çıkış
+                </button>
+              </div>
+            ) : (
+              <a href="/login" className="flex items-center gap-2 px-2 py-1 text-sm font-semibold text-[#07446c]">
+                <User size={16} /> Giriş Yap
+              </a>
+            )}
           </div>
 
           {menuLoading ? (

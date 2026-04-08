@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase, type Profile } from "@/lib/supabase";
-import { User, Phone, MapPin, Loader2, CheckCircle2, AlertCircle, LogOut } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { User, Phone, MapPin, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 
@@ -23,29 +23,46 @@ export default function ProfilePage() {
   const [toast, setToast]       = useState<{ msg: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (!data.session) {
-        router.replace("/login");
-        return;
-      }
-      const user = data.session.user;
-      setUserId(user.id);
-      setEmail(user.email ?? "");
+    let cancelled = false;
 
-      const { data: prof } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
+    const load = async () => {
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
 
-      if (prof) {
-        const p = prof as Profile;
-        setFullName(p.full_name ?? "");
-        setPhone(p.phone ?? "");
-        setAddress(p.address ?? "");
+        if (!sessionData.session) {
+          router.replace("/login");
+          return;
+        }
+
+        const user = sessionData.session.user;
+        if (cancelled) return;
+
+        setUserId(user.id);
+        setEmail(user.email ?? "");
+
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("full_name, phone, address")
+          .eq("id", user.id)
+          .single();
+
+        if (cancelled) return;
+
+        if (prof) {
+          const p = prof as { full_name?: string; phone?: string; address?: string };
+          setFullName(p.full_name ?? "");
+          setPhone(p.phone ?? "");
+          setAddress(p.address ?? "");
+        }
+      } catch {
+        // hata olsa bile loading kaldırılır
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      setLoading(false);
-    });
+    };
+
+    load();
+    return () => { cancelled = true; };
   }, [router]);
 
   const showToast = (msg: string, type: "success" | "error") => {
@@ -57,33 +74,28 @@ export default function ProfilePage() {
     e.preventDefault();
     if (!userId) return;
     setSaving(true);
-
-    const { error } = await supabase.from("profiles").upsert({
-      id: userId,
-      full_name: fullName.trim(),
-      phone: phone.trim(),
-      address: address.trim(),
-    });
-
-    setSaving(false);
-    if (error) {
-      showToast("Kayıt hatası: " + error.message, "error");
-    } else {
-      showToast("Bilgileriniz güncellendi.", "success");
+    try {
+      const { error } = await supabase.from("profiles").upsert({
+        id: userId,
+        full_name: fullName.trim(),
+        phone: phone.trim(),
+        address: address.trim(),
+      });
+      if (error) showToast("Kayıt hatası: " + error.message, "error");
+      else showToast("Bilgileriniz güncellendi.", "success");
+    } catch {
+      showToast("Beklenmeyen bir hata oluştu.", "error");
+    } finally {
+      setSaving(false);
     }
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.replace("/");
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f0f8ff] flex flex-col">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center text-gray-300">
-          <Loader2 size={32} className="animate-spin" />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 size={32} className="animate-spin text-[#0f75bc]" />
         </div>
         <Footer />
       </div>
@@ -106,18 +118,9 @@ export default function ProfilePage() {
       <main className="flex-1">
         <div className="max-w-lg mx-auto px-6 py-12">
 
-          {/* Başlık */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-2xl font-black text-[#07446c]">Profilim</h1>
-              <p className="text-sm text-gray-400 mt-0.5">{email}</p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 text-sm text-gray-400 hover:text-red-500 transition-colors font-semibold"
-            >
-              <LogOut size={15} /> Çıkış
-            </button>
+          <div className="mb-8">
+            <h1 className="text-2xl font-black text-[#07446c]">Profilim</h1>
+            <p className="text-sm text-gray-400 mt-0.5">{email}</p>
           </div>
 
           <form onSubmit={handleSave} className="bg-white rounded-3xl border border-blue-100 shadow-sm p-6 space-y-5">
