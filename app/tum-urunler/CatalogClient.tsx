@@ -18,11 +18,13 @@ export default function CatalogClient({
   categories,
   activeCategory,
   activeFilter,
+  searchQuery,
 }: {
   products: Product[];
   categories: string[];
   activeCategory: string | null;
   activeFilter: string | null;
+  searchQuery: string | null;
 }) {
   const router   = useRouter();
   const pathname = usePathname();
@@ -35,15 +37,19 @@ export default function CatalogClient({
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  /* Kategori + filtre uygula */
+  /* Kategori + filtre + arama uygula */
   const filtered = useMemo(() => {
     let result = [...products];
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter((p) => p.name.toLowerCase().includes(q));
+    }
     if (activeCategory) result = result.filter((p) => p.category === activeCategory);
     if (activeFilter === "yeni")    result = result.slice(0, Math.ceil(result.length * 0.5) || result.length);
     if (activeFilter === "firsat")  result = result.filter((_, i) => i % 2 === 0);
     if (activeFilter === "populer") result = result.filter((p) => p.is_featured);
     return result;
-  }, [products, activeCategory, activeFilter]);
+  }, [products, activeCategory, activeFilter, searchQuery]);
 
   /* Sidebar sayaçları */
   const countByCategory = useMemo(() => {
@@ -104,7 +110,9 @@ export default function CatalogClient({
         {/* Başlık */}
         <div className="mb-5">
           <h1 className="text-2xl font-black text-[#07446c] leading-tight">
-            {activeCategory ?? "Tüm Matbaa ve Baskı Ürünleri"}
+            {searchQuery
+              ? `"${searchQuery}" için arama sonuçları`
+              : (activeCategory ?? "Tüm Matbaa ve Baskı Ürünleri")}
           </h1>
           <p className="text-sm text-gray-400 mt-1">
             <span className="font-semibold text-[#0f75bc]">{filtered.length}</span> ürün listeleniyor

@@ -9,9 +9,9 @@ import CatalogClient from "./CatalogClient";
 export default async function TumUrunlerPage({
   searchParams,
 }: {
-  searchParams: Promise<{ kategori?: string; filtre?: string }>;
+  searchParams: Promise<{ kategori?: string; filtre?: string; q?: string }>;
 }) {
-  const { kategori, filtre } = await searchParams;
+  const { kategori, filtre, q } = await searchParams;
 
   const supabase = getSupabase();
   let products: Product[] = [];
@@ -50,6 +50,7 @@ export default async function TumUrunlerPage({
               categories={categories}
               activeCategory={kategori ?? null}
               activeFilter={filtre ?? null}
+              searchQuery={q ?? null}
             />
           </Suspense>
         </div>

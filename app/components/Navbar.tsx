@@ -10,6 +10,7 @@ import { supabase } from "@/lib/supabase";
 
 type NavProduct  = { name: string; slug: string; image_url: string; };
 type NavCategory = { name: string; products: NavProduct[]; };
+type SearchResult = { name: string; slug: string; image_url: string; category: string; };
 
 export default function Navbar() {
   const [query, setQuery]                   = useState("");
@@ -19,6 +20,12 @@ export default function Navbar() {
   const [menuData, setMenuData]             = useState<NavCategory[]>([]);
   const [menuLoading, setMenuLoading]       = useState(true);
   const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const [searchResults, setSearchResults]   = useState<SearchResult[]>([]);
+  const [searchLoading, setSearchLoading]   = useState(false);
+  const [searchOpen, setSearchOpen]         = useState(false);
+  const searchDebounce = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   // null = bilgi yok | "" = giriş yok | string = giriş yapılmış (user id)
   const [authUser, setAuthUser] = useState<string | null>(null);
@@ -48,6 +55,46 @@ export default function Navbar() {
         setMenuLoading(false);
       });
   }, []);
+
+  /* ── Arama dışına tıklayınca kapat ── */
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setSearchOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  /* ── Arama sorgusu ── */
+  const handleSearchChange = (value: string) => {
+    setQuery(value);
+    clearTimeout(searchDebounce.current);
+    if (!value.trim()) {
+      setSearchResults([]);
+      setSearchOpen(false);
+      return;
+    }
+    setSearchLoading(true);
+    setSearchOpen(true);
+    searchDebounce.current = setTimeout(async () => {
+      const { data } = await supabase
+        .from("products")
+        .select("name, slug, image_url, category")
+        .ilike("name", `%${value.trim()}%`)
+        .limit(8);
+      setSearchResults((data as SearchResult[]) ?? []);
+      setSearchLoading(false);
+    }, 300);
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    setSearchOpen(false);
+    window.location.href = `/tum-urunler?q=${encodeURIComponent(query.trim())}`;
+  };
 
   const openMega  = () => { clearTimeout(closeTimer.current); setMegaOpen(true); };
   const closeMega = () => {
@@ -93,13 +140,64 @@ export default function Navbar() {
           </a>
 
           {/* Arama */}
-          <div className="flex-1 relative">
-            <input type="text" value={query} onChange={e => setQuery(e.target.value)}
-              placeholder="Ne bastırmak istiyorsunuz?"
-              className="w-full h-10 pl-4 pr-12 rounded-xl border border-gray-200 bg-gray-50 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0f75bc] focus:border-transparent transition-all" />
-            <button className="absolute right-0 top-0 h-10 w-12 flex items-center justify-center bg-[#0f75bc] hover:bg-[#07446c] text-white rounded-r-xl transition-colors">
-              <Search size={17} />
-            </button>
+          <div className="flex-1 relative" ref={searchRef}>
+            <form onSubmit={handleSearchSubmit}>
+              <input
+                type="text"
+                value={query}
+                onChange={e => handleSearchChange(e.target.value)}
+                onFocus={() => { if (query.trim() && searchResults.length > 0) setSearchOpen(true); }}
+                placeholder="Ne bastırmak istiyorsunuz?"
+                className="w-full h-10 pl-4 pr-12 rounded-xl border border-gray-200 bg-gray-50 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0f75bc] focus:border-transparent transition-all"
+                autoComplete="off"
+              />
+              <button type="submit"
+                className="absolute right-0 top-0 h-10 w-12 flex items-center justify-center bg-[#0f75bc] hover:bg-[#07446c] text-white rounded-r-xl transition-colors">
+                <Search size={17} />
+              </button>
+            </form>
+
+            {/* Arama sonuçları dropdown */}
+            {searchOpen && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden" style={{ zIndex: 9999 }}>
+                {searchLoading ? (
+                  <div className="flex items-center justify-center py-5 text-gray-300">
+                    <Loader2 size={18} className="animate-spin" />
+                  </div>
+                ) : searchResults.length === 0 ? (
+                  <div className="px-4 py-4 text-sm text-gray-400 text-center">
+                    &quot;{query}&quot; için sonuç bulunamadı.
+                  </div>
+                ) : (
+                  <>
+                    {searchResults.map((r, i) => (
+                      <a key={i} href={`/urun/${r.slug}`}
+                        onClick={() => setSearchOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-blue-50 transition-colors">
+                        <div className="w-9 h-9 rounded-lg bg-[#e0f2fe] flex-shrink-0 relative overflow-hidden">
+                          {r.image_url ? (
+                            <Image src={r.image_url} alt={r.name} fill sizes="36px" className="object-contain p-1" />
+                          ) : (
+                            <span className="text-base flex items-center justify-center h-full opacity-30">🖨️</span>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-gray-800 truncate">{r.name}</p>
+                          <p className="text-xs text-gray-400 truncate">{r.category}</p>
+                        </div>
+                      </a>
+                    ))}
+                    <div className="border-t border-gray-100">
+                      <button
+                        onClick={handleSearchSubmit as unknown as React.MouseEventHandler}
+                        className="w-full px-4 py-2.5 text-xs font-bold text-[#0f75bc] hover:bg-blue-50 transition-colors text-left">
+                        &quot;{query}&quot; için tüm sonuçları gör →
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Sağ: sadece profil ikonu */}
@@ -225,11 +323,14 @@ export default function Navbar() {
       {/* ── MOBİL MENÜ ── */}
       {mobileOpen && (
         <div className="md:hidden border-t bg-white px-4 py-4 max-h-[70vh] overflow-y-auto space-y-1">
-          <div className="relative mb-3">
-            <input type="text" placeholder="Ne bastırmak istiyorsunuz?"
+          <form onSubmit={handleSearchSubmit} className="relative mb-3">
+            <input type="text" value={query} onChange={e => handleSearchChange(e.target.value)}
+              placeholder="Ne bastırmak istiyorsunuz?"
               className="w-full h-10 pl-4 pr-10 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f75bc]" />
-            <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          </div>
+            <button type="submit">
+              <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            </button>
+          </form>
           <a href={profileHref}
             className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-[#07446c] hover:bg-blue-50 transition-colors">
             <User size={16} /> {isLoggedIn ? "Profilim" : "Giriş Yap"}
