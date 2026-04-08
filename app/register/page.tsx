@@ -4,25 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Mail, Lock, User, Phone, Briefcase, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Mail, Lock, User, Phone, Loader2, AlertCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-
-const SECTORS = [
-  "Tekstil & Moda",
-  "Gıda & İçecek",
-  "İnşaat & Yapı",
-  "Turizm & Otelcilik",
-  "Sağlık & Eczane",
-  "Eğitim & Kurs",
-  "Perakende & Mağazacılık",
-  "E-ticaret",
-  "Kurumsal & Finans",
-  "Teknoloji & Yazılım",
-  "Medya & Reklam",
-  "Otomotiv",
-  "Lojistik & Taşımacılık",
-  "Diğer",
-];
 
 const inputCls =
   "w-full border border-blue-100 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f75bc] transition-all";
@@ -30,16 +13,14 @@ const inputCls =
 export default function RegisterPage() {
   const router = useRouter();
 
-  const [fullName, setFullName]     = useState("");
-  const [email, setEmail]           = useState("");
-  const [password, setPassword]     = useState("");
-  const [phone, setPhone]           = useState("");
-  const [sector, setSector]         = useState("");
-  const [kvkk, setKvkk]             = useState(false);
-  const [marketing, setMarketing]   = useState(false);
-  const [loading, setLoading]       = useState(false);
-  const [error, setError]           = useState<string | null>(null);
-  const [success, setSuccess]       = useState(false);
+  const [fullName, setFullName]   = useState("");
+  const [email, setEmail]         = useState("");
+  const [password, setPassword]   = useState("");
+  const [phone, setPhone]         = useState("");
+  const [kvkk, setKvkk]           = useState(false);
+  const [marketing, setMarketing] = useState(false);
+  const [loading, setLoading]     = useState(false);
+  const [error, setError]         = useState<string | null>(null);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,42 +55,12 @@ export default function RegisterPage() {
         id: data.user.id,
         full_name: fullName.trim(),
         phone: `+90${phone.replace(/\D/g, "")}`,
-        sector,
       });
     }
 
     setLoading(false);
-
-    if (data.session) {
-      // E-posta onayı kapalıysa direkt giriş yapıldı
-      router.replace("/");
-    } else {
-      // E-posta onayı açıksa
-      setSuccess(true);
-    }
+    router.replace("/");
   };
-
-  if (success) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#07446c] to-[#0f75bc] flex items-center justify-center px-4">
-        <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-sm text-center">
-          <div className="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <CheckCircle2 size={28} className="text-green-500" />
-          </div>
-          <h2 className="text-xl font-black text-[#07446c] mb-2">Kaydınız Alındı!</h2>
-          <p className="text-sm text-slate-500 mb-6">
-            <strong>{email}</strong> adresine bir doğrulama e-postası gönderdik. Lütfen e-postanızı onaylayın.
-          </p>
-          <Link
-            href="/login"
-            className="block w-full bg-[#0f75bc] hover:bg-[#07446c] text-white font-bold py-3 rounded-xl transition-colors"
-          >
-            Giriş Yap
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#07446c] to-[#0f75bc] flex items-center justify-center px-4 py-12">
@@ -174,25 +125,6 @@ export default function RegisterPage() {
                 placeholder="En az 6 karakter"
                 className={inputCls}
               />
-            </div>
-          </div>
-
-          {/* Sektör */}
-          <div>
-            <label className="block text-xs font-bold text-[#07446c] uppercase tracking-wide mb-1.5">Sektör *</label>
-            <div className="relative">
-              <Briefcase size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-              <select
-                required
-                value={sector}
-                onChange={(e) => setSector(e.target.value)}
-                className={`${inputCls} appearance-none bg-white`}
-              >
-                <option value="" disabled>Sektörünüzü seçin</option>
-                {SECTORS.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
             </div>
           </div>
 

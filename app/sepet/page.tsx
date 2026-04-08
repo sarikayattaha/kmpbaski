@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/lib/cart-context";
 import { supabase, type Profile } from "@/lib/supabase";
-import { Trash2, Plus, Minus, ShoppingCart, MessageCircle, MapPin, User, Phone, Briefcase, ArrowLeft, Loader2 } from "lucide-react";
+import { Trash2, Plus, Minus, ShoppingCart, MessageCircle, MapPin, User, Phone, ArrowLeft, Loader2, AlertTriangle } from "lucide-react";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 
@@ -13,12 +13,12 @@ const WA_NUMBER = "905541630031";
 
 function buildMessage(
   items: ReturnType<typeof useCart>["items"],
-  customer: { fullName: string; phone: string; sector: string; address: string }
+  customer: { fullName: string; phone: string; address: string }
 ): string {
   const productLines = items
     .map((item) => {
       const priceInfo = item.product.is_price_on_request
-        ? "Fiyat Alınız"
+        ? "Fiyat alabilir miyim?"
         : item.product.price
         ? `${item.product.price} x ${item.quantity}`
         : "—";
@@ -47,12 +47,9 @@ function buildMessage(
     totalText = canSum ? `${total.toLocaleString("tr-TR")} TL` : "Fiyat bilgisi için iletişime geçiniz";
   }
 
-  return `📦 *YENİ SİPARİŞ GELDİ!* 📦
-----------------------------------
-👤 *Müşteri Bilgileri:*
+  return `👤 *Müşteri Bilgileri:*
 - Ad Soyad: ${customer.fullName}
 - Telefon: ${customer.phone}
-- Sektör: ${customer.sector}
 - Adres: ${customer.address}
 
 🛒 *Sipariş İçeriği:*
@@ -66,14 +63,11 @@ _Bu mesaj kmpbaski.com üzerinden otomatik oluşturulmuştur._`;
 export default function SepetPage() {
   const { items, removeItem, updateQty, clearCart } = useCart();
 
-  // Kullanıcı bilgileri
-  const [profile, setProfile]   = useState<Profile | null>(null);
+  const [profile, setProfile]         = useState<Profile | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
 
-  // Form alanları (misafir veya override için)
   const [fullName, setFullName] = useState("");
   const [phone, setPhone]       = useState("");
-  const [sector, setSector]     = useState("");
   const [address, setAddress]   = useState("");
   const [addressErr, setAddressErr] = useState(false);
 
@@ -90,7 +84,7 @@ export default function SepetPage() {
           setProfile(p);
           setFullName(p.full_name ?? "");
           setPhone(p.phone ?? "");
-          setSector(p.sector ?? "");
+          setAddress(p.address ?? "");
         }
       }
       setAuthLoading(false);
@@ -107,12 +101,10 @@ export default function SepetPage() {
     const msg = buildMessage(items, {
       fullName: fullName || "Belirtilmedi",
       phone: phone || "Belirtilmedi",
-      sector: sector || "Belirtilmedi",
       address: address.trim(),
     });
 
-    const url = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
-    window.open(url, "_blank");
+    window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
   if (items.length === 0) {
@@ -153,6 +145,14 @@ export default function SepetPage() {
               <h1 className="text-2xl font-black text-[#07446c]">Sepetim</h1>
               <p className="text-sm text-gray-400">{items.length} farklı ürün</p>
             </div>
+          </div>
+
+          {/* Fiyat teyit uyarısı */}
+          <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 mb-6">
+            <AlertTriangle size={18} className="text-amber-500 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-amber-800 font-medium leading-relaxed">
+              Lütfen WhatsApp üzerinden fiyat teklifi alarak fiyatı teyit ediniz.
+            </p>
           </div>
 
           <div className="grid lg:grid-cols-5 gap-6 items-start">
@@ -218,9 +218,16 @@ export default function SepetPage() {
 
               {/* Müşteri Bilgileri */}
               <div className="bg-white rounded-2xl border border-blue-100 shadow-sm p-5">
-                <h2 className="text-sm font-black text-[#07446c] uppercase tracking-wide mb-4">
-                  Müşteri Bilgileri
-                </h2>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-sm font-black text-[#07446c] uppercase tracking-wide">
+                    Müşteri Bilgileri
+                  </h2>
+                  {profile && (
+                    <Link href="/profile" className="text-xs text-[#0f75bc] hover:underline font-semibold">
+                      Düzenle
+                    </Link>
+                  )}
+                </div>
 
                 {authLoading ? (
                   <div className="flex justify-center py-4 text-gray-300">
@@ -252,16 +259,6 @@ export default function SepetPage() {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="Telefon No"
-                      className="w-full border border-blue-100 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f75bc] transition-all"
-                    />
-                  </div>
-                  <div className="relative">
-                    <Briefcase size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="text"
-                      value={sector}
-                      onChange={(e) => setSector(e.target.value)}
-                      placeholder="Sektör"
                       className="w-full border border-blue-100 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f75bc] transition-all"
                     />
                   </div>

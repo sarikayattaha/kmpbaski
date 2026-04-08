@@ -139,7 +139,7 @@ export default function Navbar() {
             {authReady && (
               userFullName ? (
                 <div className="hidden md:flex items-center gap-1">
-                  <a href="/hesabim" className="flex items-center gap-2 px-3 py-2 text-[#07446c] hover:text-[#0f75bc] transition-colors">
+                  <a href="/profile" className="flex items-center gap-2 px-3 py-2 text-[#07446c] hover:text-[#0f75bc] transition-colors">
                     <User size={18} />
                     <span className="text-sm font-semibold max-w-[120px] truncate">{userFullName.split(" ")[0]}</span>
                   </a>

@@ -51,6 +51,6 @@ export type Profile = {
   id: string
   full_name: string
   phone: string
-  sector: string
+  address: string
   created_at: string
 }
