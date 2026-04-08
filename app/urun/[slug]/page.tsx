@@ -6,6 +6,7 @@ import { getSupabase, type Product } from "@/lib/supabase";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import TeklifButton from "./TeklifButton";
+import ReviewsSection from "@/app/components/ReviewsSection";
 import { Tag, ArrowLeft, CheckCircle2 } from "lucide-react";
 
 export default async function ProductPage(props: {
@@ -132,6 +133,8 @@ export default async function ProductPage(props: {
           </div>
         </div>
       </main>
+
+      <ReviewsSection slug={slug} />
 
       <Footer />
     </div>
