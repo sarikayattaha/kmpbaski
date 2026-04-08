@@ -5,8 +5,8 @@ import Image from "next/image";
 import { getSupabase, type Product } from "@/lib/supabase";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
-import AddToCartButton from "./AddToCartButton";
-import { Tag, ArrowLeft, Phone, MessageCircle, CheckCircle2 } from "lucide-react";
+import TeklifButton from "./TeklifButton";
+import { Tag, ArrowLeft, CheckCircle2 } from "lucide-react";
 
 export default async function ProductPage(props: {
   params: Promise<{ slug: string }>;
@@ -31,13 +31,6 @@ export default async function ProductPage(props: {
     .split("\n")
     .map((l) => l.trim())
     .filter(Boolean);
-
-  const whatsappMsg = encodeURIComponent(
-    `Merhaba, "${product.name}" ürünü hakkında bilgi almak istiyorum.`
-  );
-  const whatsappPriceMsg = encodeURIComponent(
-    `Merhaba, ${product.name} ürünü hakkında fiyat teklifi almak istiyorum.`
-  );
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -123,34 +116,9 @@ export default async function ProductPage(props: {
                 </div>
               )}
 
-              {/* Aksiyon butonları */}
-              <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                <AddToCartButton product={product} />
-                {product.is_price_on_request ? (
-                  <a
-                    href={`https://wa.me/905541630031?text=${whatsappPriceMsg}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 inline-flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-black px-6 py-4 rounded-2xl transition-colors shadow-lg shadow-orange-400/20 text-sm"
-                  >
-                    <MessageCircle size={18} /> Teklif Al
-                  </a>
-                ) : (
-                  <a
-                    href={`https://wa.me/905541630031?text=${whatsappMsg}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 inline-flex items-center justify-center gap-2 bg-[#25d366] hover:bg-[#1da851] text-white font-black px-6 py-4 rounded-2xl transition-colors shadow-lg shadow-green-400/20 text-sm"
-                  >
-                    <MessageCircle size={18} /> WhatsApp&apos;tan Sor
-                  </a>
-                )}
-                <a
-                  href="tel:08500000000"
-                  className="flex-1 inline-flex items-center justify-center gap-2 bg-[#e30613] hover:bg-red-700 text-white font-black px-6 py-4 rounded-2xl transition-colors shadow-lg shadow-red-500/20 text-sm"
-                >
-                  <Phone size={18} /> Hemen Ara
-                </a>
+              {/* Aksiyon butonu */}
+              <div className="pt-2">
+                <TeklifButton product={product} />
               </div>
 
               {/* Güvence ikonları */}
