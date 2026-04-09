@@ -164,8 +164,8 @@ export default function Navbar() {
       <div className="bg-[#07446c] text-blue-100 text-xs py-1.5 hidden md:block">
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-5">
-            <a href="tel:08500000000" className="flex items-center gap-1 hover:text-white transition-colors">
-              <Phone size={11} /> 0850 000 00 00
+            <a href="tel:+905541630031" className="flex items-center gap-1 hover:text-white transition-colors">
+              <Phone size={11} /> +90 554 163 00 31
             </a>
             <a href="mailto:info@kmpbaski.com" className="flex items-center gap-1 hover:text-white transition-colors">
               <Mail size={11} /> info@kmpbaski.com

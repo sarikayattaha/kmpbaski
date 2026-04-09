@@ -88,13 +88,13 @@ export default function Footer() {
             </li>
             <li className="flex items-start gap-2.5 text-sm">
               <Phone size={15} className="mt-0.5 flex-shrink-0 text-[#25aae1]" />
-              <a href="tel:08500000000" className="hover:text-white transition-colors">
-                0850 000 00 00
+              <a href="tel:+905541630031" className="hover:text-white transition-colors">
+                +90 554 163 00 31
               </a>
             </li>
             <li className="flex items-start gap-2.5 text-sm">
               <MapPin size={15} className="mt-0.5 flex-shrink-0 text-[#25aae1]" />
-              <span>İstanbul, Türkiye</span>
+              <span>Topkapı 2.Matbaacılar Sitesi 1BD2 Zeytinburnu / İSTANBUL</span>
             </li>
           </ul>
 
