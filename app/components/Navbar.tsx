@@ -280,7 +280,7 @@ export default function Navbar() {
           </nav>
           <a href="/ambalaj"
             className="ml-2 whitespace-nowrap flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg font-bold text-white bg-[#07446c] hover:bg-[#0f75bc] transition-colors">
-            <span className="text-base leading-none">📦</span> Ambalaj Çözümleri
+            Ambalaj Çözümleri
           </a>
         </div>
 
