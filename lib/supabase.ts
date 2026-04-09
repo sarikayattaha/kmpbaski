@@ -72,3 +72,25 @@ export type Profile = {
   email: string
   created_at: string
 }
+
+export type AmbalajCategory = {
+  id: string
+  name: string
+  slug: string
+  icon: string
+  order_index: number
+  created_at: string
+}
+
+export type AmbalajProduct = {
+  id: string
+  category_id: string
+  name: string
+  description: string
+  features: string
+  width: string
+  height: string
+  depth: string
+  image_url: string
+  created_at: string
+}

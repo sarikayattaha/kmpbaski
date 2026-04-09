@@ -175,12 +175,17 @@ function BannerYonetimiInner() {
           </h1>
           <p className="text-blue-200 text-xs mt-0.5">Ana sayfa vitrin banner&apos;larını yönetin</p>
         </div>
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
-        >
-          <LogOut size={15} /> Çıkış
-        </button>
+        <div className="flex items-center gap-3">
+          <a href="/admin/urun-yonetimi" className="text-xs text-blue-300 hover:text-white transition-colors">Ürün Yönetimi →</a>
+          <a href="/admin/kategori-yonetimi" className="text-xs text-blue-300 hover:text-white transition-colors">Kategori Yönetimi →</a>
+          <a href="/admin/ambalaj" className="text-xs text-blue-300 hover:text-white transition-colors">Ambalaj Yönetimi →</a>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
+          >
+            <LogOut size={15} /> Çıkış
+          </button>
+        </div>
       </div>
 
       <div className="max-w-5xl mx-auto px-6 py-8 space-y-8">
