@@ -87,6 +87,10 @@ export type AmbalajProduct = {
   category_id: string
   name: string
   description: string
+  features: string
+  width: string
+  height: string
+  depth: string
   image_url: string
   created_at: string
 }

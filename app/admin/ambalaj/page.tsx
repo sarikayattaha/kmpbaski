@@ -37,7 +37,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 const inputCls = "w-full border border-blue-100 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f75bc] transition-all";
 const emptyCat  = () => ({ name: "", slug: "", order_index: 0 });
-const emptyProd = () => ({ category_id: "", name: "", description: "" });
+const emptyProd = () => ({ category_id: "", name: "", description: "", features: "", width: "", height: "", depth: "" });
 
 export default function AmbalajYonetimi() {
   return <AdminGuard><AmbalajYonetimiInner /></AdminGuard>;
@@ -147,7 +147,15 @@ function AmbalajYonetimiInner() {
 
   const startEditProd = (p: AmbalajProduct) => {
     setProdEditId(p.id);
-    setProdForm({ category_id: p.category_id, name: p.name, description: p.description ?? "" });
+    setProdForm({
+      category_id: p.category_id,
+      name:        p.name,
+      description: p.description ?? "",
+      features:    p.features    ?? "",
+      width:       p.width       ?? "",
+      height:      p.height      ?? "",
+      depth:       p.depth       ?? "",
+    });
     setProdImgExist(p.image_url ?? "");
     setProdImgFile(null);
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
@@ -163,7 +171,16 @@ function AmbalajYonetimiInner() {
       if (!url) { setSavingProd(false); return; }
       image_url = url;
     }
-    const payload = { category_id: prodForm.category_id, name: prodForm.name.trim(), description: prodForm.description.trim(), image_url };
+    const payload = {
+      category_id: prodForm.category_id,
+      name:        prodForm.name.trim(),
+      description: prodForm.description.trim(),
+      features:    prodForm.features.trim(),
+      width:       prodForm.width.trim(),
+      height:      prodForm.height.trim(),
+      depth:       prodForm.depth.trim(),
+      image_url,
+    };
     const { error } = prodEditId
       ? await supabase.from("ambalaj_products").update(payload).eq("id", prodEditId)
       : await supabase.from("ambalaj_products").insert(payload);
@@ -427,8 +444,32 @@ function AmbalajYonetimiInner() {
                 </Field>
                 <Field label="Açıklama">
                   <textarea value={prodForm.description} onChange={e => setProdForm(f => ({ ...f, description: e.target.value }))}
-                    rows={4} placeholder="Kısa ürün açıklaması…" className={`${inputCls} resize-none`} />
+                    rows={3} placeholder="Kısa ürün açıklaması…" className={`${inputCls} resize-none`} />
                 </Field>
+                <Field label="Özellikler (her satır ayrı madde)">
+                  <textarea value={prodForm.features} onChange={e => setProdForm(f => ({ ...f, features: e.target.value }))}
+                    rows={4} placeholder={"Gıda onaylı malzeme\n4 renk baskı\nPencereli kapak"} className={`${inputCls} resize-none`} />
+                </Field>
+                <div>
+                  <label className="block text-xs font-bold text-[#07446c] uppercase tracking-wide mb-1.5">Ebatlar (cm)</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <input value={prodForm.width} onChange={e => setProdForm(f => ({ ...f, width: e.target.value }))}
+                        placeholder="En" className={inputCls} />
+                      <p className="text-[10px] text-gray-400 mt-1 text-center">En</p>
+                    </div>
+                    <div>
+                      <input value={prodForm.height} onChange={e => setProdForm(f => ({ ...f, height: e.target.value }))}
+                        placeholder="Boy" className={inputCls} />
+                      <p className="text-[10px] text-gray-400 mt-1 text-center">Boy</p>
+                    </div>
+                    <div>
+                      <input value={prodForm.depth} onChange={e => setProdForm(f => ({ ...f, depth: e.target.value }))}
+                        placeholder="Yük." className={inputCls} />
+                      <p className="text-[10px] text-gray-400 mt-1 text-center">Yükseklik</p>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div>
                 <Field label="Ürün Görseli">
