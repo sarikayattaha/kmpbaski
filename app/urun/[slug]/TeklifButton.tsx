@@ -94,18 +94,10 @@ export default function TeklifButton({ product }: { product: Product }) {
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <button onClick={handleClick}
-        className="w-full flex items-center justify-center gap-2.5 bg-[#25d366] hover:bg-[#1da851] active:bg-[#179443] text-white font-black px-6 py-4 rounded-2xl transition-colors shadow-lg shadow-green-400/20 text-sm">
-        <MessageCircle size={18} />
-        Fiyat Teklifi Al
-      </button>
-      {!profile && (
-        <p className="text-xs text-center text-gray-400">
-          <a href="/login" className="text-[#0f75bc] font-semibold hover:underline">Giriş yaparsanız</a>{" "}
-          bilgileriniz otomatik eklenir.
-        </p>
-      )}
-    </div>
+    <button onClick={handleClick}
+      className="w-full flex items-center justify-center gap-2.5 bg-[#25d366] hover:bg-[#1da851] active:bg-[#179443] text-white font-black px-6 py-4 rounded-2xl transition-colors shadow-lg shadow-green-400/20 text-sm">
+      <MessageCircle size={18} />
+      Fiyat Teklifi Al
+    </button>
   );
 }
