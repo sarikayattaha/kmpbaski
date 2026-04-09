@@ -118,7 +118,6 @@ export default async function ProductPage(props: {
                 <span>✓ Hızlı Teslimat</span>
                 <span>✓ Kalite Garantisi</span>
                 <span>✓ Güvenli Ödeme</span>
-                <span>✓ Ücretsiz Kargo</span>
               </div>
             </div>
           </div>

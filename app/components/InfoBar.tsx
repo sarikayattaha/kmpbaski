@@ -4,7 +4,7 @@ const infos = [
   {
     icon: <Zap size={28} />,
     title: "Hızlı Teslimat",
-    desc: "24 saatte kapınızda",
+    desc: "Zamanında teslim güvencesi",
   },
   {
     icon: <ShieldCheck size={28} />,
