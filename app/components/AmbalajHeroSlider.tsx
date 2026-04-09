@@ -12,7 +12,6 @@ const SLIDES = [
     from:      "#07446c",
     to:        "#0a5a8a",
     waText:    "Merhaba, ambalaj ürünleri hakkında bilgi almak istiyorum.",
-    emoji:     "📦",
   },
   {
     badge:     "Pastane & Tatlıcı Grubu",
@@ -22,7 +21,6 @@ const SLIDES = [
     from:      "#1a3a5c",
     to:        "#0e4f70",
     waText:    "Merhaba, pastane ambalaj çözümleri hakkında bilgi almak istiyorum.",
-    emoji:     "🎂",
   },
   {
     badge:     "Hızlı & Kaliteli Üretim",
@@ -32,7 +30,6 @@ const SLIDES = [
     from:      "#0c3b5e",
     to:        "#1a5276",
     waText:    "Merhaba, ambalaj siparişi vermek istiyorum.",
-    emoji:     "🚀",
   },
 ];
 
@@ -87,9 +84,6 @@ export default function AmbalajHeroSlider() {
                 >
                   <MessageCircle size={17} /> WhatsApp ile Teklif Al
                 </a>
-              </div>
-              <div className="text-8xl md:text-9xl opacity-10 hidden md:block select-none pl-8 flex-shrink-0">
-                {s.emoji}
               </div>
             </div>
           </div>
