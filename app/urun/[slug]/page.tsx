@@ -1,11 +1,11 @@
 export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import { getSupabase, type Product } from "@/lib/supabase";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import TeklifButton from "./TeklifButton";
+import ProductGallery from "./ProductGallery";
 import ReviewsSection from "@/app/components/ReviewsSection";
 import { Tag, ArrowLeft, CheckCircle2 } from "lucide-react";
 
@@ -57,20 +57,11 @@ export default async function ProductPage(props: {
         <div className="max-w-5xl mx-auto px-6 py-12">
           <div className="grid md:grid-cols-2 gap-12 items-start">
 
-            {/* ── GÖRSEL ── */}
-            <div className="relative aspect-square rounded-3xl overflow-hidden bg-gradient-to-br from-[#e0f2fe] to-[#bae6fd] shadow-sm">
-              {product.image_url ? (
-                <Image
-                  src={product.image_url}
-                  alt={product.name}
-                  fill
-                  className="object-contain p-10"
-                  priority
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-9xl opacity-10">🖨️</div>
-              )}
-            </div>
+            {/* ── GÖRSEL GALERİ ── */}
+            <ProductGallery
+              images={Array.isArray(product.images) && product.images.length > 0 ? product.images : product.image_url ? [product.image_url] : []}
+              name={product.name}
+            />
 
             {/* ── BİLGİLER ── */}
             <div className="flex flex-col gap-5">

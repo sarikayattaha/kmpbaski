@@ -7,7 +7,7 @@ import Image from "next/image";
 import { supabase, type Product } from "@/lib/supabase";
 import {
   Plus, Trash2, LogOut, Loader2, CheckCircle,
-  AlertCircle, ImageIcon, Star, Upload, ExternalLink, Pencil, MessageSquare,
+  AlertCircle, ImageIcon, Star, Upload, ExternalLink, Pencil, MessageSquare, X,
 } from "lucide-react";
 import { type Review } from "@/lib/supabase";
 import AdminGuard from "@/app/admin/_components/AdminGuard";
@@ -54,11 +54,12 @@ function UrunYonetimiInner() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading]   = useState(false);
 
-  const [form, setForm]   = useState(emptyForm());
+  const [form, setForm]       = useState(emptyForm());
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [editId, setEditId] = useState<string | null>(null); // null = yeni ekle, string = düzenle
-  const [file, setFile]   = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [editId, setEditId]   = useState<string | null>(null);
+  // Çoklu görsel: mevcut URL'ler + yeni dosyalar
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [newFiles, setNewFiles]             = useState<{ file: File; preview: string }[]>([]);
   const [saving, setSaving]   = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -86,12 +87,13 @@ function UrunYonetimiInner() {
     if (!editId) setForm((f) => ({ ...f, slug: toSlug(f.name) }));
   }, [form.name, editId]);
 
-  /* ── Dosya seç ── */
+  /* ── Dosya seç (çoklu) ── */
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    setFile(f);
-    setPreview(URL.createObjectURL(f));
+    const selected = Array.from(e.target.files ?? []);
+    if (!selected.length) return;
+    const items = selected.map(f => ({ file: f, preview: URL.createObjectURL(f) }));
+    setNewFiles(prev => [...prev, ...items]);
+    if (fileRef.current) fileRef.current.value = "";
   };
 
   /* ── Formu sıfırla ── */
@@ -99,8 +101,8 @@ function UrunYonetimiInner() {
     setForm(emptyForm());
     setReviews([]);
     setEditId(null);
-    setFile(null);
-    setPreview(null);
+    setExistingImages([]);
+    setNewFiles([]);
     if (fileRef.current) fileRef.current.value = "";
   };
 
@@ -109,50 +111,53 @@ function UrunYonetimiInner() {
     setEditId(p.id);
     setForm({ name: p.name, slug: p.slug, price: p.price ?? "", features: p.features ?? "", category: p.category, isFeatured: p.is_featured, isPriceOnRequest: p.is_price_on_request ?? false });
     setReviews(Array.isArray(p.reviews) ? p.reviews : []);
-    setPreview(p.image_url || null);
-    setFile(null);
+    const imgs = Array.isArray(p.images) && p.images.length > 0 ? p.images : p.image_url ? [p.image_url] : [];
+    setExistingImages(imgs);
+    setNewFiles([]);
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   };
 
-  /* ── Görsel yükle (ortak) ── */
-  const uploadImage = async (): Promise<string | null> => {
-    if (!file) return null;
+  /* ── Tek görsel yükle ── */
+  const uploadOne = async (file: File): Promise<string | null> => {
     const ext  = file.name.split(".").pop();
-    const path = `${Date.now()}.${ext}`;
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
     const { error } = await supabase.storage.from("product-images").upload(path, file, { upsert: true });
     if (error) { showToast("Görsel yüklenemedi: " + error.message, "error"); return null; }
-    const { data } = supabase.storage.from("product-images").getPublicUrl(path);
-    return data.publicUrl;
+    return supabase.storage.from("product-images").getPublicUrl(path).data.publicUrl;
   };
 
   /* ── Ürün ekle / güncelle ── */
   const handleSave = async () => {
     if (!form.name.trim()) return showToast("Ürün adı zorunludur.", "error");
     if (!form.slug.trim()) return showToast("Slug zorunludur.", "error");
+    if (existingImages.length === 0 && newFiles.length === 0) return showToast("En az bir görsel ekleyin.", "error");
     setSaving(true);
 
-    let imageUrl: string | undefined;
-    if (file) {
-      const url = await uploadImage();
+    // Yeni dosyaları yükle
+    const uploaded: string[] = [];
+    for (const { file } of newFiles) {
+      const url = await uploadOne(file);
       if (!url) { setSaving(false); return; }
-      imageUrl = url;
+      uploaded.push(url);
     }
 
+    const allImages = [...existingImages, ...uploaded];
     const payload: Record<string, unknown> = {
-      name:                 form.name.trim(),
-      slug:                 form.slug.trim(),
-      price:                form.isPriceOnRequest ? "" : form.price.trim(),
-      features:             form.features.trim(),
-      category:             form.category,
-      is_featured:          form.isFeatured,
-      is_price_on_request:  form.isPriceOnRequest,
-      reviews:              reviews.filter(r => r.name.trim() && r.comment.trim()),
+      name:                form.name.trim(),
+      slug:                form.slug.trim(),
+      price:               form.isPriceOnRequest ? "" : form.price.trim(),
+      features:            form.features.trim(),
+      category:            form.category,
+      is_featured:         form.isFeatured,
+      is_price_on_request: form.isPriceOnRequest,
+      reviews:             reviews.filter(r => r.name.trim() && r.comment.trim()),
+      images:              allImages,
+      image_url:           allImages[0] ?? "",
     };
-    if (imageUrl) payload.image_url = imageUrl;
 
     const { error } = editId
       ? await supabase.from("products").update(payload).eq("id", editId)
-      : await supabase.from("products").insert({ ...payload, image_url: imageUrl ?? "" });
+      : await supabase.from("products").insert(payload);
 
     setSaving(false);
     if (error) return showToast("Hata: " + error.message, "error");
@@ -351,28 +356,67 @@ function UrunYonetimiInner() {
               </label>
             </div>
 
-            {/* Sağ: görsel */}
+            {/* Sağ: çoklu görsel */}
             <div className="flex flex-col gap-3">
-              <label className="text-xs font-bold text-[#07446c] uppercase tracking-wide">Ürün Görseli</label>
-              <label htmlFor="product-upload"
-                className="flex-1 border-2 border-dashed border-blue-200 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-[#0f75bc] hover:bg-blue-50 transition-all min-h-[220px] relative overflow-hidden">
-                {preview ? (
-                  <Image src={preview} alt="önizleme" fill className="object-contain p-4" />
-                ) : (
-                  <>
-                    <Upload size={32} className="text-blue-200" />
-                    <p className="text-sm text-slate-400 font-medium">Görsel seçmek için tıklayın</p>
-                    <p className="text-xs text-slate-300">PNG, JPG, WEBP · Maks 5MB</p>
-                  </>
-                )}
-              </label>
-              <input id="product-upload" type="file" accept="image/*" className="hidden" ref={fileRef} onChange={onFileChange} />
-              {preview && (
-                <button type="button" onClick={() => { setFile(null); setPreview(null); if (fileRef.current) fileRef.current.value = ""; }}
-                  className="text-xs text-red-400 hover:text-red-600 self-start">
-                  Görseli kaldır
-                </button>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-[#07446c] uppercase tracking-wide">
+                  Ürün Görselleri
+                  <span className="ml-2 text-gray-400 font-normal normal-case">({existingImages.length + newFiles.length} adet)</span>
+                </label>
+                <label htmlFor="product-upload"
+                  className="flex items-center gap-1.5 text-xs font-bold text-[#0f75bc] bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl cursor-pointer transition-colors">
+                  <Upload size={13} /> Fotoğraf Ekle
+                </label>
+                <input id="product-upload" type="file" accept="image/*" multiple className="hidden" ref={fileRef} onChange={onFileChange} />
+              </div>
+
+              {/* Görsel grid */}
+              {existingImages.length === 0 && newFiles.length === 0 ? (
+                <label htmlFor="product-upload"
+                  className="border-2 border-dashed border-blue-200 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-[#0f75bc] hover:bg-blue-50 transition-all min-h-[180px]">
+                  <Upload size={28} className="text-blue-200" />
+                  <p className="text-sm text-slate-400 font-medium">Görsel eklemek için tıklayın</p>
+                  <p className="text-xs text-slate-300">PNG, JPG, WEBP · 800×800 px önerilir</p>
+                </label>
+              ) : (
+                <div className="grid grid-cols-3 gap-2">
+                  {/* Mevcut görseller */}
+                  {existingImages.map((url, i) => (
+                    <div key={`e-${i}`} className="relative aspect-square rounded-xl overflow-hidden border border-blue-100 bg-gray-50 group">
+                      <Image src={url} alt={`görsel-${i+1}`} fill className="object-contain p-1" />
+                      {i === 0 && (
+                        <span className="absolute top-1 left-1 bg-[#0f75bc] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">Ana</span>
+                      )}
+                      <button type="button"
+                        onClick={() => setExistingImages(prev => prev.filter((_, idx) => idx !== i))}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <X size={11} />
+                      </button>
+                    </div>
+                  ))}
+                  {/* Yeni görseller */}
+                  {newFiles.map((item, i) => (
+                    <div key={`n-${i}`} className="relative aspect-square rounded-xl overflow-hidden border border-blue-100 bg-gray-50 group">
+                      <Image src={item.preview} alt={`yeni-${i+1}`} fill className="object-contain p-1" />
+                      {existingImages.length === 0 && i === 0 && (
+                        <span className="absolute top-1 left-1 bg-[#0f75bc] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">Ana</span>
+                      )}
+                      <button type="button"
+                        onClick={() => setNewFiles(prev => prev.filter((_, idx) => idx !== i))}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <X size={11} />
+                      </button>
+                    </div>
+                  ))}
+                  {/* + Ekle butonu */}
+                  <label htmlFor="product-upload"
+                    className="aspect-square rounded-xl border-2 border-dashed border-blue-200 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-[#0f75bc] hover:bg-blue-50 transition-all">
+                    <Plus size={20} className="text-blue-300" />
+                    <span className="text-[10px] text-slate-400">Ekle</span>
+                  </label>
+                </div>
               )}
+              <p className="text-xs text-gray-400">İlk fotoğraf ana görsel olarak kullanılır.</p>
             </div>
           </div>
 

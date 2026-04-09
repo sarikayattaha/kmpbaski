@@ -60,6 +60,7 @@ export type Product = {
   is_featured: boolean
   is_price_on_request: boolean  // true ise fiyat yerine "Fiyat Alınız" gösterilir
   reviews: Review[]
+  images: string[]
   created_at: string
 }
 
