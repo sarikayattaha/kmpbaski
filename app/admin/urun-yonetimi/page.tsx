@@ -130,7 +130,6 @@ function UrunYonetimiInner() {
   const handleSave = async () => {
     if (!form.name.trim()) return showToast("Ürün adı zorunludur.", "error");
     if (!form.slug.trim()) return showToast("Slug zorunludur.", "error");
-    if (existingImages.length === 0 && newFiles.length === 0) return showToast("En az bir görsel ekleyin.", "error");
     setSaving(true);
 
     // Yeni dosyaları yükle
