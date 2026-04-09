@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
 import { supabase, type AmbalajBanner } from "@/lib/supabase";
 
-/* Supabase boşsa gösterilecek yedek slaytlar */
 const FALLBACK: AmbalajBanner[] = [
-  { id: "1", badge: "Özel Ambalaj Çözümleri", title: "Markanızı Yansıtan", highlight: "Ambalaj Tasarımları", subtitle: "Pastane kutularından fast food ambalajlarına, özel ebat ve tasarımlarla markanıza özel baskılı ambalaj çözümleri üretiyoruz.", from_color: "#07446c", to_color: "#0a5a8a", wa_text: "Merhaba, ambalaj ürünleri hakkında bilgi almak istiyorum.", order_index: 0, is_active: true, created_at: "" },
-  { id: "2", badge: "Pastane & Tatlıcı Grubu", title: "Pastane ve Tatlıcılar İçin", highlight: "Sızdırmaz Çözümler", subtitle: "Baklava kutusundan pasta kutusuna, ürünlerinizi koruyacak ve markanızı yansıtacak özel ambalaj çözümleri.", from_color: "#1a3a5c", to_color: "#0e4f70", wa_text: "Merhaba, pastane ambalaj çözümleri hakkında bilgi almak istiyorum.", order_index: 1, is_active: true, created_at: "" },
-  { id: "3", badge: "Hızlı & Kaliteli Üretim", title: "Hızlı Teslimat ve", highlight: "Kaliteli Baskı Güvencesi", subtitle: "Siparişinizi zamanında teslim ediyor, renk tutarlılığı ve baskı kalitesiyle fark yaratıyoruz.", from_color: "#0c3b5e", to_color: "#1a5276", wa_text: "Merhaba, ambalaj siparişi vermek istiyorum.", order_index: 2, is_active: true, created_at: "" },
+  { id: "1", badge: "Özel Ambalaj Çözümleri", title: "Markanızı Yansıtan", highlight: "Ambalaj Tasarımları", subtitle: "Pastane kutularından fast food ambalajlarına, özel ebat ve tasarımlarla markanıza özel baskılı ambalaj çözümleri üretiyoruz.", from_color: "#07446c", to_color: "#0a5a8a", image_url: "", button_text: "", button_link: "", wa_text: "Merhaba, ambalaj ürünleri hakkında bilgi almak istiyorum.", order_index: 0, is_active: true, created_at: "" },
+  { id: "2", badge: "Pastane & Tatlıcı Grubu", title: "Pastane ve Tatlıcılar İçin", highlight: "Sızdırmaz Çözümler", subtitle: "Baklava kutusundan pasta kutusuna, ürünlerinizi koruyacak ve markanızı yansıtacak özel ambalaj çözümleri.", from_color: "#1a3a5c", to_color: "#0e4f70", image_url: "", button_text: "", button_link: "", wa_text: "Merhaba, pastane ambalaj çözümleri hakkında bilgi almak istiyorum.", order_index: 1, is_active: true, created_at: "" },
+  { id: "3", badge: "Hızlı & Kaliteli Üretim", title: "Hızlı Teslimat ve", highlight: "Kaliteli Baskı Güvencesi", subtitle: "Siparişinizi zamanında teslim ediyor, renk tutarlılığı ve baskı kalitesiyle fark yaratıyoruz.", from_color: "#0c3b5e", to_color: "#1a5276", image_url: "", button_text: "", button_link: "", wa_text: "Merhaba, ambalaj siparişi vermek istiyorum.", order_index: 2, is_active: true, created_at: "" },
 ];
 
 const INTERVAL = 5000;
@@ -18,7 +18,6 @@ export default function AmbalajHeroSlider() {
   const [current, setCurrent] = useState(0);
   const [paused,  setPaused]  = useState(false);
 
-  /* Supabase'den akif banner'ları çek */
   useEffect(() => {
     supabase
       .from("ambalaj_banners")
@@ -39,7 +38,6 @@ export default function AmbalajHeroSlider() {
     return () => clearInterval(t);
   }, [next, paused]);
 
-  /* Slayt sayısı değişince index taşmasını önle */
   useEffect(() => { setCurrent(0); }, [slides.length]);
 
   return (
@@ -58,8 +56,10 @@ export default function AmbalajHeroSlider() {
             }`}
             style={{ background: `linear-gradient(135deg, ${s.from_color}, ${s.to_color})` }}
           >
-            <div className="max-w-7xl mx-auto px-6 h-full min-h-[300px] md:min-h-[380px] flex items-center">
-              <div className="flex-1 py-10 md:py-14 max-w-2xl">
+            <div className="max-w-7xl mx-auto px-6 h-full min-h-[300px] md:min-h-[380px] flex items-center gap-8">
+
+              {/* Metin */}
+              <div className="flex-1 py-10 md:py-14">
                 {s.badge && (
                   <span className="inline-block text-xs font-bold text-[#25aae1] uppercase tracking-widest mb-3">
                     {s.badge}
@@ -70,19 +70,50 @@ export default function AmbalajHeroSlider() {
                   {s.highlight && <span className="text-[#25aae1]">{s.highlight}</span>}
                 </h1>
                 {s.subtitle && (
-                  <p className="text-blue-200 text-sm md:text-base max-w-lg leading-relaxed">
+                  <p className="text-blue-200 text-sm md:text-base max-w-lg leading-relaxed mb-6">
                     {s.subtitle}
                   </p>
                 )}
-                <a
-                  href={`https://wa.me/905541630031?text=${encodeURIComponent(s.wa_text || "Merhaba, ambalaj ürünleri hakkında bilgi almak istiyorum.")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-6 inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebe57] text-white font-bold px-6 py-3 rounded-2xl transition-colors shadow-lg text-sm"
-                >
-                  <MessageCircle size={17} /> WhatsApp ile Teklif Al
-                </a>
+
+                {/* Butonlar */}
+                <div className="flex flex-wrap gap-3">
+                  {/* Özel buton (varsa) */}
+                  {s.button_text && s.button_link && (
+                    <a
+                      href={s.button_link}
+                      className="inline-flex items-center gap-2 bg-white text-[#07446c] hover:bg-blue-50 font-bold px-6 py-3 rounded-2xl transition-colors shadow-lg text-sm"
+                    >
+                      {s.button_text}
+                    </a>
+                  )}
+                  {/* WhatsApp butonu */}
+                  <a
+                    href={`https://wa.me/905541630031?text=${encodeURIComponent(
+                      s.wa_text || "Merhaba, ambalaj ürünleri hakkında bilgi almak istiyorum."
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebe57] text-white font-bold px-6 py-3 rounded-2xl transition-colors shadow-lg text-sm"
+                  >
+                    <MessageCircle size={17} /> WhatsApp ile Teklif Al
+                  </a>
+                </div>
               </div>
+
+              {/* Görsel (varsa, masaüstünde sağ tarafta) */}
+              {s.image_url && (
+                <div className="hidden md:flex flex-shrink-0 w-64 lg:w-80 h-56 lg:h-72 relative">
+                  <Image
+                    src={s.image_url}
+                    alt={s.title}
+                    fill
+                    sizes="320px"
+                    className="object-contain drop-shadow-2xl"
+                    priority={i === 0}
+                  />
+                </div>
+              )}
+
             </div>
           </div>
         ))}

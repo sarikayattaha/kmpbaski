@@ -82,6 +82,9 @@ export type AmbalajBanner = {
   wa_text: string
   from_color: string
   to_color: string
+  image_url: string
+  button_text: string
+  button_link: string
   order_index: number
   is_active: boolean
   created_at: string

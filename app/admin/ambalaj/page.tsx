@@ -38,7 +38,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 const inputCls = "w-full border border-blue-100 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f75bc] transition-all";
 const emptyCat    = () => ({ name: "", slug: "", order_index: 0 });
 const emptyProd   = () => ({ category_id: "", name: "", description: "", features: "", width: "", height: "", depth: "" });
-const emptyBanner = () => ({ badge: "", title: "", highlight: "", subtitle: "", wa_text: "", from_color: "#07446c", to_color: "#0a5a8a", order_index: 0, is_active: true });
+const emptyBanner = () => ({ badge: "", title: "", highlight: "", subtitle: "", wa_text: "", from_color: "#07446c", to_color: "#0a5a8a", image_url: "", button_text: "", button_link: "", order_index: 0, is_active: true });
 
 export default function AmbalajYonetimi() {
   return <AdminGuard><AmbalajYonetimiInner /></AdminGuard>;
@@ -80,6 +80,9 @@ function AmbalajYonetimiInner() {
   const [bannerForm,     setBannerForm]     = useState(emptyBanner());
   const [bannerEditId,   setBannerEditId]   = useState<string | null>(null);
   const [savingBanner,   setSavingBanner]   = useState(false);
+  const [bannerImgFile,  setBannerImgFile]  = useState<{ file: File; preview: string } | null>(null);
+  const [bannerImgExist, setBannerImgExist] = useState("");
+  const bannerFileRef = useRef<HTMLInputElement>(null);
 
   const fetchBanners = async () => {
     setLoadingBanners(true);
@@ -89,18 +92,32 @@ function AmbalajYonetimiInner() {
     } catch { setBanners([]); } finally { setLoadingBanners(false); }
   };
 
-  const resetBanner = () => { setBannerForm(emptyBanner()); setBannerEditId(null); };
+  const resetBanner = () => {
+    setBannerForm(emptyBanner());
+    setBannerEditId(null);
+    setBannerImgFile(null);
+    setBannerImgExist("");
+    if (bannerFileRef.current) bannerFileRef.current.value = "";
+  };
 
   const startEditBanner = (b: AmbalajBanner) => {
     setBannerEditId(b.id);
-    setBannerForm({ badge: b.badge, title: b.title, highlight: b.highlight, subtitle: b.subtitle, wa_text: b.wa_text, from_color: b.from_color, to_color: b.to_color, order_index: b.order_index, is_active: b.is_active });
+    setBannerForm({ badge: b.badge, title: b.title, highlight: b.highlight, subtitle: b.subtitle, wa_text: b.wa_text, from_color: b.from_color, to_color: b.to_color, image_url: b.image_url ?? "", button_text: b.button_text ?? "", button_link: b.button_link ?? "", order_index: b.order_index, is_active: b.is_active });
+    setBannerImgExist(b.image_url ?? "");
+    setBannerImgFile(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleSaveBanner = async () => {
     if (!bannerForm.title.trim()) return showToast("Banner başlığı zorunludur.", "error");
     setSavingBanner(true);
-    const payload = { ...bannerForm, title: bannerForm.title.trim(), order_index: Number(bannerForm.order_index) };
+    let image_url = bannerImgExist;
+    if (bannerImgFile) {
+      const url = await uploadFile(bannerImgFile.file, "ambalaj-banners");
+      if (!url) { setSavingBanner(false); return; }
+      image_url = url;
+    }
+    const payload = { ...bannerForm, title: bannerForm.title.trim(), order_index: Number(bannerForm.order_index), image_url };
     const { error } = bannerEditId
       ? await supabase.from("ambalaj_banners").update(payload).eq("id", bannerEditId)
       : await supabase.from("ambalaj_banners").insert(payload);
@@ -389,14 +406,55 @@ function AmbalajYonetimiInner() {
                   <textarea value={bannerForm.subtitle} onChange={e => setBannerForm(f => ({ ...f, subtitle: e.target.value }))}
                     rows={3} placeholder="Kısa açıklama metni…" className={`${inputCls} resize-none`} />
                 </Field>
-                <Field label="WhatsApp Mesajı">
+                <Field label="WhatsApp Mesajı (boş bırakılırsa varsayılan mesaj gönderilir)">
                   <input value={bannerForm.wa_text} onChange={e => setBannerForm(f => ({ ...f, wa_text: e.target.value }))}
                     placeholder="Ör: Merhaba, ambalaj hakkında bilgi almak istiyorum." className={inputCls} />
                 </Field>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Buton Metni">
+                    <input value={bannerForm.button_text} onChange={e => setBannerForm(f => ({ ...f, button_text: e.target.value }))}
+                      placeholder="Ör: Ürünleri İncele" className={inputCls} />
+                  </Field>
+                  <Field label="Buton Linki">
+                    <input value={bannerForm.button_link} onChange={e => setBannerForm(f => ({ ...f, button_link: e.target.value }))}
+                      placeholder="Ör: /ambalaj/pastane-urunleri" className={inputCls} />
+                  </Field>
+                </div>
               </div>
 
               {/* Sağ */}
               <div className="space-y-3">
+                {/* Banner Görseli */}
+                <Field label="Banner Görseli (sağ tarafta gösterilir)">
+                  {bannerImgExist || bannerImgFile ? (
+                    <div className="relative aspect-video rounded-2xl overflow-hidden border border-blue-100 bg-gray-50 group">
+                      <Image
+                        src={bannerImgFile?.preview ?? bannerImgExist}
+                        alt="Banner görseli"
+                        fill
+                        className="object-contain p-2"
+                      />
+                      <button type="button"
+                        onClick={() => { setBannerImgFile(null); setBannerImgExist(""); if (bannerFileRef.current) bannerFileRef.current.value = ""; }}
+                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <X size={13} />
+                      </button>
+                      <label htmlFor="banner-img-upload"
+                        className="absolute bottom-2 right-2 flex items-center gap-1 text-xs font-bold bg-[#0f75bc] text-white px-3 py-1 rounded-xl cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Upload size={11} /> Değiştir
+                      </label>
+                    </div>
+                  ) : (
+                    <label htmlFor="banner-img-upload"
+                      className="border-2 border-dashed border-blue-200 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-[#0f75bc] hover:bg-blue-50 transition-all min-h-[120px]">
+                      <Upload size={22} className="text-blue-200" />
+                      <p className="text-sm text-slate-400 font-medium">Görsel eklemek için tıklayın</p>
+                    </label>
+                  )}
+                  <input id="banner-img-upload" ref={bannerFileRef} type="file" accept="image/*" className="hidden"
+                    onChange={e => { const f = e.target.files?.[0]; if (f) setBannerImgFile({ file: f, preview: URL.createObjectURL(f) }); if (bannerFileRef.current) bannerFileRef.current.value = ""; }} />
+                </Field>
+
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Başlangıç Rengi">
                     <div className="flex items-center gap-2">
@@ -421,14 +479,24 @@ function AmbalajYonetimiInner() {
                 {/* Önizleme */}
                 <div>
                   <label className="block text-xs font-bold text-[#07446c] uppercase tracking-wide mb-1.5">Önizleme</label>
-                  <div className="rounded-2xl p-5 min-h-[120px] flex flex-col justify-center"
+                  <div className="rounded-2xl p-4 min-h-[110px] flex items-center justify-between gap-3 overflow-hidden"
                     style={{ background: `linear-gradient(135deg, ${bannerForm.from_color}, ${bannerForm.to_color})` }}>
-                    {bannerForm.badge && <span className="text-[10px] font-bold text-[#25aae1] uppercase tracking-widest mb-1">{bannerForm.badge}</span>}
-                    <p className="text-white font-black text-base leading-tight">
-                      {bannerForm.title || "Ana Başlık"}{" "}
-                      <span className="text-[#25aae1]">{bannerForm.highlight}</span>
-                    </p>
-                    {bannerForm.subtitle && <p className="text-blue-200 text-xs mt-1 line-clamp-2">{bannerForm.subtitle}</p>}
+                    <div className="flex-1">
+                      {bannerForm.badge && <span className="text-[9px] font-bold text-[#25aae1] uppercase tracking-widest block mb-1">{bannerForm.badge}</span>}
+                      <p className="text-white font-black text-sm leading-tight">
+                        {bannerForm.title || "Ana Başlık"}{" "}
+                        <span className="text-[#25aae1]">{bannerForm.highlight}</span>
+                      </p>
+                      {bannerForm.subtitle && <p className="text-blue-200 text-[10px] mt-1 line-clamp-2">{bannerForm.subtitle}</p>}
+                      {bannerForm.button_text && (
+                        <span className="mt-2 inline-block text-[10px] font-bold bg-white/20 text-white px-2 py-1 rounded-lg">{bannerForm.button_text}</span>
+                      )}
+                    </div>
+                    {(bannerImgFile || bannerImgExist) && (
+                      <div className="w-16 h-16 relative flex-shrink-0 rounded-lg overflow-hidden">
+                        <Image src={bannerImgFile?.preview ?? bannerImgExist} alt="preview" fill className="object-contain" />
+                      </div>
+                    )}
                   </div>
                 </div>
 
