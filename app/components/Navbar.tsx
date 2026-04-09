@@ -271,10 +271,6 @@ export default function Navbar() {
             <ChevronDown size={13} className={`transition-transform duration-200 ${megaOpen ? "rotate-180" : ""}`} />
           </button>
           <nav className="flex items-center gap-0.5 overflow-x-auto scrollbar-none flex-1 ml-1">
-            <a href="/ambalaj"
-              className="whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg font-bold text-white bg-[#07446c] hover:bg-[#0f75bc] transition-colors flex-shrink-0">
-              <span className="text-base leading-none">📦</span> Ambalaj Çözümleri
-            </a>
             {navbarCats.map((cat, i) => (
               <a key={i} href={`/tum-urunler?kategori=${encodeURIComponent(cat.name)}`}
                 className="whitespace-nowrap px-3 py-1.5 text-sm rounded-lg font-medium text-gray-600 hover:text-[#0f75bc] hover:bg-blue-50 transition-colors">
@@ -282,6 +278,10 @@ export default function Navbar() {
               </a>
             ))}
           </nav>
+          <a href="/ambalaj"
+            className="ml-2 whitespace-nowrap flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg font-bold text-white bg-[#07446c] hover:bg-[#0f75bc] transition-colors">
+            <span className="text-base leading-none">📦</span> Ambalaj Çözümleri
+          </a>
         </div>
 
         {megaOpen && (
