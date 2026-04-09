@@ -1,22 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
 import { supabase, type AmbalajBanner } from "@/lib/supabase";
 
-const FALLBACK: AmbalajBanner[] = [
-  { id: "1", badge: "Özel Ambalaj Çözümleri", title: "Markanızı Yansıtan", highlight: "Ambalaj Tasarımları", subtitle: "Pastane kutularından fast food ambalajlarına, özel ebat ve tasarımlarla markanıza özel baskılı ambalaj çözümleri üretiyoruz.", from_color: "#07446c", to_color: "#0a5a8a", image_url: "", button_text: "", button_link: "", wa_text: "Merhaba, ambalaj ürünleri hakkında bilgi almak istiyorum.", order_index: 0, is_active: true, created_at: "" },
-  { id: "2", badge: "Pastane & Tatlıcı Grubu", title: "Pastane ve Tatlıcılar İçin", highlight: "Sızdırmaz Çözümler", subtitle: "Baklava kutusundan pasta kutusuna, ürünlerinizi koruyacak ve markanızı yansıtacak özel ambalaj çözümleri.", from_color: "#1a3a5c", to_color: "#0e4f70", image_url: "", button_text: "", button_link: "", wa_text: "Merhaba, pastane ambalaj çözümleri hakkında bilgi almak istiyorum.", order_index: 1, is_active: true, created_at: "" },
-  { id: "3", badge: "Hızlı & Kaliteli Üretim", title: "Hızlı Teslimat ve", highlight: "Kaliteli Baskı Güvencesi", subtitle: "Siparişinizi zamanında teslim ediyor, renk tutarlılığı ve baskı kalitesiyle fark yaratıyoruz.", from_color: "#0c3b5e", to_color: "#1a5276", image_url: "", button_text: "", button_link: "", wa_text: "Merhaba, ambalaj siparişi vermek istiyorum.", order_index: 2, is_active: true, created_at: "" },
-];
-
-const INTERVAL = 5000;
-
 export default function AmbalajHeroSlider() {
-  const [slides,  setSlides]  = useState<AmbalajBanner[]>(FALLBACK);
+  const [banners, setBanners] = useState<AmbalajBanner[]>([]);
   const [current, setCurrent] = useState(0);
-  const [paused,  setPaused]  = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     supabase
@@ -25,128 +17,151 @@ export default function AmbalajHeroSlider() {
       .eq("is_active", true)
       .order("order_index", { ascending: true })
       .then(({ data }) => {
-        if (data && data.length > 0) setSlides(data as AmbalajBanner[]);
+        if (data && data.length > 0) setBanners(data as AmbalajBanner[]);
+        setLoading(false);
       });
   }, []);
 
-  const next = useCallback(() => setCurrent(c => (c + 1) % slides.length), [slides.length]);
-  const prev = useCallback(() => setCurrent(c => (c - 1 + slides.length) % slides.length), [slides.length]);
+  const next = useCallback(() => setCurrent(c => (c + 1) % banners.length), [banners.length]);
+  const prev = useCallback(() => setCurrent(c => (c - 1 + banners.length) % banners.length), [banners.length]);
 
   useEffect(() => {
-    if (paused) return;
-    const t = setInterval(next, INTERVAL);
+    if (banners.length <= 1) return;
+    const t = setInterval(next, 5000);
     return () => clearInterval(t);
-  }, [next, paused]);
+  }, [banners.length, next]);
 
-  useEffect(() => { setCurrent(0); }, [slides.length]);
+  if (loading) {
+    return (
+      <div className="w-full h-[420px] bg-slate-50 animate-pulse flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[#0f75bc] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (banners.length === 0) return <FallbackBanner />;
+
+  const b = banners[current];
 
   return (
-    <div
-      className="relative overflow-hidden"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-    >
-      {/* ── Slaytlar ── */}
-      <div className="relative min-h-[300px] md:min-h-[380px]">
-        {slides.map((s, i) => (
-          <div
-            key={s.id}
-            className={`absolute inset-0 text-white transition-opacity duration-700 ${
-              i === current ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
-            }`}
-            style={{ background: `linear-gradient(135deg, ${s.from_color}, ${s.to_color})` }}
-          >
-            <div className="max-w-7xl mx-auto px-6 h-full min-h-[300px] md:min-h-[380px] flex items-center gap-8">
+    <section className="relative w-full bg-gradient-to-br from-slate-50 via-white to-[#e0f2fe] overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 py-14 flex flex-col lg:flex-row items-center gap-10 min-h-[400px]">
 
-              {/* Metin */}
-              <div className="flex-1 py-10 md:py-14">
-                {s.badge && (
-                  <span className="inline-block text-xs font-bold text-[#25aae1] uppercase tracking-widest mb-3">
-                    {s.badge}
-                  </span>
-                )}
-                <h1 className="text-2xl md:text-4xl font-black leading-tight mb-4">
-                  {s.title}<br />
-                  {s.highlight && <span className="text-[#25aae1]">{s.highlight}</span>}
-                </h1>
-                {s.subtitle && (
-                  <p className="text-blue-200 text-sm md:text-base max-w-lg leading-relaxed mb-6">
-                    {s.subtitle}
-                  </p>
-                )}
-
-                {/* Butonlar */}
-                <div className="flex flex-wrap gap-3">
-                  {/* Özel buton (varsa) */}
-                  {s.button_text && s.button_link && (
-                    <a
-                      href={s.button_link}
-                      className="inline-flex items-center gap-2 bg-white text-[#07446c] hover:bg-blue-50 font-bold px-6 py-3 rounded-2xl transition-colors shadow-lg text-sm"
-                    >
-                      {s.button_text}
-                    </a>
-                  )}
-                  {/* WhatsApp butonu */}
-                  <a
-                    href={`https://wa.me/905541630031?text=${encodeURIComponent(
-                      s.wa_text || "Merhaba, ambalaj ürünleri hakkında bilgi almak istiyorum."
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebe57] text-white font-bold px-6 py-3 rounded-2xl transition-colors shadow-lg text-sm"
-                  >
-                    <MessageCircle size={17} /> WhatsApp ile Teklif Al
-                  </a>
-                </div>
-              </div>
-
-              {/* Görsel (varsa, masaüstünde sağ tarafta) */}
-              {s.image_url && (
-                <div className="hidden md:flex flex-shrink-0 w-64 lg:w-80 h-56 lg:h-72 relative">
-                  <Image
-                    src={s.image_url}
-                    alt={s.title}
-                    fill
-                    sizes="320px"
-                    className="object-contain drop-shadow-2xl"
-                    priority={i === 0}
-                  />
-                </div>
-              )}
-
-            </div>
+        {/* SOL — Metin */}
+        <div className="flex-1 z-10">
+          {b.badge && (
+            <p className="text-xs font-bold text-[#25aae1] uppercase tracking-widest mb-3">
+              {b.badge}
+            </p>
+          )}
+          <h2 className="text-4xl md:text-5xl font-black text-[#07446c] leading-tight mb-4">
+            {b.title}
+            {b.highlight && (
+              <><br /><span className="text-[#0f75bc]">{b.highlight}</span></>
+            )}
+          </h2>
+          {b.subtitle && (
+            <p className="text-lg text-[#25aae1] font-medium mb-8 max-w-md leading-relaxed">
+              {b.subtitle}
+            </p>
+          )}
+          <div className="flex flex-wrap gap-3">
+            {b.button_text && b.button_link && (
+              <a
+                href={b.button_link}
+                className="inline-flex items-center gap-2.5 bg-[#0f75bc] hover:bg-[#07446c] text-white font-bold px-7 py-3.5 rounded-2xl transition-colors shadow-lg shadow-[#0f75bc]/25 text-sm"
+              >
+                {b.button_text}
+              </a>
+            )}
+            <a
+              href={`https://wa.me/905541630031?text=${encodeURIComponent(
+                b.wa_text || "Merhaba, ambalaj ürünleri hakkında bilgi almak istiyorum."
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2.5 bg-[#25D366] hover:bg-[#1ebe57] text-white font-bold px-7 py-3.5 rounded-2xl transition-colors shadow-lg text-sm"
+            >
+              <MessageCircle size={16} /> WhatsApp ile Teklif Al
+            </a>
           </div>
-        ))}
+        </div>
+
+        {/* SAĞ — Görsel */}
+        <div className="flex-1 flex items-center justify-center relative">
+          <div className="absolute w-[340px] h-[340px] bg-[#0f75bc]/8 rounded-full" />
+          <div className="absolute w-[260px] h-[260px] bg-[#25aae1]/10 rounded-full translate-x-6 translate-y-4" />
+
+          {b.image_url ? (
+            <div className="relative z-10 drop-shadow-2xl" style={{ transform: "perspective(800px) rotateY(-8deg) rotateX(2deg)" }}>
+              <Image
+                src={b.image_url}
+                alt={b.title}
+                width={420}
+                height={320}
+                className="object-contain max-h-[300px] w-auto rounded-2xl"
+                priority={current === 0}
+              />
+            </div>
+          ) : (
+            <div className="relative z-10 w-72 h-56 bg-gradient-to-br from-[#e0f2fe] to-[#bae6fd] rounded-2xl flex items-center justify-center shadow-xl">
+              <span className="text-7xl opacity-20">📦</span>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* ── Sol ok ── */}
-      {slides.length > 1 && (
-        <button onClick={prev} aria-label="Önceki slayt"
-          className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors">
-          <ChevronLeft size={20} />
-        </button>
+      {/* Oklar */}
+      {banners.length > 1 && (
+        <>
+          <button onClick={prev}
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full shadow-md flex items-center justify-center text-[#07446c] transition-all hover:scale-110 z-20">
+            <ChevronLeft size={20} />
+          </button>
+          <button onClick={next}
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full shadow-md flex items-center justify-center text-[#07446c] transition-all hover:scale-110 z-20">
+            <ChevronRight size={20} />
+          </button>
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+            {banners.map((_, i) => (
+              <button key={i} onClick={() => setCurrent(i)}
+                className={`rounded-full transition-all duration-300 ${
+                  i === current ? "w-6 h-2 bg-[#0f75bc]" : "w-2 h-2 bg-[#0f75bc]/30 hover:bg-[#0f75bc]/60"
+                }`}
+              />
+            ))}
+          </div>
+        </>
       )}
+    </section>
+  );
+}
 
-      {/* ── Sağ ok ── */}
-      {slides.length > 1 && (
-        <button onClick={next} aria-label="Sonraki slayt"
-          className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors">
-          <ChevronRight size={20} />
-        </button>
-      )}
-
-      {/* ── Noktalar ── */}
-      {slides.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
-          {slides.map((_, i) => (
-            <button key={i} onClick={() => setCurrent(i)} aria-label={`Slayt ${i + 1}`}
-              className={`rounded-full transition-all duration-300 ${
-                i === current ? "w-6 h-2 bg-white" : "w-2 h-2 bg-white/40 hover:bg-white/70"
-              }`}
-            />
-          ))}
+function FallbackBanner() {
+  return (
+    <section className="w-full bg-gradient-to-br from-slate-50 via-white to-[#e0f2fe] border-b border-blue-100">
+      <div className="max-w-7xl mx-auto px-6 py-14 flex flex-col lg:flex-row items-center gap-10 min-h-[400px]">
+        <div className="flex-1">
+          <p className="text-xs font-bold text-[#25aae1] uppercase tracking-widest mb-3">Ambalaj Çözümleri</p>
+          <h2 className="text-4xl md:text-5xl font-black text-[#07446c] leading-tight mb-4">
+            Markanızı Yansıtan<br />Ambalaj Tasarımları
+          </h2>
+          <p className="text-lg text-[#25aae1] font-medium mb-8 max-w-md leading-relaxed">
+            Özel ebat ve baskı seçenekleriyle markanıza özel ambalaj çözümleri üretiyoruz.
+          </p>
+          <a href="https://wa.me/905541630031?text=Merhaba%2C%20ambalaj%20%C3%BCr%C3%BCnleri%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum."
+            target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-2.5 bg-[#25D366] hover:bg-[#1ebe57] text-white font-bold px-7 py-3.5 rounded-2xl transition-colors shadow-lg text-sm">
+            <MessageCircle size={16} /> WhatsApp ile Teklif Al
+          </a>
         </div>
-      )}
-    </div>
+        <div className="flex-1 flex items-center justify-center relative">
+          <div className="absolute w-[340px] h-[340px] bg-[#0f75bc]/8 rounded-full" />
+          <div className="w-72 h-56 bg-gradient-to-br from-[#e0f2fe] to-[#bae6fd] rounded-2xl flex items-center justify-center shadow-xl relative z-10">
+            <span className="text-7xl opacity-20">📦</span>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
