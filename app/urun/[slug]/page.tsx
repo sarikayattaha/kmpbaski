@@ -134,7 +134,7 @@ export default async function ProductPage(props: {
         </div>
       </main>
 
-      <ReviewsSection slug={slug} />
+      <ReviewsSection slug={slug} reviews={product.reviews} />
 
       <Footer />
     </div>

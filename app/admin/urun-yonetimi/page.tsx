@@ -7,8 +7,9 @@ import Image from "next/image";
 import { supabase, type Product } from "@/lib/supabase";
 import {
   Plus, Trash2, LogOut, Loader2, CheckCircle,
-  AlertCircle, ImageIcon, Star, Upload, ExternalLink, Pencil,
+  AlertCircle, ImageIcon, Star, Upload, ExternalLink, Pencil, MessageSquare,
 } from "lucide-react";
+import { type Review } from "@/lib/supabase";
 import AdminGuard from "@/app/admin/_components/AdminGuard";
 
 const CATEGORIES = [
@@ -54,6 +55,8 @@ const emptyForm = () => ({
   name: "", slug: "", price: "", features: "", category: CATEGORIES[0], isFeatured: false, isPriceOnRequest: false,
 });
 
+const emptyReview = (): Review => ({ name: "", rating: 5, date: "", comment: "" });
+
 export default function UrunYonetimi() {
   return <AdminGuard><UrunYonetimiInner /></AdminGuard>;
 }
@@ -63,6 +66,7 @@ function UrunYonetimiInner() {
   const [loading, setLoading]   = useState(false);
 
   const [form, setForm]   = useState(emptyForm());
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [editId, setEditId] = useState<string | null>(null); // null = yeni ekle, string = düzenle
   const [file, setFile]   = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -104,6 +108,7 @@ function UrunYonetimiInner() {
   /* ── Formu sıfırla ── */
   const resetForm = () => {
     setForm(emptyForm());
+    setReviews([]);
     setEditId(null);
     setFile(null);
     setPreview(null);
@@ -114,6 +119,7 @@ function UrunYonetimiInner() {
   const startEdit = (p: Product) => {
     setEditId(p.id);
     setForm({ name: p.name, slug: p.slug, price: p.price ?? "", features: p.features ?? "", category: p.category, isFeatured: p.is_featured, isPriceOnRequest: p.is_price_on_request ?? false });
+    setReviews(Array.isArray(p.reviews) ? p.reviews : []);
     setPreview(p.image_url || null);
     setFile(null);
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
@@ -151,6 +157,7 @@ function UrunYonetimiInner() {
       category:             form.category,
       is_featured:          form.isFeatured,
       is_price_on_request:  form.isPriceOnRequest,
+      reviews:              reviews.filter(r => r.name.trim() && r.comment.trim()),
     };
     if (imageUrl) payload.image_url = imageUrl;
 
@@ -375,6 +382,69 @@ function UrunYonetimiInner() {
                   Görseli kaldır
                 </button>
               )}
+            </div>
+          </div>
+
+          {/* ── YORUMLAR ── */}
+          <div className="mt-8 border-t border-blue-50 pt-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-black text-[#07446c] flex items-center gap-2">
+                <MessageSquare size={16} className="text-[#0f75bc]" /> Müşteri Yorumları
+              </h3>
+              <button type="button"
+                onClick={() => setReviews(r => [...r, emptyReview()])}
+                className="flex items-center gap-1.5 text-xs font-bold text-[#0f75bc] hover:text-[#07446c] bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl transition-colors">
+                <Plus size={13} /> Yorum Ekle
+              </button>
+            </div>
+
+            {reviews.length === 0 && (
+              <p className="text-xs text-gray-400 italic">Henüz yorum eklenmedi. "Yorum Ekle" butonuna tıklayın.</p>
+            )}
+
+            <div className="space-y-4">
+              {reviews.map((rev, i) => (
+                <div key={i} className="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 relative">
+                  <button type="button" onClick={() => setReviews(r => r.filter((_, idx) => idx !== i))}
+                    className="absolute top-3 right-3 text-gray-300 hover:text-red-500 transition-colors">
+                    <Trash2 size={14} />
+                  </button>
+
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <label className="block text-xs font-bold text-[#07446c] mb-1">İsim</label>
+                      <input value={rev.name}
+                        onChange={e => setReviews(r => r.map((x, idx) => idx === i ? { ...x, name: e.target.value } : x))}
+                        placeholder="Ahmet Y." className={inputCls} />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#07446c] mb-1">Tarih</label>
+                      <input value={rev.date}
+                        onChange={e => setReviews(r => r.map((x, idx) => idx === i ? { ...x, date: e.target.value } : x))}
+                        placeholder="12 Mart 2025" className={inputCls} />
+                    </div>
+                  </div>
+
+                  <div className="mb-3">
+                    <label className="block text-xs font-bold text-[#07446c] mb-1">Puan</label>
+                    <div className="flex items-center gap-2">
+                      {[1, 2, 3, 4, 5].map(n => (
+                        <button key={n} type="button" onClick={() => setReviews(r => r.map((x, idx) => idx === i ? { ...x, rating: n } : x))}>
+                          <Star size={22} className={n <= rev.rating ? "text-amber-400 fill-amber-400" : "text-gray-200 fill-gray-200"} />
+                        </button>
+                      ))}
+                      <span className="text-xs text-gray-400 ml-1">{rev.rating}/5</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#07446c] mb-1">Yorum</label>
+                    <textarea value={rev.comment}
+                      onChange={e => setReviews(r => r.map((x, idx) => idx === i ? { ...x, comment: e.target.value } : x))}
+                      rows={2} placeholder="Baskı kalitesi çok iyiydi…" className={`${inputCls} resize-none`} />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 

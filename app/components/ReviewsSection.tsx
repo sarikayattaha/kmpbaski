@@ -54,13 +54,20 @@ function initials(name: string) {
     .join("");
 }
 
-export default function ReviewsSection({ slug }: { slug: string }) {
-  // slug'u sayıya çevirip reviews seçiyoruz — her ürün farklı ama tutarlı yorum seti görsün
-  const seed = slug.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  const count = 4 + (seed % 3); // 4, 5 veya 6 yorum
-  const reviews = Array.from({ length: count }, (_, i) =>
-    ALL_REVIEWS[(seed + i * 3) % ALL_REVIEWS.length]
-  );
+type ReviewEntry = { name: string; rating: number; date: string; comment: string };
+
+export default function ReviewsSection({ slug, reviews: productReviews }: { slug: string; reviews?: ReviewEntry[] }) {
+  // Ürüne özel yorum varsa kullan, yoksa statik havuzdan seç
+  let reviews: ReviewEntry[];
+  if (productReviews && productReviews.length > 0) {
+    reviews = productReviews;
+  } else {
+    const seed = slug.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    const count = 4 + (seed % 3);
+    reviews = Array.from({ length: count }, (_, i) =>
+      ALL_REVIEWS[(seed + i * 3) % ALL_REVIEWS.length]
+    );
+  }
   const avg = reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
   const avgDisplay = Math.round(avg * 10) / 10;
 

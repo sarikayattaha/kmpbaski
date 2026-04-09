@@ -34,6 +34,13 @@ export type Banner = {
   created_at: string
 }
 
+export type Review = {
+  name: string
+  rating: number
+  date: string
+  comment: string
+}
+
 export type Product = {
   id: string
   name: string
@@ -44,6 +51,7 @@ export type Product = {
   features: string       // satır satır özellikler (newline ile ayrılmış)
   is_featured: boolean
   is_price_on_request: boolean  // true ise fiyat yerine "Fiyat Alınız" gösterilir
+  reviews: Review[]
   created_at: string
 }
 
