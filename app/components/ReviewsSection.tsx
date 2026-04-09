@@ -1,19 +1,49 @@
-// Statik yorum bölümü — slug'a göre deterministik olarak farklı yorumlar seçilir
+// Statik yorum bölümü — slug'a göre deterministik shuffle ile tekrarsız seçilir
 
 const ALL_REVIEWS = [
-  { name: "Ahmet Y.",              rating: 5,   date: "12 Mart 2025",    comment: "Çok hızlı geldi, baskı kalitesi gerçekten iyi. Tekrar sipariş vereceğim." },
-  { name: "Selin K.",              rating: 4.5, date: "3 Şubat 2025",    comment: "Beklediğimden güzel çıktı. Renk uyumu tam istediğim gibiydi." },
-  { name: "Marka İletişim A.Ş.",   rating: 5,   date: "27 Ocak 2025",    comment: "Kurumsal siparişlerimizi buradan veriyoruz, her seferinde memnun kalıyoruz." },
-  { name: "Fatma D.",              rating: 4,   date: "8 Nisan 2025",    comment: "Zamanında teslim edildi, kalite iyiydi. Hizmet için teşekkürler." },
-  { name: "Kerem B.",              rating: 5,   date: "19 Mart 2025",    comment: "Harika iş çıkardılar. Müşteri hizmetleri de çok ilgiliydi." },
-  { name: "Zeynep A.",             rating: 4.5, date: "1 Mart 2025",     comment: "İlk siparişimdi, çok memnun kaldım. Kesinlikle tekrar kullanacağım." },
-  { name: "Oğuz T.",              rating: 5,   date: "22 Şubat 2025",   comment: "Hız ve kalite bir arada. Fiyat performans çok iyi." },
-  { name: "Ayla M.",               rating: 4.5, date: "14 Ocak 2025",    comment: "Baskılar çok temiz çıktı. Hızlı kargo için teşekkürler." },
-  { name: "Pronto Reklam Ltd.",    rating: 5,   date: "9 Nisan 2025",    comment: "Profesyonel ekip, kaliteli baskı. Referans olarak göstereceğiz." },
-  { name: "Burak Ş.",             rating: 4,   date: "5 Şubat 2025",    comment: "Siparişim eksiksiz geldi, baskı kalitesinden memnunum." },
-  { name: "Nilüfer C.",            rating: 5,   date: "17 Mart 2025",    comment: "Çok şık oldu, tam istediğim kalitede. Hızlı teslimat süpriz yaptı." },
-  { name: "Doruk Medya A.Ş.",     rating: 4.5, date: "2 Nisan 2025",    comment: "Sektörde çalıştığımız en güvenilir baskı firması." },
+  { name: "Emre Y.",                          rating: 5,   date: "7 Ocak 2025",     comment: "Baskı kalitesi beklentimin çok üzerindeydi. Kesinlikle tekrar sipariş vereceğim." },
+  { name: "Canan A.",                         rating: 4.5, date: "14 Ocak 2025",    comment: "Renkler ekrandaki gibi çıktı, çok memnun kaldım. Teslimat da hızlıydı." },
+  { name: "Çınar Reklam ve Tanıtım Ltd.",     rating: 5,   date: "21 Ocak 2025",    comment: "Kurumsal siparişlerimizi düzenli veriyoruz, hiç sorun yaşamadık." },
+  { name: "Tolga K.",                         rating: 4,   date: "28 Ocak 2025",    comment: "Kalite iyiydi, zamanında teslim ettiler. Bir dahaki siparişi de buradan veririm." },
+  { name: "Akdeniz Ofset Matbaacılık A.Ş.",   rating: 5,   date: "3 Şubat 2025",    comment: "Sektördeki en iyi fiyat-kalite dengesi bu firmada. Teşekkürler." },
+  { name: "Merve Ş.",                         rating: 5,   date: "10 Şubat 2025",   comment: "Müşteri temsilcisi çok ilgili ve yardımseverdi. Ürün de harika çıktı." },
+  { name: "Kuzey Ajans Tanıtım Hiz.",         rating: 4.5, date: "17 Şubat 2025",   comment: "Ajans olarak çalıştığımız firmalar arasında en güveniliri." },
+  { name: "Hasan Ç.",                         rating: 5,   date: "24 Şubat 2025",   comment: "Hız ve kalite aynı anda. Fiyatlar da gayet uygun." },
+  { name: "Duygu E.",                         rating: 4.5, date: "3 Mart 2025",     comment: "İlk siparişimde çok memnun kaldım, artık başka yere bakmıyorum." },
+  { name: "Metropol Görsel İletişim Ltd.",    rating: 5,   date: "10 Mart 2025",    comment: "Profesyonel ekip, baskı kalitesi gerçekten üst düzey." },
+  { name: "Barış A.",                         rating: 4,   date: "17 Mart 2025",    comment: "Ürün tam istediğim gibi geldi, kargo süreci de sorunsuzdu." },
+  { name: "Demir & Demir Organizasyon",       rating: 5,   date: "24 Mart 2025",    comment: "Etkinliklerimiz için düzenli sipariş veriyoruz, her zaman memnunuz." },
+  { name: "Seda K.",                          rating: 5,   date: "31 Mart 2025",    comment: "Renk uyumu ve baskı netliği mükemmeldi. Teşekkür ederim." },
+  { name: "Yıldız Kurumsal Kimlik A.Ş.",      rating: 4.5, date: "7 Nisan 2025",    comment: "Kurumsal kimlik baskılarımızı yıllardır buradan yaptırıyoruz." },
+  { name: "Murat G.",                         rating: 5,   date: "9 Nisan 2025",    comment: "Çok kaliteli iş çıkardılar. Çevremdeki herkese tavsiye ettim." },
+  { name: "Pınar Y.",                         rating: 4,   date: "11 Nisan 2025",   comment: "Zamanında ve eksiksiz teslim. Kaliteden gayet memnunum." },
+  { name: "Güven Promosyon Hiz. Ltd.",        rating: 5,   date: "13 Nisan 2025",   comment: "Promosyon ürünlerimizi buradan alıyoruz, hiç hayal kırıklığı yaşamadık." },
+  { name: "Atlas Baskı ve Ambalaj A.Ş.",      rating: 5,   date: "15 Nisan 2025",   comment: "Ambalaj baskılarımız için ideal bir firma. Kalite tutarlı, teslimat hızlı." },
+  { name: "Tuncay B.",                        rating: 4.5, date: "17 Nisan 2025",   comment: "Çok temiz baskılar çıktı. Bir dahaki siparişimde de tercihim bu firma." },
+  { name: "Ufuk Reklam Çözümleri",           rating: 5,   date: "19 Nisan 2025",   comment: "Müşterilerimiz için hazırladığımız materyallerde hep bu firmayı kullanıyoruz." },
+  { name: "Gülsen T.",                        rating: 4.5, date: "21 Nisan 2025",   comment: "Sipariş süreci çok kolaydı, ürün de kaliteli geldi." },
+  { name: "Kartal Tanıtım ve Medya Ltd.",     rating: 5,   date: "23 Nisan 2025",   comment: "Tanıtım materyallerimizi buradan bastırıyoruz, kaliteden hiç ödün verilmiyor." },
+  { name: "Onur D.",                          rating: 4,   date: "25 Nisan 2025",   comment: "Baskı kalitesi iyiydi, kargo da beklenenden hızlı geldi." },
+  { name: "Palmiye Ofis Malzemeleri A.Ş.",    rating: 5,   date: "27 Nisan 2025",   comment: "Ofis baskı ihtiyaçlarımızın tamamını buradan karşılıyoruz." },
+  { name: "Ayşe N.",                          rating: 5,   date: "29 Nisan 2025",   comment: "Ürün tam tarihinde kapıdaydı. Kalite de gayet güzeldi, teşekkürler." },
+  { name: "Ege Kurumsal Hizmetler Ltd.",      rating: 4.5, date: "1 Mayıs 2025",    comment: "Güvenilir ve hızlı bir firma. Kurumsal ihtiyaçlar için ideal." },
+  { name: "Selçuk Ö.",                        rating: 5,   date: "3 Mayıs 2025",    comment: "İlk siparişten itibaren çok memnunum. Kalite hiç düşmüyor." },
+  { name: "Boztepe İletişim Ajansı",          rating: 5,   date: "5 Mayıs 2025",    comment: "Ajans olarak tercih ettiğimiz tek baskı firması. Teşekkürler." },
+  { name: "Derya C.",                         rating: 4.5, date: "7 Mayıs 2025",    comment: "Renk kalitesi çok iyiydi, bir daha kesinlikle sipariş vereceğim." },
+  { name: "Asya Promosyon ve Hediyecilik",    rating: 5,   date: "9 Mayıs 2025",    comment: "Promosyon siparişlerimizi her zaman zamanında ve kaliteli teslim ediyorlar." },
 ];
+
+// Tekrar olmayan deterministik shuffle (Fisher-Yates + LCG seed)
+function seededShuffle<T>(arr: T[], seed: number): T[] {
+  const result = [...arr];
+  let s = seed;
+  for (let i = result.length - 1; i > 0; i--) {
+    s = (s * 1664525 + 1013904223) & 0x7fffffff;
+    const j = s % (i + 1);
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
 
 function Stars({ rating }: { rating: number }) {
   const full = Math.floor(rating);
@@ -64,9 +94,7 @@ export default function ReviewsSection({ slug, reviews: productReviews }: { slug
   } else {
     const seed = slug.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
     const count = 4 + (seed % 3);
-    reviews = Array.from({ length: count }, (_, i) =>
-      ALL_REVIEWS[(seed + i * 3) % ALL_REVIEWS.length]
-    );
+    reviews = seededShuffle(ALL_REVIEWS, seed).slice(0, count);
   }
   const avg = reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
   const avgDisplay = Math.round(avg * 10) / 10;
