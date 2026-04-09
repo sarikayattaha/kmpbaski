@@ -167,8 +167,8 @@ export default function Navbar() {
             <a href="tel:+905541630031" className="flex items-center gap-1 hover:text-white transition-colors">
               <Phone size={11} /> +90 554 163 00 31
             </a>
-            <a href="mailto:info@kmpbaski.com" className="flex items-center gap-1 hover:text-white transition-colors">
-              <Mail size={11} /> info@kmpbaski.com
+            <a href="mailto:info@kmpprint.net" className="flex items-center gap-1 hover:text-white transition-colors">
+              <Mail size={11} /> info@kmpprint.net
             </a>
           </div>
           <span className="flex items-center gap-1 text-[#25aae1]">
