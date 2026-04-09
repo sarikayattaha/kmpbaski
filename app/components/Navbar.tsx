@@ -271,6 +271,10 @@ export default function Navbar() {
             <ChevronDown size={13} className={`transition-transform duration-200 ${megaOpen ? "rotate-180" : ""}`} />
           </button>
           <nav className="flex items-center gap-0.5 overflow-x-auto scrollbar-none flex-1 ml-1">
+            <a href="/ambalaj"
+              className="whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg font-bold text-white bg-[#07446c] hover:bg-[#0f75bc] transition-colors flex-shrink-0">
+              <span className="text-base leading-none">📦</span> Ambalaj Çözümleri
+            </a>
             {navbarCats.map((cat, i) => (
               <a key={i} href={`/tum-urunler?kategori=${encodeURIComponent(cat.name)}`}
                 className="whitespace-nowrap px-3 py-1.5 text-sm rounded-lg font-medium text-gray-600 hover:text-[#0f75bc] hover:bg-blue-50 transition-colors">
@@ -371,8 +375,13 @@ export default function Navbar() {
             </a>
           </div>
 
-          {/* Tüm Ürünler linki */}
-          <div className="px-4 pt-2 pb-1">
+          {/* Hızlı linkler */}
+          <div className="px-4 pt-2 pb-1 space-y-1.5">
+            <a href="/ambalaj" onClick={() => setMobileOpen(false)}
+              className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-bold text-white bg-[#07446c]">
+              <span className="flex items-center gap-2"><span className="text-base">📦</span> Ambalaj Çözümleri</span>
+              <ChevronRight size={15} />
+            </a>
             <a href="/tum-urunler" onClick={() => setMobileOpen(false)}
               className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-bold text-[#0f75bc] bg-[#e0f2fe]">
               <span className="flex items-center gap-2"><AlignJustify size={15} /> Tüm Ürünler</span>

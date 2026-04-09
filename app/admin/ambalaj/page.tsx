@@ -7,11 +7,10 @@ import Image from "next/image";
 import { supabase, type AmbalajCategory, type AmbalajProduct } from "@/lib/supabase";
 import {
   Plus, Trash2, LogOut, Loader2, CheckCircle, AlertCircle,
-  ImageIcon, Upload, Pencil, X, Package, Tag, Ruler,
+  ImageIcon, Upload, Pencil, X, Package, Tag,
 } from "lucide-react";
 import AdminGuard from "@/app/admin/_components/AdminGuard";
 
-/* ─── Helpers ──────────────────────────────────────────── */
 const toSlug = (s: string) =>
   s.toLowerCase()
     .replace(/ğ/g, "g").replace(/ü/g, "u").replace(/ş/g, "s")
@@ -37,230 +36,201 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 const inputCls = "w-full border border-blue-100 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f75bc] transition-all";
+const emptyCat  = () => ({ name: "", slug: "", order_index: 0 });
+const emptyProd = () => ({ category_id: "", name: "", description: "" });
 
-const emptyCatForm  = () => ({ name: "", slug: "", icon: "📦", order_index: 0 });
-const emptyProdForm = () => ({ category_id: "", name: "", description: "", features: "", width: "", height: "", depth: "" });
-
-/* ─── Guard wrapper ─────────────────────────────────────── */
 export default function AmbalajYonetimi() {
   return <AdminGuard><AmbalajYonetimiInner /></AdminGuard>;
 }
 
-/* ─── Main ──────────────────────────────────────────────── */
 function AmbalajYonetimiInner() {
-  /* — Data — */
   const [categories, setCategories] = useState<AmbalajCategory[]>([]);
   const [products,   setProducts]   = useState<AmbalajProduct[]>([]);
   const [loadingCats,  setLoadingCats]  = useState(false);
   const [loadingProds, setLoadingProds] = useState(false);
-  const [filterCatId, setFilterCatId]  = useState<string>("all");
+  const [filterCatId,  setFilterCatId]  = useState("all");
 
-  /* — Category form — */
-  const [catForm,   setCatForm]   = useState(emptyCatForm());
-  const [catEditId, setCatEditId] = useState<string | null>(null);
-  const [savingCat, setSavingCat] = useState(false);
+  /* Category form */
+  const [catForm,       setCatForm]       = useState(emptyCat());
+  const [catEditId,     setCatEditId]     = useState<string | null>(null);
+  const [savingCat,     setSavingCat]     = useState(false);
+  const [catImgFile,    setCatImgFile]    = useState<{ file: File; preview: string } | null>(null);
+  const [catImgExist,   setCatImgExist]   = useState("");
+  const catFileRef = useRef<HTMLInputElement>(null);
 
-  /* — Product form — */
-  const [prodForm,   setProdForm]   = useState(emptyProdForm());
-  const [prodEditId, setProdEditId] = useState<string | null>(null);
-  const [savingProd, setSavingProd] = useState(false);
-  const [imageFile,  setImageFile]  = useState<{ file: File; preview: string } | null>(null);
-  const [existingImg, setExistingImg] = useState("");
-  const fileRef = useRef<HTMLInputElement>(null);
+  /* Product form */
+  const [prodForm,      setProdForm]      = useState(emptyProd());
+  const [prodEditId,    setProdEditId]    = useState<string | null>(null);
+  const [savingProd,    setSavingProd]    = useState(false);
+  const [prodImgFile,   setProdImgFile]   = useState<{ file: File; preview: string } | null>(null);
+  const [prodImgExist,  setProdImgExist]  = useState("");
+  const prodFileRef = useRef<HTMLInputElement>(null);
 
-  /* — Toast — */
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
   const showToast = (msg: string, type: "success" | "error") => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 3500);
   };
-
   const handleLogout = () => { sessionStorage.removeItem("kmp_admin"); window.location.href = "/admin/login"; };
 
-  /* ── Fetch ───────────────────────────────────────────── */
+  /* ── Fetch ── */
   const fetchCategories = async () => {
     setLoadingCats(true);
     try {
-      const { data } = await supabase
-        .from("ambalaj_categories")
-        .select("*")
-        .order("order_index", { ascending: true });
+      const { data } = await supabase.from("ambalaj_categories").select("*").order("order_index", { ascending: true });
       setCategories((data as AmbalajCategory[]) ?? []);
-    } catch { setCategories([]); }
-    finally { setLoadingCats(false); }
+    } catch { setCategories([]); } finally { setLoadingCats(false); }
   };
-
   const fetchProducts = async () => {
     setLoadingProds(true);
     try {
-      const { data } = await supabase
-        .from("ambalaj_products")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const { data } = await supabase.from("ambalaj_products").select("*").order("created_at", { ascending: false });
       setProducts((data as AmbalajProduct[]) ?? []);
-    } catch { setProducts([]); }
-    finally { setLoadingProds(false); }
+    } catch { setProducts([]); } finally { setLoadingProds(false); }
   };
-
   useEffect(() => { fetchCategories(); fetchProducts(); }, []);
+  useEffect(() => { if (!catEditId) setCatForm(f => ({ ...f, slug: toSlug(f.name) })); }, [catForm.name, catEditId]);
 
-  /* Auto-slug */
-  useEffect(() => {
-    if (!catEditId) setCatForm(f => ({ ...f, slug: toSlug(f.name) }));
-  }, [catForm.name, catEditId]);
+  const filteredProducts = filterCatId === "all" ? products : products.filter(p => p.category_id === filterCatId);
 
-  /* Filtered products */
-  const filteredProducts = filterCatId === "all"
-    ? products
-    : products.filter(p => p.category_id === filterCatId);
-
-  const getCatLabel = (id: string) => {
-    const c = categories.find(x => x.id === id);
-    return c ? `${c.icon} ${c.name}` : "—";
+  /* ── Upload helper ── */
+  const uploadFile = async (file: File, prefix: string): Promise<string | null> => {
+    const ext  = file.name.split(".").pop();
+    const path = `${prefix}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage.from("product-images").upload(path, file, { upsert: true });
+    if (error) { showToast("Görsel yüklenemedi: " + error.message, "error"); return null; }
+    return supabase.storage.from("product-images").getPublicUrl(path).data.publicUrl;
   };
 
-  /* ══════════════════════════════════════════════════════
-     CATEGORY CRUD
-  ══════════════════════════════════════════════════════ */
-  const resetCatForm = () => { setCatForm(emptyCatForm()); setCatEditId(null); };
+  /* ══ CATEGORY CRUD ══ */
+  const resetCat = () => { setCatForm(emptyCat()); setCatEditId(null); setCatImgFile(null); setCatImgExist(""); if (catFileRef.current) catFileRef.current.value = ""; };
 
-  const startEditCat = (cat: AmbalajCategory) => {
-    setCatEditId(cat.id);
-    setCatForm({ name: cat.name, slug: cat.slug, icon: cat.icon, order_index: cat.order_index });
+  const startEditCat = (c: AmbalajCategory) => {
+    setCatEditId(c.id);
+    setCatForm({ name: c.name, slug: c.slug, order_index: c.order_index });
+    setCatImgExist(c.cover_image ?? "");
+    setCatImgFile(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleSaveCat = async () => {
     if (!catForm.name.trim()) return showToast("Kategori adı zorunludur.", "error");
     setSavingCat(true);
-    const payload = {
-      name:        catForm.name.trim(),
-      slug:        catForm.slug.trim() || toSlug(catForm.name),
-      icon:        catForm.icon.trim() || "📦",
-      order_index: Number(catForm.order_index),
-    };
+    let cover_image = catImgExist;
+    if (catImgFile) {
+      const url = await uploadFile(catImgFile.file, "ambalaj-cats");
+      if (!url) { setSavingCat(false); return; }
+      cover_image = url;
+    }
+    const payload = { name: catForm.name.trim(), slug: catForm.slug.trim() || toSlug(catForm.name), cover_image, order_index: Number(catForm.order_index) };
     const { error } = catEditId
       ? await supabase.from("ambalaj_categories").update(payload).eq("id", catEditId)
       : await supabase.from("ambalaj_categories").insert(payload);
     setSavingCat(false);
     if (error) return showToast("Hata: " + error.message, "error");
     showToast(catEditId ? "Kategori güncellendi!" : "Kategori eklendi!", "success");
-    resetCatForm();
-    fetchCategories();
+    resetCat(); fetchCategories();
   };
 
-  const handleDeleteCat = async (cat: AmbalajCategory) => {
-    if (!confirm(`"${cat.name}" kategorisi ve içindeki tüm ürünler silinsin mi?`)) return;
-    await supabase.from("ambalaj_products").delete().eq("category_id", cat.id);
-    const { error } = await supabase.from("ambalaj_categories").delete().eq("id", cat.id);
-    if (error) return showToast("Silme hatası: " + error.message, "error");
+  const handleDeleteCat = async (c: AmbalajCategory) => {
+    if (!confirm(`"${c.name}" ve içindeki ürünler silinsin mi?`)) return;
+    await supabase.from("ambalaj_products").delete().eq("category_id", c.id);
+    const { error } = await supabase.from("ambalaj_categories").delete().eq("id", c.id);
+    if (error) return showToast("Hata: " + error.message, "error");
     showToast("Kategori silindi.", "success");
-    if (filterCatId === cat.id) setFilterCatId("all");
-    fetchCategories();
-    fetchProducts();
+    if (filterCatId === c.id) setFilterCatId("all");
+    fetchCategories(); fetchProducts();
   };
 
-  /* ══════════════════════════════════════════════════════
-     PRODUCT CRUD
-  ══════════════════════════════════════════════════════ */
-  const resetProdForm = () => {
-    setProdForm(emptyProdForm());
-    setProdEditId(null);
-    setImageFile(null);
-    setExistingImg("");
-    if (fileRef.current) fileRef.current.value = "";
-  };
+  /* ══ PRODUCT CRUD ══ */
+  const resetProd = () => { setProdForm(emptyProd()); setProdEditId(null); setProdImgFile(null); setProdImgExist(""); if (prodFileRef.current) prodFileRef.current.value = ""; };
 
   const startEditProd = (p: AmbalajProduct) => {
     setProdEditId(p.id);
-    setProdForm({
-      category_id: p.category_id,
-      name:        p.name,
-      description: p.description ?? "",
-      features:    p.features    ?? "",
-      width:       p.width       ?? "",
-      height:      p.height      ?? "",
-      depth:       p.depth       ?? "",
-    });
-    setExistingImg(p.image_url ?? "");
-    setImageFile(null);
+    setProdForm({ category_id: p.category_id, name: p.name, description: p.description ?? "" });
+    setProdImgExist(p.image_url ?? "");
+    setProdImgFile(null);
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   };
 
-  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setImageFile({ file, preview: URL.createObjectURL(file) });
-    if (fileRef.current) fileRef.current.value = "";
-  };
-
-  const uploadImage = async (file: File): Promise<string | null> => {
-    const ext  = file.name.split(".").pop();
-    const path = `ambalaj/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const { error } = await supabase.storage.from("product-images").upload(path, file, { upsert: true });
-    if (error) { showToast("Görsel yüklenemedi: " + error.message, "error"); return null; }
-    return supabase.storage.from("product-images").getPublicUrl(path).data.publicUrl;
-  };
-
   const handleSaveProd = async () => {
-    if (!prodForm.name.trim())      return showToast("Ürün adı zorunludur.", "error");
-    if (!prodForm.category_id)      return showToast("Kategori seçiniz.", "error");
+    if (!prodForm.name.trim())    return showToast("Ürün adı zorunludur.", "error");
+    if (!prodForm.category_id)    return showToast("Kategori seçiniz.", "error");
     setSavingProd(true);
-
-    let imageUrl = existingImg;
-    if (imageFile) {
-      const url = await uploadImage(imageFile.file);
+    let image_url = prodImgExist;
+    if (prodImgFile) {
+      const url = await uploadFile(prodImgFile.file, "ambalaj");
       if (!url) { setSavingProd(false); return; }
-      imageUrl = url;
+      image_url = url;
     }
-
-    const payload: Record<string, unknown> = {
-      category_id: prodForm.category_id,
-      name:        prodForm.name.trim(),
-      description: prodForm.description.trim(),
-      features:    prodForm.features.trim(),
-      width:       prodForm.width.trim(),
-      height:      prodForm.height.trim(),
-      depth:       prodForm.depth.trim(),
-      image_url:   imageUrl,
-    };
-
+    const payload = { category_id: prodForm.category_id, name: prodForm.name.trim(), description: prodForm.description.trim(), image_url };
     const { error } = prodEditId
       ? await supabase.from("ambalaj_products").update(payload).eq("id", prodEditId)
       : await supabase.from("ambalaj_products").insert(payload);
-
     setSavingProd(false);
     if (error) return showToast("Hata: " + error.message, "error");
     showToast(prodEditId ? "Ürün güncellendi!" : "Ürün eklendi!", "success");
-    resetProdForm();
-    fetchProducts();
+    resetProd(); fetchProducts();
   };
 
   const handleDeleteProd = async (p: AmbalajProduct) => {
     if (!confirm(`"${p.name}" silinsin mi?`)) return;
     const { error } = await supabase.from("ambalaj_products").delete().eq("id", p.id);
-    if (error) return showToast("Silme hatası: " + error.message, "error");
-    showToast("Ürün silindi.", "success");
-    fetchProducts();
+    if (error) return showToast("Hata: " + error.message, "error");
+    showToast("Ürün silindi.", "success"); fetchProducts();
   };
 
-  /* ══════════════════════════════════════════════════════
-     RENDER
-  ══════════════════════════════════════════════════════ */
+  const getCatName = (id: string) => categories.find(c => c.id === id)?.name ?? "—";
+
+  /* ── Image picker (reusable render) ── */
+  const ImagePicker = ({
+    id, existingUrl, newFile,
+    onFileChange, onRemove,
+  }: {
+    id: string;
+    existingUrl: string;
+    newFile: { file: File; preview: string } | null;
+    onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onRemove: () => void;
+  }) => {
+    const src = newFile?.preview ?? existingUrl;
+    return src ? (
+      <div className="relative aspect-video rounded-2xl overflow-hidden border border-blue-100 bg-gray-50 group">
+        <Image src={src} alt="görsel" fill className="object-contain p-2" />
+        <button type="button" onClick={onRemove}
+          className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <X size={13} />
+        </button>
+        <label htmlFor={id}
+          className="absolute bottom-2 right-2 flex items-center gap-1 text-xs font-bold bg-[#0f75bc] text-white px-3 py-1 rounded-xl cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
+          <Upload size={11} /> Değiştir
+        </label>
+        <input id={id} type="file" accept="image/*" className="hidden" onChange={onFileChange} />
+      </div>
+    ) : (
+      <label htmlFor={id}
+        className="border-2 border-dashed border-blue-200 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-[#0f75bc] hover:bg-blue-50 transition-all min-h-[150px]">
+        <Upload size={26} className="text-blue-200" />
+        <p className="text-sm text-slate-400 font-medium">Görsel eklemek için tıklayın</p>
+        <input id={id} type="file" accept="image/*" className="hidden" onChange={onFileChange} />
+      </label>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-[#f0f8ff]">
       {toast && <Toast msg={toast.msg} type={toast.type} />}
 
-      {/* ── Header ── */}
+      {/* Header */}
       <div className="bg-[#07446c] text-white px-6 py-4 flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="font-black text-lg">KMP<span className="text-[#25aae1]">BASKI</span> — Ambalaj Yönetimi</h1>
           <p className="text-blue-200 text-xs mt-0.5">Ambalaj kategorileri ve ürünlerini yönet</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <a href="/admin/urun-yonetimi"    className="text-xs text-blue-300 hover:text-white transition-colors">Ürün Yönetimi →</a>
+          <a href="/admin/urun-yonetimi"     className="text-xs text-blue-300 hover:text-white transition-colors">Ürün Yönetimi →</a>
           <a href="/admin/kategori-yonetimi" className="text-xs text-blue-300 hover:text-white transition-colors">Kategori Yönetimi →</a>
-          <a href="/admin/banner-yonetimi"  className="text-xs text-blue-300 hover:text-white transition-colors">Banner Yönetimi →</a>
+          <a href="/admin/banner-yonetimi"   className="text-xs text-blue-300 hover:text-white transition-colors">Banner Yönetimi →</a>
           <button onClick={handleLogout}
             className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-semibold transition-colors">
             <LogOut size={15} /> Çıkış
@@ -270,24 +240,19 @@ function AmbalajYonetimiInner() {
 
       <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
 
-        {/* ══════════════════════════════════════════════
-            KATEGORİLER
-        ══════════════════════════════════════════════ */}
+        {/* ══ KATEGORİLER ══ */}
         <div className="bg-white rounded-3xl border border-blue-100 shadow-sm p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-base font-black text-[#07446c] flex items-center gap-2">
               <Tag size={18} className="text-[#0f75bc]" /> Ambalaj Kategorileri
             </h2>
             {!loadingCats && (
-              <span className="text-xs bg-[#0f75bc]/10 text-[#0f75bc] px-2 py-0.5 rounded-full font-bold">
-                {categories.length} kategori
-              </span>
+              <span className="text-xs bg-[#0f75bc]/10 text-[#0f75bc] px-2 py-0.5 rounded-full font-bold">{categories.length} kategori</span>
             )}
           </div>
 
-          {/* Liste */}
           {loadingCats ? (
-            <div className="flex items-center justify-center py-8 text-slate-300"><Loader2 size={24} className="animate-spin" /></div>
+            <div className="flex items-center justify-center py-8"><Loader2 size={24} className="animate-spin text-slate-300" /></div>
           ) : categories.length === 0 ? (
             <div className="text-center py-8 text-slate-300">
               <Tag size={32} className="mx-auto mb-2 opacity-40" />
@@ -298,15 +263,21 @@ function AmbalajYonetimiInner() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-blue-50">
-                    {["İkon", "Kategori Adı", "Slug", "Sıra", ""].map((h, i) => (
+                    {["Görsel", "Kategori Adı", "Slug", "Sıra", ""].map((h, i) => (
                       <th key={i} className="text-left text-xs font-bold text-gray-400 uppercase tracking-wide pb-3 pr-4">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {categories.map((cat) => (
+                  {categories.map(cat => (
                     <tr key={cat.id} className="border-b border-blue-50 hover:bg-slate-50 transition-colors">
-                      <td className="py-3 pr-4 text-2xl">{cat.icon}</td>
+                      <td className="py-3 pr-4">
+                        <div className="w-14 h-10 rounded-lg overflow-hidden bg-gradient-to-br from-[#e0f2fe] to-[#bae6fd] relative flex-shrink-0">
+                          {cat.cover_image
+                            ? <Image src={cat.cover_image} alt={cat.name} fill className="object-cover" />
+                            : <div className="w-full h-full flex items-center justify-center"><ImageIcon size={14} className="text-[#0f75bc]/40" /></div>}
+                        </div>
+                      </td>
                       <td className="py-3 pr-4 font-semibold text-[#07446c]">{cat.name}</td>
                       <td className="py-3 pr-4 text-gray-400 font-mono text-xs">{cat.slug}</td>
                       <td className="py-3 pr-4">
@@ -314,14 +285,8 @@ function AmbalajYonetimiInner() {
                       </td>
                       <td className="py-3">
                         <div className="flex items-center gap-1">
-                          <button onClick={() => startEditCat(cat)}
-                            className="p-2 rounded-lg text-slate-300 hover:bg-blue-50 hover:text-[#0f75bc] transition-colors">
-                            <Pencil size={14} />
-                          </button>
-                          <button onClick={() => handleDeleteCat(cat)}
-                            className="p-2 rounded-lg text-slate-300 hover:bg-red-50 hover:text-red-500 transition-colors">
-                            <Trash2 size={15} />
-                          </button>
+                          <button onClick={() => startEditCat(cat)} className="p-2 rounded-lg text-slate-300 hover:bg-blue-50 hover:text-[#0f75bc] transition-colors"><Pencil size={14} /></button>
+                          <button onClick={() => handleDeleteCat(cat)} className="p-2 rounded-lg text-slate-300 hover:bg-red-50 hover:text-red-500 transition-colors"><Trash2 size={15} /></button>
                         </div>
                       </td>
                     </tr>
@@ -338,29 +303,36 @@ function AmbalajYonetimiInner() {
                 {catEditId ? <Pencil size={15} className="text-[#0f75bc]" /> : <Plus size={15} className="text-[#0f75bc]" />}
                 {catEditId ? "Kategoriyi Düzenle" : "Yeni Kategori Ekle"}
               </h3>
-              {catEditId && (
-                <button onClick={resetCatForm} className="text-xs text-gray-400 hover:text-red-500 font-semibold transition-colors">✕ İptal</button>
-              )}
+              {catEditId && <button onClick={resetCat} className="text-xs text-gray-400 hover:text-red-500 font-semibold">✕ İptal</button>}
             </div>
 
-            <div className="grid sm:grid-cols-4 gap-4">
-              <Field label="Kategori Adı *">
-                <input value={catForm.name} onChange={e => setCatForm(f => ({ ...f, name: e.target.value }))}
-                  placeholder="Ör: Baklava Kutuları" className={inputCls} />
-              </Field>
-              <Field label="Slug">
-                <input value={catForm.slug} onChange={e => setCatForm(f => ({ ...f, slug: e.target.value }))}
-                  placeholder="baklava-kutulari" className={`${inputCls} font-mono text-xs`} />
-              </Field>
-              <Field label="İkon (emoji)">
-                <input value={catForm.icon} onChange={e => setCatForm(f => ({ ...f, icon: e.target.value }))}
-                  placeholder="📦" maxLength={4} className={`${inputCls} text-center text-xl`} />
-              </Field>
-              <Field label="Sıra No">
-                <input type="number" min={0} value={catForm.order_index}
-                  onChange={e => setCatForm(f => ({ ...f, order_index: Number(e.target.value) }))}
-                  className={inputCls} />
-              </Field>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <Field label="Kategori Adı *">
+                  <input value={catForm.name} onChange={e => setCatForm(f => ({ ...f, name: e.target.value }))}
+                    placeholder="Ör: Pastane Ürünleri" className={inputCls} />
+                </Field>
+                <Field label="Slug">
+                  <input value={catForm.slug} onChange={e => setCatForm(f => ({ ...f, slug: e.target.value }))}
+                    placeholder="pastane-urunleri" className={`${inputCls} font-mono text-xs`} />
+                </Field>
+                <Field label="Sıra No">
+                  <input type="number" min={0} value={catForm.order_index}
+                    onChange={e => setCatForm(f => ({ ...f, order_index: Number(e.target.value) }))}
+                    className={inputCls} />
+                </Field>
+              </div>
+              <div>
+                <Field label="Kapak Görseli">
+                  <ImagePicker
+                    id="cat-img"
+                    existingUrl={catImgExist}
+                    newFile={catImgFile}
+                    onFileChange={e => { const f = e.target.files?.[0]; if (f) setCatImgFile({ file: f, preview: URL.createObjectURL(f) }); if (catFileRef.current) catFileRef.current.value = ""; }}
+                    onRemove={() => { setCatImgFile(null); setCatImgExist(""); }}
+                  />
+                </Field>
+              </div>
             </div>
 
             <button onClick={handleSaveCat} disabled={savingCat}
@@ -371,9 +343,7 @@ function AmbalajYonetimiInner() {
           </div>
         </div>
 
-        {/* ══════════════════════════════════════════════
-            ÜRÜNLER
-        ══════════════════════════════════════════════ */}
+        {/* ══ ÜRÜNLER ══ */}
         <div className="bg-white rounded-3xl border border-blue-100 shadow-sm p-6">
           <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
             <h2 className="text-base font-black text-[#07446c] flex items-center gap-2">
@@ -381,21 +351,18 @@ function AmbalajYonetimiInner() {
             </h2>
             <div className="flex items-center gap-3">
               {!loadingProds && (
-                <span className="text-xs bg-[#0f75bc]/10 text-[#0f75bc] px-2 py-0.5 rounded-full font-bold">
-                  {filteredProducts.length} ürün
-                </span>
+                <span className="text-xs bg-[#0f75bc]/10 text-[#0f75bc] px-2 py-0.5 rounded-full font-bold">{filteredProducts.length} ürün</span>
               )}
               <select value={filterCatId} onChange={e => setFilterCatId(e.target.value)}
                 className="text-xs border border-blue-100 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#0f75bc] text-[#07446c] font-semibold bg-white">
                 <option value="all">Tüm Kategoriler</option>
-                {categories.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
+                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
           </div>
 
-          {/* Ürün listesi */}
           {loadingProds ? (
-            <div className="flex items-center justify-center py-8 text-slate-300"><Loader2 size={24} className="animate-spin" /></div>
+            <div className="flex items-center justify-center py-8"><Loader2 size={24} className="animate-spin text-slate-300" /></div>
           ) : filteredProducts.length === 0 ? (
             <div className="text-center py-8 text-slate-300">
               <Package size={32} className="mx-auto mb-2 opacity-40" />
@@ -406,45 +373,27 @@ function AmbalajYonetimiInner() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-blue-50">
-                    {["Görsel", "Ürün Adı", "Kategori", "Ebatlar (E×B×Y cm)", ""].map((h, i) => (
+                    {["Görsel", "Ürün Adı", "Kategori", ""].map((h, i) => (
                       <th key={i} className="text-left text-xs font-bold text-gray-400 uppercase tracking-wide pb-3 pr-4">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredProducts.map((p) => (
+                  {filteredProducts.map(p => (
                     <tr key={p.id} className="border-b border-blue-50 hover:bg-slate-50 transition-colors">
                       <td className="py-3 pr-4">
                         <div className="w-12 h-10 rounded-lg overflow-hidden bg-gradient-to-br from-[#e0f2fe] to-[#bae6fd] relative flex-shrink-0">
-                          {p.image_url ? (
-                            <Image src={p.image_url} alt={p.name} fill className="object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <ImageIcon size={14} className="text-[#0f75bc]/40" />
-                            </div>
-                          )}
+                          {p.image_url
+                            ? <Image src={p.image_url} alt={p.name} fill className="object-cover" />
+                            : <div className="w-full h-full flex items-center justify-center"><ImageIcon size={14} className="text-[#0f75bc]/40" /></div>}
                         </div>
                       </td>
-                      <td className="py-3 pr-4 font-semibold text-[#07446c] max-w-[200px] truncate">{p.name}</td>
-                      <td className="py-3 pr-4 text-gray-500 whitespace-nowrap">{getCatLabel(p.category_id)}</td>
-                      <td className="py-3 pr-4">
-                        {p.width || p.height || p.depth ? (
-                          <span className="flex items-center gap-1 text-xs font-mono text-[#07446c] bg-blue-50 px-2 py-0.5 rounded-full w-fit">
-                            <Ruler size={10} className="shrink-0" />
-                            {[p.width, p.height, p.depth].filter(Boolean).join(" × ")}
-                          </span>
-                        ) : <span className="text-gray-300">—</span>}
-                      </td>
+                      <td className="py-3 pr-4 font-semibold text-[#07446c] max-w-[220px] truncate">{p.name}</td>
+                      <td className="py-3 pr-4 text-gray-500">{getCatName(p.category_id)}</td>
                       <td className="py-3">
                         <div className="flex items-center gap-1">
-                          <button onClick={() => startEditProd(p)}
-                            className="p-2 rounded-lg text-slate-300 hover:bg-blue-50 hover:text-[#0f75bc] transition-colors">
-                            <Pencil size={14} />
-                          </button>
-                          <button onClick={() => handleDeleteProd(p)}
-                            className="p-2 rounded-lg text-slate-300 hover:bg-red-50 hover:text-red-500 transition-colors">
-                            <Trash2 size={15} />
-                          </button>
+                          <button onClick={() => startEditProd(p)} className="p-2 rounded-lg text-slate-300 hover:bg-blue-50 hover:text-[#0f75bc] transition-colors"><Pencil size={14} /></button>
+                          <button onClick={() => handleDeleteProd(p)} className="p-2 rounded-lg text-slate-300 hover:bg-red-50 hover:text-red-500 transition-colors"><Trash2 size={15} /></button>
                         </div>
                       </td>
                     </tr>
@@ -461,95 +410,36 @@ function AmbalajYonetimiInner() {
                 {prodEditId ? <Pencil size={15} className="text-[#0f75bc]" /> : <Plus size={15} className="text-[#0f75bc]" />}
                 {prodEditId ? "Ürünü Düzenle" : "Yeni Ürün Ekle"}
               </h3>
-              {prodEditId && (
-                <button onClick={resetProdForm} className="text-xs text-gray-400 hover:text-red-500 font-semibold transition-colors">✕ İptal</button>
-              )}
+              {prodEditId && <button onClick={resetProd} className="text-xs text-gray-400 hover:text-red-500 font-semibold">✕ İptal</button>}
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
-              {/* Sol — metin alanları */}
               <div className="space-y-4">
                 <Field label="Kategori *">
-                  <select value={prodForm.category_id}
-                    onChange={e => setProdForm(f => ({ ...f, category_id: e.target.value }))}
-                    className={inputCls}>
+                  <select value={prodForm.category_id} onChange={e => setProdForm(f => ({ ...f, category_id: e.target.value }))} className={inputCls}>
                     <option value="">— Kategori Seç —</option>
-                    {categories.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
+                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </Field>
-
                 <Field label="Ürün Adı *">
                   <input value={prodForm.name} onChange={e => setProdForm(f => ({ ...f, name: e.target.value }))}
                     placeholder="Ör: Çiğ Köfte Kutusu 1 Kg" className={inputCls} />
                 </Field>
-
                 <Field label="Açıklama">
                   <textarea value={prodForm.description} onChange={e => setProdForm(f => ({ ...f, description: e.target.value }))}
-                    rows={3} placeholder="Kısa ürün açıklaması…" className={`${inputCls} resize-none`} />
+                    rows={4} placeholder="Kısa ürün açıklaması…" className={`${inputCls} resize-none`} />
                 </Field>
-
-                <Field label="Özellikler (her satır ayrı madde)">
-                  <textarea value={prodForm.features} onChange={e => setProdForm(f => ({ ...f, features: e.target.value }))}
-                    rows={4} placeholder={"Gıda onaylı malzeme\n4 renk baskı\nPencereli kapak\nSterilize"} className={`${inputCls} resize-none`} />
-                </Field>
-
-                {/* Ebatlar */}
-                <div>
-                  <label className="block text-xs font-bold text-[#07446c] uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
-                    <Ruler size={12} /> Varsayılan Ebatlar (cm)
-                  </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <input value={prodForm.width} onChange={e => setProdForm(f => ({ ...f, width: e.target.value }))}
-                        placeholder="En" className={inputCls} />
-                      <p className="text-[10px] text-gray-400 mt-1 text-center">En</p>
-                    </div>
-                    <div>
-                      <input value={prodForm.height} onChange={e => setProdForm(f => ({ ...f, height: e.target.value }))}
-                        placeholder="Boy" className={inputCls} />
-                      <p className="text-[10px] text-gray-400 mt-1 text-center">Boy</p>
-                    </div>
-                    <div>
-                      <input value={prodForm.depth} onChange={e => setProdForm(f => ({ ...f, depth: e.target.value }))}
-                        placeholder="Yük." className={inputCls} />
-                      <p className="text-[10px] text-gray-400 mt-1 text-center">Yükseklik</p>
-                    </div>
-                  </div>
-                </div>
               </div>
-
-              {/* Sağ — görsel */}
-              <div className="flex flex-col gap-3">
-                <label className="text-xs font-bold text-[#07446c] uppercase tracking-wide">Ürün Görseli</label>
-
-                {existingImg || imageFile ? (
-                  <div className="relative aspect-video rounded-2xl overflow-hidden border border-blue-100 bg-gray-50 group">
-                    <Image
-                      src={imageFile?.preview ?? existingImg}
-                      alt="Ürün görseli"
-                      fill
-                      className="object-contain p-2"
-                    />
-                    <button type="button"
-                      onClick={() => { setImageFile(null); setExistingImg(""); if (fileRef.current) fileRef.current.value = ""; }}
-                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <X size={13} />
-                    </button>
-                    <label htmlFor="ambalaj-img-upload"
-                      className="absolute bottom-2 right-2 flex items-center gap-1 text-xs font-bold bg-[#0f75bc] text-white px-3 py-1 rounded-xl cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Upload size={11} /> Değiştir
-                    </label>
-                  </div>
-                ) : (
-                  <label htmlFor="ambalaj-img-upload"
-                    className="border-2 border-dashed border-blue-200 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-[#0f75bc] hover:bg-blue-50 transition-all min-h-[180px]">
-                    <Upload size={28} className="text-blue-200" />
-                    <p className="text-sm text-slate-400 font-medium">Görsel eklemek için tıklayın</p>
-                    <p className="text-xs text-slate-300">PNG, JPG, WEBP</p>
-                  </label>
-                )}
-                <input id="ambalaj-img-upload" type="file" accept="image/*" className="hidden" ref={fileRef} onChange={onFileChange} />
-                <p className="text-xs text-gray-400">Görsel Supabase Storage&apos;a yüklenir (product-images bucket).</p>
+              <div>
+                <Field label="Ürün Görseli">
+                  <ImagePicker
+                    id="prod-img"
+                    existingUrl={prodImgExist}
+                    newFile={prodImgFile}
+                    onFileChange={e => { const f = e.target.files?.[0]; if (f) setProdImgFile({ file: f, preview: URL.createObjectURL(f) }); if (prodFileRef.current) prodFileRef.current.value = ""; }}
+                    onRemove={() => { setProdImgFile(null); setProdImgExist(""); }}
+                  />
+                </Field>
               </div>
             </div>
 

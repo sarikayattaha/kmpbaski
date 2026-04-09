@@ -77,7 +77,7 @@ export type AmbalajCategory = {
   id: string
   name: string
   slug: string
-  icon: string
+  cover_image: string
   order_index: number
   created_at: string
 }
@@ -87,10 +87,6 @@ export type AmbalajProduct = {
   category_id: string
   name: string
   description: string
-  features: string
-  width: string
-  height: string
-  depth: string
   image_url: string
   created_at: string
 }
