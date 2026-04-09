@@ -4,20 +4,22 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
   Search, User, Phone, Mail, Clock,
-  Menu, X, ChevronDown, AlignJustify, Loader2,
+  Menu, X, ChevronDown, AlignJustify, Loader2, ChevronRight,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
-type NavProduct  = { name: string; slug: string; image_url: string; };
-type NavCategory = { name: string; products: NavProduct[]; };
-type SearchResult = { name: string; slug: string; image_url: string; category: string; };
+type NavProduct    = { name: string; slug: string; image_url: string; };
+type NavCategory   = { name: string; products: NavProduct[]; };
+type SearchResult  = { name: string; slug: string; image_url: string; category: string; };
 type NavbarCategory = { name: string; navbar_order: number; };
 
 export default function Navbar() {
   const [query, setQuery]                   = useState("");
   const [mobileOpen, setMobileOpen]         = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [megaOpen, setMegaOpen]             = useState(false);
   const [activeCategory, setActiveCategory] = useState(0);
+  const [openMobileCat, setOpenMobileCat]   = useState<string | null>(null);
   const [menuData, setMenuData]             = useState<NavCategory[]>([]);
   const [menuLoading, setMenuLoading]       = useState(true);
   const [navbarCats, setNavbarCats]         = useState<NavbarCategory[]>([]);
@@ -27,9 +29,9 @@ export default function Navbar() {
   const [searchLoading, setSearchLoading]   = useState(false);
   const [searchOpen, setSearchOpen]         = useState(false);
   const searchDebounce = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const searchRef = useRef<HTMLDivElement>(null);
+  const searchRef      = useRef<HTMLDivElement>(null);
+  const mobileSearchRef = useRef<HTMLDivElement>(null);
 
-  // null = bilgi yok | "" = giriş yok | string = giriş yapılmış (user id)
   const [authUser, setAuthUser] = useState<string | null>(null);
 
   /* ── Auth ── */
@@ -40,7 +42,7 @@ export default function Navbar() {
     return () => listener.subscription.unsubscribe();
   }, []);
 
-  /* ── Ürün menüsü (mega menu için) ── */
+  /* ── Ürün menüsü (mega menu) ── */
   useEffect(() => {
     supabase
       .from("products")
@@ -68,26 +70,23 @@ export default function Navbar() {
       .then(({ data }) => setNavbarCats((data as NavbarCategory[]) ?? []));
   }, []);
 
-  /* ── Arama dışına tıklayınca kapat ── */
+  /* ── Dışa tıklayınca kapat ── */
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node))
         setSearchOpen(false);
-      }
+      if (mobileSearchRef.current && !mobileSearchRef.current.contains(e.target as Node))
+        setMobileSearchOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  /* ── Arama sorgusu ── */
+  /* ── Arama ── */
   const handleSearchChange = (value: string) => {
     setQuery(value);
     clearTimeout(searchDebounce.current);
-    if (!value.trim()) {
-      setSearchResults([]);
-      setSearchOpen(false);
-      return;
-    }
+    if (!value.trim()) { setSearchResults([]); setSearchOpen(false); return; }
     setSearchLoading(true);
     setSearchOpen(true);
     searchDebounce.current = setTimeout(async () => {
@@ -105,22 +104,63 @@ export default function Navbar() {
     e.preventDefault();
     if (!query.trim()) return;
     setSearchOpen(false);
+    setMobileSearchOpen(false);
+    setMobileOpen(false);
     window.location.href = `/tum-urunler?q=${encodeURIComponent(query.trim())}`;
   };
 
-  const openMega  = () => { clearTimeout(closeTimer.current); setMegaOpen(true); };
-  const closeMega = () => {
+  const openMegaMenu  = () => { clearTimeout(closeTimer.current); setMegaOpen(true); };
+  const closeMegaMenu = () => {
     closeTimer.current = setTimeout(() => { setMegaOpen(false); setActiveCategory(0); }, 120);
   };
 
-  const activeCat   = menuData[activeCategory];
-  const isLoggedIn  = authUser !== null && authUser !== "";
+  const activeCat  = menuData[activeCategory];
+  const isLoggedIn = authUser !== null && authUser !== "";
   const profileHref = isLoggedIn ? "/profile" : "/login";
+
+  /* Arama sonuçları kutusu (ortak) */
+  const SearchDropdown = () => (
+    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden" style={{ zIndex: 9999 }}>
+      {searchLoading ? (
+        <div className="flex items-center justify-center py-5 text-gray-300">
+          <Loader2 size={18} className="animate-spin" />
+        </div>
+      ) : searchResults.length === 0 ? (
+        <div className="px-4 py-4 text-sm text-gray-400 text-center">
+          &quot;{query}&quot; için sonuç bulunamadı.
+        </div>
+      ) : (
+        <>
+          {searchResults.map((r, i) => (
+            <a key={i} href={`/urun/${r.slug}`}
+              onClick={() => { setSearchOpen(false); setMobileSearchOpen(false); }}
+              className="flex items-center gap-3 px-4 py-2.5 hover:bg-blue-50 transition-colors">
+              <div className="w-9 h-9 rounded-lg bg-[#e0f2fe] flex-shrink-0 relative overflow-hidden">
+                {r.image_url
+                  ? <Image src={r.image_url} alt={r.name} fill sizes="36px" className="object-contain p-1" />
+                  : <span className="text-base flex items-center justify-center h-full opacity-30">🖨️</span>}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-gray-800 truncate">{r.name}</p>
+                <p className="text-xs text-gray-400 truncate">{r.category}</p>
+              </div>
+            </a>
+          ))}
+          <div className="border-t border-gray-100">
+            <button onClick={handleSearchSubmit as unknown as React.MouseEventHandler}
+              className="w-full px-4 py-2.5 text-xs font-bold text-[#0f75bc] hover:bg-blue-50 transition-colors text-left">
+              &quot;{query}&quot; için tüm sonuçları gör →
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
 
-      {/* ── TOP BAR ── */}
+      {/* ── TOP BAR (sadece desktop) ── */}
       <div className="bg-[#07446c] text-blue-100 text-xs py-1.5 hidden md:block">
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-5">
@@ -139,20 +179,20 @@ export default function Navbar() {
 
       {/* ── ANA HEADER ── */}
       <div className="border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center gap-5">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 h-14 md:h-16 flex items-center gap-3 md:gap-5">
 
           {/* Logo */}
-          <a href="/" className="flex items-center gap-2.5 flex-shrink-0">
-            <Image src="/kmpbaskilogo.png" alt="KMP Baskı" width={40} height={40}
-              className="object-contain h-10 w-auto" priority />
-            <span className="text-xl font-black tracking-tight leading-none">
+          <a href="/" className="flex items-center gap-2 flex-shrink-0">
+            <Image src="/kmpbaskilogo.png" alt="KMP Baskı" width={36} height={36}
+              className="object-contain h-8 md:h-10 w-auto" priority />
+            <span className="text-lg md:text-xl font-black tracking-tight leading-none">
               <span className="text-[#07446c]">KMP</span>
               <span className="text-[#25aae1]"> BASKI</span>
             </span>
           </a>
 
-          {/* Arama */}
-          <div className="flex-1 relative" ref={searchRef}>
+          {/* Desktop arama */}
+          <div className="hidden md:block flex-1 relative" ref={searchRef}>
             <form onSubmit={handleSearchSubmit}>
               <input
                 type="text"
@@ -168,74 +208,62 @@ export default function Navbar() {
                 <Search size={17} />
               </button>
             </form>
-
-            {/* Arama sonuçları dropdown */}
-            {searchOpen && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden" style={{ zIndex: 9999 }}>
-                {searchLoading ? (
-                  <div className="flex items-center justify-center py-5 text-gray-300">
-                    <Loader2 size={18} className="animate-spin" />
-                  </div>
-                ) : searchResults.length === 0 ? (
-                  <div className="px-4 py-4 text-sm text-gray-400 text-center">
-                    &quot;{query}&quot; için sonuç bulunamadı.
-                  </div>
-                ) : (
-                  <>
-                    {searchResults.map((r, i) => (
-                      <a key={i} href={`/urun/${r.slug}`}
-                        onClick={() => setSearchOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-blue-50 transition-colors">
-                        <div className="w-9 h-9 rounded-lg bg-[#e0f2fe] flex-shrink-0 relative overflow-hidden">
-                          {r.image_url ? (
-                            <Image src={r.image_url} alt={r.name} fill sizes="36px" className="object-contain p-1" />
-                          ) : (
-                            <span className="text-base flex items-center justify-center h-full opacity-30">🖨️</span>
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-gray-800 truncate">{r.name}</p>
-                          <p className="text-xs text-gray-400 truncate">{r.category}</p>
-                        </div>
-                      </a>
-                    ))}
-                    <div className="border-t border-gray-100">
-                      <button
-                        onClick={handleSearchSubmit as unknown as React.MouseEventHandler}
-                        className="w-full px-4 py-2.5 text-xs font-bold text-[#0f75bc] hover:bg-blue-50 transition-colors text-left">
-                        &quot;{query}&quot; için tüm sonuçları gör →
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
+            {searchOpen && <SearchDropdown />}
           </div>
 
-          {/* Sağ: sadece profil ikonu */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Sağ ikonlar */}
+          <div className="flex items-center gap-1 ml-auto md:ml-0 flex-shrink-0">
+            {/* Mobil: arama ikonu */}
+            <button
+              className="md:hidden p-2.5 rounded-xl text-gray-500 hover:bg-gray-100 transition-colors"
+              onClick={() => { setMobileSearchOpen(!mobileSearchOpen); setMobileOpen(false); }}>
+              <Search size={20} />
+            </button>
+
+            {/* Profil */}
             <a href={profileHref}
               className={`p-2.5 rounded-xl transition-colors ${
-                isLoggedIn
-                  ? "bg-[#e0f2fe] text-[#0f75bc] hover:bg-[#bae6fd]"
-                  : "text-gray-400 hover:bg-gray-100"
+                isLoggedIn ? "bg-[#e0f2fe] text-[#0f75bc] hover:bg-[#bae6fd]" : "text-gray-400 hover:bg-gray-100"
               }`}
               title={isLoggedIn ? "Profilim" : "Giriş Yap"}>
-              <User size={21} />
+              <User size={20} />
             </a>
 
-            <button className="md:hidden p-2 rounded-lg text-[#07446c] hover:bg-blue-50"
-              onClick={() => setMobileOpen(!mobileOpen)}>
+            {/* Mobil: hamburger */}
+            <button className="md:hidden p-2.5 rounded-xl text-[#07446c] hover:bg-blue-50 transition-colors"
+              onClick={() => { setMobileOpen(!mobileOpen); setMobileSearchOpen(false); }}>
               {mobileOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
         </div>
+
+        {/* Mobil arama barı */}
+        {mobileSearchOpen && (
+          <div className="md:hidden px-4 pb-3 relative" ref={mobileSearchRef}>
+            <form onSubmit={handleSearchSubmit} className="relative">
+              <input
+                autoFocus
+                type="text"
+                value={query}
+                onChange={e => handleSearchChange(e.target.value)}
+                placeholder="Ne bastırmak istiyorsunuz?"
+                className="w-full h-11 pl-4 pr-12 rounded-xl border border-gray-200 bg-gray-50 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0f75bc] transition-all"
+                autoComplete="off"
+              />
+              <button type="submit"
+                className="absolute right-0 top-0 h-11 w-12 flex items-center justify-center bg-[#0f75bc] text-white rounded-r-xl">
+                <Search size={17} />
+              </button>
+            </form>
+            {searchOpen && <SearchDropdown />}
+          </div>
+        )}
       </div>
 
-      {/* ── KATEGORİ BARI + MEGA PANEL ── */}
-      <div className="hidden md:block bg-white border-b border-gray-100 relative" onMouseLeave={closeMega}>
+      {/* ── KATEGORİ BARI + MEGA PANEL (sadece desktop) ── */}
+      <div className="hidden md:block bg-white border-b border-gray-100 relative" onMouseLeave={closeMegaMenu}>
         <div className="max-w-7xl mx-auto px-6 flex items-center h-11 gap-1">
-          <button onMouseEnter={openMega}
+          <button onMouseEnter={openMegaMenu}
             className={`flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 text-sm rounded-lg font-bold transition-colors flex-shrink-0
               ${megaOpen ? "bg-[#0f75bc] text-white" : "bg-[#e0f2fe] text-[#07446c] hover:bg-[#bae6fd]"}`}>
             <AlignJustify size={14} />
@@ -254,7 +282,7 @@ export default function Navbar() {
 
         {megaOpen && (
           <div className="absolute top-full left-0 right-0 bg-white border-t border-b border-gray-200 shadow-xl"
-            style={{ zIndex: 9999 }} onMouseEnter={openMega}>
+            style={{ zIndex: 9999 }} onMouseEnter={openMegaMenu}>
             <div className="max-w-7xl mx-auto flex" style={{ minHeight: 280 }}>
 
               <div className="w-56 border-r border-gray-100 py-3 flex-shrink-0">
@@ -312,12 +340,10 @@ export default function Navbar() {
                       <a key={pi} href={`/urun/${product.slug}`}
                         className="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-gray-50 transition-colors group">
                         <div className="w-14 h-14 rounded-lg overflow-hidden relative bg-gradient-to-br from-[#e8f4fc] to-[#ddf0fb] flex items-center justify-center">
-                          {product.image_url ? (
-                            <Image src={product.image_url} alt={product.name} fill sizes="56px"
-                              className="object-contain p-1 group-hover:scale-110 transition-transform duration-200" />
-                          ) : (
-                            <span className="text-xl opacity-25">🖨️</span>
-                          )}
+                          {product.image_url
+                            ? <Image src={product.image_url} alt={product.name} fill sizes="56px"
+                                className="object-contain p-1 group-hover:scale-110 transition-transform duration-200" />
+                            : <span className="text-xl opacity-25">🖨️</span>}
                         </div>
                         <p className="text-[9px] text-center text-gray-400 group-hover:text-[#0f75bc] leading-tight line-clamp-2 transition-colors font-medium">
                           {product.name}
@@ -334,34 +360,66 @@ export default function Navbar() {
 
       {/* ── MOBİL MENÜ ── */}
       {mobileOpen && (
-        <div className="md:hidden border-t bg-white px-4 py-4 max-h-[70vh] overflow-y-auto space-y-1">
-          <form onSubmit={handleSearchSubmit} className="relative mb-3">
-            <input type="text" value={query} onChange={e => handleSearchChange(e.target.value)}
-              placeholder="Ne bastırmak istiyorsunuz?"
-              className="w-full h-10 pl-4 pr-10 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f75bc]" />
-            <button type="submit">
-              <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            </button>
-          </form>
-          <a href={profileHref}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-[#07446c] hover:bg-blue-50 transition-colors">
-            <User size={16} /> {isLoggedIn ? "Profilim" : "Giriş Yap"}
-          </a>
-          {menuData.map((cat, ci) => (
-            <div key={ci}>
-              <a href={`/tum-urunler?kategori=${encodeURIComponent(cat.name)}`}
-                className="block text-[10px] font-bold text-[#25aae1] uppercase tracking-widest px-2 pt-3 pb-1">
-                {cat.name}
-              </a>
-              {cat.products.map(p => (
-                <a key={p.slug} href={`/urun/${p.slug}`}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-blue-50 hover:text-[#0f75bc] transition-colors">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#25aae1] flex-shrink-0" />
-                  {p.name}
-                </a>
-              ))}
-            </div>
-          ))}
+        <div className="md:hidden border-t bg-white overflow-y-auto" style={{ maxHeight: "calc(100dvh - 56px)" }}>
+
+          {/* Profil / Giriş */}
+          <div className="px-4 pt-3 pb-2 border-b border-gray-100">
+            <a href={profileHref} onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gray-50 text-sm font-semibold text-[#07446c]">
+              <User size={17} />
+              {isLoggedIn ? "Profilim" : "Giriş Yap"}
+            </a>
+          </div>
+
+          {/* Tüm Ürünler linki */}
+          <div className="px-4 pt-2 pb-1">
+            <a href="/tum-urunler" onClick={() => setMobileOpen(false)}
+              className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-bold text-[#0f75bc] bg-[#e0f2fe]">
+              <span className="flex items-center gap-2"><AlignJustify size={15} /> Tüm Ürünler</span>
+              <ChevronRight size={15} />
+            </a>
+          </div>
+
+          {/* Kategoriler accordion */}
+          <div className="px-4 py-2 space-y-1">
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2 mb-2">Kategoriler</p>
+            {menuLoading ? (
+              <div className="flex items-center justify-center py-6 text-gray-200">
+                <Loader2 size={20} className="animate-spin" />
+              </div>
+            ) : menuData.map((cat, ci) => (
+              <div key={ci} className="rounded-xl overflow-hidden border border-gray-100">
+                <button
+                  onClick={() => setOpenMobileCat(openMobileCat === cat.name ? null : cat.name)}
+                  className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-[#07446c] bg-white hover:bg-blue-50 transition-colors">
+                  <span>{cat.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">{cat.products.length}</span>
+                    <ChevronDown size={15} className={`text-gray-400 transition-transform duration-200 ${openMobileCat === cat.name ? "rotate-180" : ""}`} />
+                  </div>
+                </button>
+                {openMobileCat === cat.name && (
+                  <div className="bg-gray-50 border-t border-gray-100 px-2 py-1.5 space-y-0.5">
+                    {cat.products.map(p => (
+                      <a key={p.slug} href={`/urun/${p.slug}`}
+                        onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-600 hover:text-[#0f75bc] hover:bg-white transition-colors">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#25aae1] flex-shrink-0" />
+                        {p.name}
+                      </a>
+                    ))}
+                    <a href={`/tum-urunler?kategori=${encodeURIComponent(cat.name)}`}
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-[#0f75bc]">
+                      Tümünü gör →
+                    </a>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="h-6" />
         </div>
       )}
     </header>
