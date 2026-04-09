@@ -11,6 +11,7 @@ import { supabase } from "@/lib/supabase";
 type NavProduct  = { name: string; slug: string; image_url: string; };
 type NavCategory = { name: string; products: NavProduct[]; };
 type SearchResult = { name: string; slug: string; image_url: string; category: string; };
+type NavbarCategory = { name: string; navbar_order: number; };
 
 export default function Navbar() {
   const [query, setQuery]                   = useState("");
@@ -19,6 +20,7 @@ export default function Navbar() {
   const [activeCategory, setActiveCategory] = useState(0);
   const [menuData, setMenuData]             = useState<NavCategory[]>([]);
   const [menuLoading, setMenuLoading]       = useState(true);
+  const [navbarCats, setNavbarCats]         = useState<NavbarCategory[]>([]);
   const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const [searchResults, setSearchResults]   = useState<SearchResult[]>([]);
@@ -38,7 +40,7 @@ export default function Navbar() {
     return () => listener.subscription.unsubscribe();
   }, []);
 
-  /* ── Ürün menüsü ── */
+  /* ── Ürün menüsü (mega menu için) ── */
   useEffect(() => {
     supabase
       .from("products")
@@ -54,6 +56,16 @@ export default function Navbar() {
         setMenuData(Object.entries(map).map(([name, products]) => ({ name, products })));
         setMenuLoading(false);
       });
+  }, []);
+
+  /* ── Navbar kategori barı ── */
+  useEffect(() => {
+    supabase
+      .from("categories")
+      .select("name, navbar_order")
+      .eq("show_in_navbar", true)
+      .order("navbar_order", { ascending: true })
+      .then(({ data }) => setNavbarCats((data as NavbarCategory[]) ?? []));
   }, []);
 
   /* ── Arama dışına tıklayınca kapat ── */
@@ -231,7 +243,7 @@ export default function Navbar() {
             <ChevronDown size={13} className={`transition-transform duration-200 ${megaOpen ? "rotate-180" : ""}`} />
           </button>
           <nav className="flex items-center gap-0.5 overflow-x-auto scrollbar-none flex-1 ml-1">
-            {menuData.slice(0, 8).map((cat, i) => (
+            {navbarCats.map((cat, i) => (
               <a key={i} href={`/tum-urunler?kategori=${encodeURIComponent(cat.name)}`}
                 className="whitespace-nowrap px-3 py-1.5 text-sm rounded-lg font-medium text-gray-600 hover:text-[#0f75bc] hover:bg-blue-50 transition-colors">
                 {cat.name}

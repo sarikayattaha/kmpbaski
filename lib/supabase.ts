@@ -23,6 +23,14 @@ export const supabase = new Proxy({} as SupabaseClient, {
   },
 })
 
+export type Category = {
+  id: string
+  name: string
+  show_in_navbar: boolean
+  navbar_order: number
+  created_at: string
+}
+
 export type Banner = {
   id: string
   title: string
