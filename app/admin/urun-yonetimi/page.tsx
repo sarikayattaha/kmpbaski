@@ -12,17 +12,6 @@ import {
 import { type Review } from "@/lib/supabase";
 import AdminGuard from "@/app/admin/_components/AdminGuard";
 
-const CATEGORIES = [
-  "Kartvizitler",
-  "Broşür & Katalog",
-  "Kurumsal Ürünler",
-  "Reklam Ürünleri",
-  "Ambalaj",
-  "Promosyon",
-  "Sticker / Etiket",
-  "Tabela & Afiş",
-  "Diğer",
-];
 
 const toSlug = (s: string) =>
   s.toLowerCase()
@@ -52,7 +41,7 @@ const inputCls = "w-full border border-blue-100 rounded-xl px-4 py-2.5 text-sm f
 
 /* Boş form state */
 const emptyForm = () => ({
-  name: "", slug: "", price: "", features: "", category: CATEGORIES[0], isFeatured: false, isPriceOnRequest: false,
+  name: "", slug: "", price: "", features: "", category: "", isFeatured: false, isPriceOnRequest: false,
 });
 
 const emptyReview = (): Review => ({ name: "", rating: 5, date: "", comment: "" });
@@ -342,9 +331,8 @@ function UrunYonetimiInner() {
                   </label>
                 </div>
                 <Field label="Kategori">
-                  <select value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} className={inputCls}>
-                    {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
-                  </select>
+                  <input value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+                    placeholder="Ör: Kartvizitler" className={inputCls} />
                 </Field>
               </div>
 
