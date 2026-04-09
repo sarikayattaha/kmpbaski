@@ -98,7 +98,7 @@ export default function CatalogClient({
           </nav>
           <div className="border-t border-gray-100 bg-[#f0fdf4] px-5 py-4 mt-1">
             <p className="text-[11px] text-green-700 font-semibold leading-relaxed">
-              ✓ Hızlı teslimat<br />✓ Kalite garantisi<br />✓ Ücretsiz kargo seçenekleri
+              ✓ Hızlı teslimat<br />✓ Kalite garantisi<br />✓ Zamanında teslim güvencesi
             </p>
           </div>
         </div>
