@@ -6,11 +6,34 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
 import type { Product } from "@/lib/supabase";
 
-// ── Ortalama puan ─────────────────────────────────────────────────────────────
-function avgRating(p: Product): number | null {
-  const r = Array.isArray(p.reviews) ? p.reviews : [];
-  if (r.length === 0) return null;
-  return r.reduce((s, x) => s + x.rating, 0) / r.length;
+// ── Puan hesapla — ReviewsSection ile aynı fallback mantığı ─────────────────
+// Ürünün gerçek yorumu varsa onu kullan; yoksa slug'a göre deterministik
+// statik havuzdan üret (ürün sayfasıyla tutarlı).
+const STATIC_RATINGS = [5,4.5,5,4,5,5,4.5,5,4.5,5,4,5,5,4.5,5,4,5,5,4.5,5,4.5,5,4,5,5,4.5,5,5,4.5,5];
+
+function seededShuffle<T>(arr: T[], seed: number): T[] {
+  const out = [...arr];
+  let s = seed;
+  for (let i = out.length - 1; i > 0; i--) {
+    s = (s * 1664525 + 1013904223) & 0x7fffffff;
+    const j = s % (i + 1);
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+function getCardRating(p: Product): { avg: number; count: number } {
+  const reviews = Array.isArray(p.reviews) ? p.reviews : [];
+  if (reviews.length > 0) {
+    const avg = reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
+    return { avg: Math.round(avg * 10) / 10, count: reviews.length };
+  }
+  // Statik fallback
+  const seed = p.slug.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  const count = 4 + (seed % 3);
+  const picked = seededShuffle(STATIC_RATINGS, seed).slice(0, count);
+  const avg = picked.reduce((s, r) => s + r, 0) / count;
+  return { avg: Math.round(avg * 10) / 10, count };
 }
 
 // ── Ürün kartı ────────────────────────────────────────────────────────────────
@@ -18,8 +41,7 @@ function ProductCard({ product: p }: { product: Product }) {
   const mainImage =
     (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null) ??
     p.image_url ?? null;
-  const rating = avgRating(p);
-  const reviewCount = Array.isArray(p.reviews) ? p.reviews.length : 0;
+  const { avg: rating, count: reviewCount } = getCardRating(p);
 
   return (
     <Link
@@ -56,8 +78,7 @@ function ProductCard({ product: p }: { product: Product }) {
           {p.name}
         </h3>
 
-        {rating !== null && (
-          <div className="flex items-center gap-1 mt-1.5">
+        <div className="flex items-center gap-1 mt-1.5">
             <div className="flex">
               {[1, 2, 3, 4, 5].map(s => (
                 <svg key={s} width="11" height="11" viewBox="0 0 24 24"
@@ -68,7 +89,6 @@ function ProductCard({ product: p }: { product: Product }) {
             </div>
             <span className="text-[11px] text-gray-400">({reviewCount})</span>
           </div>
-        )}
 
         <div className="mt-auto pt-3">
           {p.is_price_on_request ? (
