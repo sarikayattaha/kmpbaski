@@ -3,8 +3,8 @@ const MONTHS_TR = [
   "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık",
 ];
 
-export const SITE_URL  = process.env.NEXT_PUBLIC_SITE_URL ?? "https://kmpbaski.com";
-export const SITE_NAME = "KMP Baskı";
+export const SITE_URL   = process.env.NEXT_PUBLIC_SITE_URL ?? "https://kmpbaski.com";
+export const SITE_NAME  = "KMP Baskı";
 export const SITE_PHONE = "+905541630031";
 
 export function currentMonthYear(): string {
@@ -27,20 +27,22 @@ export type City = {
 };
 
 export const CITIES: City[] = [
-  { slug: "istanbul",  name: "İstanbul",  locative: "İstanbul'da" },
-  { slug: "ankara",    name: "Ankara",    locative: "Ankara'da"   },
-  { slug: "izmir",     name: "İzmir",     locative: "İzmir'de"    },
-  { slug: "bursa",     name: "Bursa",     locative: "Bursa'da"    },
-  { slug: "gaziantep", name: "Gaziantep", locative: "Gaziantep'te"},
-  { slug: "antalya",   name: "Antalya",   locative: "Antalya'da"  },
+  { slug: "istanbul",  name: "İstanbul",  locative: "İstanbul'da"  },
+  { slug: "ankara",    name: "Ankara",    locative: "Ankara'da"    },
+  { slug: "izmir",     name: "İzmir",     locative: "İzmir'de"     },
+  { slug: "bursa",     name: "Bursa",     locative: "Bursa'da"     },
+  { slug: "gaziantep", name: "Gaziantep", locative: "Gaziantep'te" },
+  { slug: "antalya",   name: "Antalya",   locative: "Antalya'da"   },
 ];
 
-// ── Ambalaj ürün listesi ───────────────────────────────────────────────────────
+// ── Ambalaj ürün listesi (6 şehir × 7 ürün = 42 sayfa) ───────────────────────
 
 export type AmbalajSeoProduct = {
   slug: string;
   name: string;
   description: string;
+  /** Hangi kağıt/malzeme kullanılır — FAQ için */
+  materials: string;
 };
 
 export const AMBALAJ_SEO_PRODUCTS: AmbalajSeoProduct[] = [
@@ -48,41 +50,43 @@ export const AMBALAJ_SEO_PRODUCTS: AmbalajSeoProduct[] = [
     slug: "baklava-kutusu",
     name: "Baklava Kutusu",
     description: "Markalı ve özel baskılı baklava kutusu imalatı. Lüks sunum için özel tasarım, toptan fiyat.",
+    materials: "300-400 g/m² Bristol karton, mat veya parlak selefon kaplama, UV lak",
   },
   {
-    slug: "pasta-kutusu",
-    name: "Pasta Kutusu",
-    description: "Butik pastane ve cafe'ler için özel pasta kutusu tasarım ve baskısı.",
+    slug: "pide-kutusu",
+    name: "Pide Kutusu",
+    description: "Fırın ve restoranlar için dayanıklı, markalı pide kutusu üretimi. Hava delikli ve gıda güvenli.",
+    materials: "Mikro oluklu E-tipi karton, kraft iç kaplama, gıda onaylı baskı mürekkepleri",
+  },
+  {
+    slug: "lahmacun-kutusu",
+    name: "Lahmacun Kutusu",
+    description: "Pratik taşıma ve sunum için özel tasarımlı lahmacun kutusu, tam renk baskı seçeneği.",
+    materials: "Mikro oluklu B-tipi karton, yağa dayanıklı iç kaplama, tek veya çift taraf baskı",
   },
   {
     slug: "pizza-kutusu",
     name: "Pizza Kutusu",
     description: "Restoranlar ve fast-food işletmeleri için markalı pizza kutusu baskısı.",
+    materials: "Mikro oluklu C/E-tipi karton, gıda güvenli baskı, havalandırma deliği seçeneği",
   },
   {
-    slug: "kek-kutusu",
-    name: "Kek Kutusu",
-    description: "Özel tasarım kek kutusu baskı ve imalatı, tek renk veya tam baskı seçeneği.",
+    slug: "pasta-kutusu",
+    name: "Pasta Kutusu",
+    description: "Butik pastane ve cafe'ler için özel pasta kutusu tasarım ve baskısı.",
+    materials: "350-400 g/m² Bristol karton, mat selefon, isteğe göre PET pencere seçeneği",
   },
   {
-    slug: "hamburger-kutusu",
-    name: "Hamburger Kutusu",
-    description: "Fast-food işletmeleri için dayanıklı ve markalı hamburger kutusu üretimi.",
+    slug: "karton-canta",
+    name: "Karton Çanta",
+    description: "Kurumsal etkinlik, mağaza ve hediye için özel baskılı karton çanta üretimi.",
+    materials: "250-350 g/m² parlak veya mat kağıt, kordela veya pvc sap, güçlendirilmiş taban",
   },
   {
-    slug: "lokum-kutusu",
-    name: "Lokum Kutusu",
-    description: "Geleneksel ve modern tasarımlı lokum kutusu imalatı, hediyelik sunum çözümleri.",
-  },
-  {
-    slug: "karton-kutu",
-    name: "Karton Kutu",
-    description: "Her ölçü ve gramajda özel baskılı karton kutu üretimi ve toptan satış.",
-  },
-  {
-    slug: "hediye-kutusu",
-    name: "Hediye Kutusu",
-    description: "Kurumsal ve bireysel kullanım için özel tasarım hediye kutusu baskısı.",
+    slug: "durum-kagidi",
+    name: "Dürüm Kağıdı",
+    description: "Dürüm ve wrap ürünleri için markalı, gıda güvenli baskılı kağıt üretimi.",
+    materials: "40-50 g/m² greaseproof (yağa dayanıklı) kağıt, gıda onaylı soya bazlı mürekkep",
   },
 ];
 

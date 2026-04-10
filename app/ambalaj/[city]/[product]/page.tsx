@@ -7,6 +7,8 @@ import { MessageCircle, CheckCircle, Package, Phone } from "lucide-react";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import GlossarySection from "@/app/components/GlossarySection";
+import DynamicFAQ from "@/app/components/DynamicFAQ";
+import InternalLinkCloud from "@/app/components/InternalLinkCloud";
 import { BreadcrumbSchema, ProductSchema } from "@/app/components/SEO/Schema";
 import {
   CITIES,
@@ -21,7 +23,7 @@ import {
 type Params = { city: string; product: string };
 type Props  = { params: Promise<Params> };
 
-// ── Statik path listesi ───────────────────────────────────────────────────────
+// ── Statik path listesi (6 şehir × 7 ürün = 42 sayfa) ───────────────────────
 
 export function generateStaticParams(): Params[] {
   return CITIES.flatMap(city =>
@@ -40,10 +42,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const product = getSeoProductBySlug(productSlug);
   if (!city || !product) return {};
 
-  const monthYear = currentMonthYear();
-  const title     = `${city.name} ${product.name} İmalatı ve Baskı - ${monthYear} | ${SITE_NAME}`;
+  const monthYear   = currentMonthYear();
+  const title       = `${city.name} ${product.name} Fiyatları - ${monthYear} | ${SITE_NAME}`;
   const description = `${city.locative} ${product.name.toLowerCase()} imalatı, özel baskı ve toptan satış. Markanıza özel tasarım, hızlı üretim, rekabetçi fiyat. KMP Baskı'dan teklif alın.`;
-  const url = `${SITE_URL}/ambalaj/${citySlug}/${productSlug}`;
+  const url         = `${SITE_URL}/ambalaj/${citySlug}/${productSlug}`;
 
   return {
     title,
@@ -91,13 +93,13 @@ export default async function CityProductPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] flex flex-col">
-      {/* Schema */}
+      {/* Schemas */}
       <BreadcrumbSchema
         items={[
-          { name: "Ana Sayfa",           url: SITE_URL },
-          { name: "Ambalaj Çözümleri",   url: `${SITE_URL}/ambalaj` },
-          { name: city.name,             url: `${SITE_URL}/ambalaj/${citySlug}` },
-          { name: product.name,          url: pageUrl },
+          { name: "Ana Sayfa",         url: SITE_URL },
+          { name: "Ambalaj Çözümleri", url: `${SITE_URL}/ambalaj` },
+          { name: city.name,           url: `${SITE_URL}/ambalaj/${citySlug}` },
+          { name: product.name,        url: pageUrl },
         ]}
       />
       <ProductSchema
@@ -133,7 +135,7 @@ export default async function CityProductPage({ params }: Props) {
             <h1 className="text-3xl md:text-5xl font-black leading-tight mb-5">
               {city.name} {product.name}
               <br className="hidden md:block" />
-              <span className="text-[#93c5fd]"> İmalatı ve Baskı</span>
+              <span className="text-[#93c5fd]"> Fiyatları ve İmalatı</span>
             </h1>
             <p className="text-blue-100 text-base md:text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
               {city.locative} faaliyet gösteren işletmeler için özel tasarımlı{" "}
@@ -183,10 +185,14 @@ export default async function CityProductPage({ params }: Props) {
           <div className="max-w-3xl mx-auto px-6 py-12 text-center">
             <Package size={40} className="text-[#0f75bc]/30 mx-auto mb-4" />
             <h2 className="text-xl font-black text-[#07446c] mb-3">
-              {city.name} {product.name} Özellikleri
+              {city.name} {product.name} — Malzeme ve Özellikler
             </h2>
-            <p className="text-gray-500 leading-relaxed">
-              {product.description} {city.locative} ki tüm sektörler için özelleştirilebilir
+            <p className="text-gray-500 leading-relaxed mb-3">
+              {product.description}
+            </p>
+            <p className="text-sm text-gray-400 leading-relaxed">
+              <span className="font-semibold text-gray-500">Kullanılan Malzemeler:</span>{" "}
+              {product.materials}. {city.locative} tüm sektörler için özelleştirilebilir
               ebat, baskı ve malzeme seçenekleri sunuyoruz.
             </p>
           </div>
@@ -195,7 +201,7 @@ export default async function CityProductPage({ params }: Props) {
         {/* CTA */}
         <section className="max-w-4xl mx-auto px-6 py-14 text-center">
           <h2 className="text-2xl font-black text-[#07446c] mb-3">
-            {city.name} {product.name} için Fiyat Teklifi
+            {city.name} {product.name} için Fiyat Teklifi Al
           </h2>
           <p className="text-gray-400 text-sm mb-8 max-w-md mx-auto">
             WhatsApp'tan görseli, ölçüyü ve adedi paylaşın — en kısa sürede size özel
@@ -211,9 +217,20 @@ export default async function CityProductPage({ params }: Props) {
           </a>
         </section>
 
+        {/* Sıkça Sorulan Sorular + FAQ Schema */}
+        <DynamicFAQ product={product} city={city} />
+
       </main>
 
+      {/* İç linkleme ağı */}
+      <InternalLinkCloud
+        currentCitySlug={citySlug}
+        currentProductSlug={productSlug}
+      />
+
+      {/* SEO Sözlük */}
       <GlossarySection topic="ambalaj" />
+
       <Footer />
     </div>
   );
