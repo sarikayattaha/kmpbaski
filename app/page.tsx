@@ -1,7 +1,7 @@
 import Navbar from "@/app/components/Navbar";
 import HeroBanner from "@/app/components/HeroBanner";
 import InfoBar from "@/app/components/InfoBar";
-import ProductGrid from "@/app/components/ProductGrid";
+import FeaturedSlider from "@/app/components/FeaturedSlider";
 import SectorGrid from "@/app/components/SectorGrid";
 import Footer from "@/app/components/Footer";
 
@@ -18,8 +18,8 @@ export default function Home() {
         {/* Hızlı bilgi çubuğu */}
         <InfoBar />
 
-        {/* Öne Çıkan Ürünler */}
-        <ProductGrid />
+        {/* Öne Çıkan Ürünler — admin'de is_featured işaretli ürünler */}
+        <FeaturedSlider />
 
         {/* Sektörlere Göre Ürünler */}
         <SectorGrid />
