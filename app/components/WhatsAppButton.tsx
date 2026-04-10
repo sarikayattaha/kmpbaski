@@ -34,7 +34,7 @@ export default function WhatsAppButton() {
 
       {/* Alt metin — yalnızca desktop */}
       <span className="hidden text-[10px] font-medium text-white/80 sm:block leading-none">
-        Hızlı Teklif Hattı · 15 Dk. Yanıt
+        Hızlı Teklif Hattı
       </span>
 
       {/* Notification badge — animasyon globals.css'te */}
