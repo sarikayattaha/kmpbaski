@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   Calendar,
   Coffee,
@@ -27,10 +28,12 @@ export default function SectorGrid() {
         <h2 className="text-2xl font-black text-[#07446c] mb-8">Sektörlere Göre Ürünler</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
           {sectors.map((s, i) => (
-            <a
+            <Link
               key={i}
-              href="#"
-              className="flex flex-col items-center gap-3 p-4 bg-white border border-gray-100 rounded-2xl hover:border-[#0f75bc] hover:shadow-md hover:-translate-y-1 transition-all duration-200 group text-center"
+              href="/tum-urunler"
+              className="flex flex-col items-center gap-3 p-4 bg-white border border-gray-100 rounded-2xl cursor-pointer
+                         hover:border-[#0f75bc] hover:shadow-lg hover:scale-105
+                         transition-all duration-200 group text-center"
             >
               <span className="text-gray-400 group-hover:text-[#0f75bc] transition-colors">
                 {s.icon}
@@ -38,7 +41,7 @@ export default function SectorGrid() {
               <p className="text-[11px] font-bold text-gray-500 group-hover:text-[#0f75bc] uppercase tracking-wide leading-tight whitespace-pre-line transition-colors">
                 {s.label}
               </p>
-            </a>
+            </Link>
           ))}
         </div>
       </div>
