@@ -75,18 +75,12 @@ export type Profile = {
 
 export type AmbalajBanner = {
   id: string
-  badge: string
   title: string
-  highlight: string
   subtitle: string
-  wa_text: string
-  from_color: string
-  to_color: string
-  image_url: string
   button_text: string
   button_link: string
+  images: string[]
   order_index: number
-  is_active: boolean
   created_at: string
 }
 
