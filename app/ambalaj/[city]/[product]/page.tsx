@@ -176,7 +176,7 @@ export default async function CityProductPage({ params }: Props) {
           {imageList.length > 0 ? (
             <div className="flex flex-col gap-4">
               {/* Ana görsel — LCP için high priority */}
-              <div className="relative w-full aspect-[16/9] rounded-3xl overflow-hidden border border-blue-100 shadow-md bg-white">
+              <div className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden border border-gray-100 bg-white">
                 <SmartImage
                   src={imageList[0]}
                   fill
@@ -185,7 +185,7 @@ export default async function CityProductPage({ params }: Props) {
                   loading="eager"
                   product={category.name}
                   city={city.name}
-                  className="object-contain p-4"
+                  className="object-contain p-6"
                 />
               </div>
               {/* Ek görseller — lazy */}
@@ -194,7 +194,7 @@ export default async function CityProductPage({ params }: Props) {
                   {imageList.slice(1).map((src, i) => (
                     <div
                       key={i}
-                      className="relative aspect-square rounded-2xl overflow-hidden border border-blue-100 bg-white shadow-sm"
+                      className="relative aspect-square rounded-2xl overflow-hidden border border-gray-100 bg-white"
                     >
                       <SmartImage
                         src={src}

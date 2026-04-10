@@ -203,12 +203,14 @@ function ProductGridCard({ product: p }: { product: Product }) {
   return (
     <a href={`/urun/${p.slug}`}
       className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-[#bae6fd] hover:-translate-y-1 transition-all duration-200 flex flex-col overflow-hidden">
-      <div className="relative h-48 bg-gradient-to-br from-[#e8f4fc] to-[#ddf0fb] overflow-hidden">
+      <div className="relative aspect-[4/3] bg-white overflow-hidden">
         {p.image_url ? (
           <Image src={p.image_url} alt={p.name} fill sizes="(max-width:768px) 50vw, 33vw"
             className="object-contain p-6 group-hover:scale-105 transition-transform duration-300" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-5xl opacity-10">🖨️</div>
+          <div className="w-full h-full flex items-center justify-center text-gray-100">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+          </div>
         )}
         {p.is_featured && (
           <span className="absolute top-2.5 left-2.5 bg-[#e30613] text-white text-[9px] font-black px-2 py-1 rounded-full uppercase tracking-wide">
@@ -254,12 +256,14 @@ function ProductListRow({ product: p }: { product: Product }) {
   return (
     <a href={`/urun/${p.slug}`}
       className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-[#bae6fd] transition-all duration-200 flex items-center gap-5 p-4">
-      <div className="relative w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-gradient-to-br from-[#e8f4fc] to-[#ddf0fb]">
+      <div className="relative w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-white border border-gray-100">
         {p.image_url ? (
           <Image src={p.image_url} alt={p.name} fill sizes="80px"
             className="object-contain p-2 group-hover:scale-110 transition-transform duration-300" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-2xl opacity-10">🖨️</div>
+          <div className="w-full h-full flex items-center justify-center text-gray-200">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+          </div>
         )}
       </div>
       <div className="flex-1 min-w-0">
