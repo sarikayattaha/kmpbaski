@@ -2,21 +2,24 @@ export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { MessageCircle, CheckCircle, Package, Phone } from "lucide-react";
+import { MessageCircle, CheckCircle, Package, Phone, ImageOff } from "lucide-react";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import GlossarySection from "@/app/components/GlossarySection";
 import DynamicFAQ from "@/app/components/DynamicFAQ";
 import InternalLinkCloud from "@/app/components/InternalLinkCloud";
+import SmartImage from "@/app/components/SmartImage";
 import { BreadcrumbSchema, ProductSchema } from "@/app/components/SEO/Schema";
 import {
-  CITIES,
   SITE_URL,
   SITE_NAME,
   currentMonthYear,
   getCityBySlug,
 } from "@/lib/seo";
-import { getAmbalajCategories } from "@/lib/ambalaj-data";
+import {
+  getAmbalajCategories,
+  getAmbalajProductImages,
+} from "@/lib/ambalaj-data";
 
 type Params = { city: string; product: string };
 type Props  = { params: Promise<Params> };
@@ -25,15 +28,19 @@ type Props  = { params: Promise<Params> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { city: citySlug, product: productSlug } = await params;
-  const city       = getCityBySlug(citySlug);
-  const categories = await getAmbalajCategories();
-  const category   = categories.find(c => c.slug === productSlug);
+  const city = getCityBySlug(citySlug);
+  const [categories, productImages] = await Promise.all([
+    getAmbalajCategories(),
+    getAmbalajProductImages(productSlug),
+  ]);
+  const category = categories.find(c => c.slug === productSlug);
   if (!city || !category) return {};
 
   const monthYear   = currentMonthYear();
   const title       = `${city.name} ${category.name} Fiyatları - ${monthYear} | ${SITE_NAME}`;
   const description = `${city.locative} ${category.name.toLowerCase()} imalatı, özel baskı ve toptan satış. Markanıza özel tasarım, hızlı üretim, rekabetçi fiyat. KMP Baskı'dan teklif alın.`;
   const url         = `${SITE_URL}/ambalaj/${citySlug}/${productSlug}`;
+  const ogImage     = productImages?.image_url ?? undefined;
 
   return {
     title,
@@ -45,6 +52,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       siteName: SITE_NAME,
       locale: "tr_TR",
       type: "website",
+      ...(ogImage ? { images: [{ url: ogImage, alt: `${city.name} ${category.name} İmalatı - KMP Baskı` }] } : {}),
     },
     alternates: { canonical: url },
   };
@@ -55,9 +63,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function CityProductPage({ params }: Props) {
   const { city: citySlug, product: productSlug } = await params;
 
-  const [city, categories] = await Promise.all([
+  const [city, categories, productImages] = await Promise.all([
     Promise.resolve(getCityBySlug(citySlug)),
     getAmbalajCategories(),
+    getAmbalajProductImages(productSlug),
   ]);
 
   const category = categories.find(c => c.slug === productSlug);
@@ -68,6 +77,14 @@ export default async function CityProductPage({ params }: Props) {
   const waText    = encodeURIComponent(
     `Merhaba, ${city.name} için ${category.name} hakkında fiyat teklifi almak istiyorum.`
   );
+
+  // Görsel listesi: images dizisi varsa kullan, yoksa image_url tekli
+  const imageList: string[] = (() => {
+    const imgs = productImages?.images;
+    if (Array.isArray(imgs) && imgs.length > 0) return imgs;
+    if (productImages?.image_url) return [productImages.image_url];
+    return [];
+  })();
 
   const features = [
     {
@@ -154,8 +171,59 @@ export default async function CityProductPage({ params }: Props) {
           </div>
         </section>
 
+        {/* Ürün Görselleri */}
+        <section className="max-w-5xl mx-auto px-6 py-12">
+          {imageList.length > 0 ? (
+            <div className="flex flex-col gap-4">
+              {/* Ana görsel — LCP için high priority */}
+              <div className="relative w-full aspect-[16/9] rounded-3xl overflow-hidden border border-blue-100 shadow-md bg-white">
+                <SmartImage
+                  src={imageList[0]}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 960px"
+                  fetchPriority="high"
+                  loading="eager"
+                  product={category.name}
+                  city={city.name}
+                  className="object-contain p-4"
+                />
+              </div>
+              {/* Ek görseller — lazy */}
+              {imageList.length > 1 && (
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                  {imageList.slice(1).map((src, i) => (
+                    <div
+                      key={i}
+                      className="relative aspect-square rounded-2xl overflow-hidden border border-blue-100 bg-white shadow-sm"
+                    >
+                      <SmartImage
+                        src={src}
+                        fill
+                        sizes="(max-width: 640px) 30vw, 200px"
+                        loading="lazy"
+                        product={category.name}
+                        city={city.name}
+                        className="object-contain p-2"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Placeholder — görsel henüz yüklenmemiş */
+            <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-blue-100 bg-white py-16 text-center">
+              <ImageOff size={40} className="text-blue-200 mb-3" />
+              <p className="text-sm font-semibold text-gray-400">Görsel Hazırlanıyor</p>
+              <p className="text-xs text-gray-300 mt-1">
+                {category.name} için yakında fotoğraf eklenecek.
+              </p>
+            </div>
+          )}
+        </section>
+
         {/* Özellikler */}
-        <section className="max-w-5xl mx-auto px-6 py-14">
+        <section className="max-w-5xl mx-auto px-6 pb-14">
           <h2 className="text-2xl font-black text-[#07446c] text-center mb-10">
             {city.name}&apos;da Neden KMP Baskı?
           </h2>

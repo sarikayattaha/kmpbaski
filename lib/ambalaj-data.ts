@@ -6,6 +6,30 @@ export type AmbalajCategoryData = {
   slug: string;
 };
 
+export type AmbalajProductImages = {
+  image_url: string | null;
+  images: string[] | null;
+};
+
+/**
+ * Belirli bir ürünün görsellerini slug üzerinden çeker.
+ * City+product page'de paralel fetch edilir.
+ */
+export async function getAmbalajProductImages(
+  slug: string
+): Promise<AmbalajProductImages | null> {
+  const supabase = getSupabase();
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from("products")
+    .select("image_url, images")
+    .eq("slug", slug)
+    .ilike("category", "ambalaj")
+    .maybeSingle();
+  if (error || !data) return null;
+  return data;
+}
+
 /**
  * 81 il SEO sayfası oluşturmak için kaynak ürün listesini döner.
  *

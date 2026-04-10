@@ -46,13 +46,13 @@ export default function SmartImage({
 
 function buildAlt(product?: string, city?: string): string {
   if (product && city) {
-    return `${product} ${city} Modelleri ve Fiyatları - KMP Baskı Ambalaj`;
+    return `${city} ${product} İmalatı ve Toptan Fiyatları - KMP Baskı`;
   }
   if (product) {
-    return `${product} Modelleri ve Fiyatları - KMP Baskı`;
+    return `${product} İmalatı ve Toptan Fiyatları - KMP Baskı`;
   }
   if (city) {
-    return `${city} Ambalaj ve Baskı Çözümleri - KMP Baskı`;
+    return `${city} Ambalaj İmalatı ve Toptan Fiyatları - KMP Baskı`;
   }
   return "KMP Baskı - Profesyonel Ambalaj ve Baskı Çözümleri";
 }
