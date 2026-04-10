@@ -4,10 +4,10 @@ export const dynamic = "force-dynamic";
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { supabase, type Product } from "@/lib/supabase";
+import { supabase, type Product, type Category } from "@/lib/supabase";
 import {
   Plus, Trash2, LogOut, Loader2, CheckCircle,
-  AlertCircle, ImageIcon, Star, Upload, ExternalLink, Pencil, MessageSquare, X,
+  AlertCircle, ImageIcon, Star, Upload, ExternalLink, Pencil, MessageSquare, X, Globe,
 } from "lucide-react";
 import { type Review } from "@/lib/supabase";
 import AdminGuard from "@/app/admin/_components/AdminGuard";
@@ -51,8 +51,9 @@ export default function UrunYonetimi() {
 }
 
 function UrunYonetimiInner() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading]   = useState(false);
+  const [products, setProducts]       = useState<Product[]>([]);
+  const [dbCategories, setDbCategories] = useState<Category[]>([]);
+  const [loading, setLoading]         = useState(false);
 
   const [form, setForm]       = useState(emptyForm());
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -71,7 +72,7 @@ function UrunYonetimiInner() {
 
   const handleLogout = () => { sessionStorage.removeItem("kmp_admin"); window.location.href = "/admin/login"; };
 
-  /* ── Ürünleri yükle ── */
+  /* ── Yükle ── */
   const fetchProducts = async () => {
     setLoading(true);
     try {
@@ -80,7 +81,11 @@ function UrunYonetimiInner() {
     } catch { setProducts([]); }
     finally { setLoading(false); }
   };
-  useEffect(() => { fetchProducts(); }, []);
+  const fetchCategories = async () => {
+    const { data } = await supabase.from("categories").select("*").order("navbar_order", { ascending: true });
+    setDbCategories((data as Category[]) ?? []);
+  };
+  useEffect(() => { fetchProducts(); fetchCategories(); }, []);
 
   /* ── Slug otomatik ── */
   useEffect(() => {
@@ -236,7 +241,7 @@ function UrunYonetimiInner() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-blue-50">
-                    {["Görsel", "Ürün Adı", "Kategori", "Fiyat", "Slug", "Öne Çıkan", ""].map((h, i) => (
+                    {["Görsel", "Ürün Adı", "Kategori", "81 İl SEO", "Fiyat", "Slug", "Öne Çıkan", ""].map((h, i) => (
                       <th key={i} className="text-left text-xs font-bold text-gray-400 uppercase tracking-wide pb-3 pr-4">{h}</th>
                     ))}
                   </tr>
@@ -257,6 +262,15 @@ function UrunYonetimiInner() {
                       </td>
                       <td className="py-3 pr-4 font-semibold text-[#07446c] max-w-[180px] truncate">{p.name}</td>
                       <td className="py-3 pr-4 text-gray-500 whitespace-nowrap">{p.category}</td>
+                      <td className="py-3 pr-4">
+                        {p.category.toLowerCase() === "ambalaj" ? (
+                          <span className="flex items-center gap-1 text-xs font-bold text-[#0f75bc] bg-blue-50 px-2 py-0.5 rounded-full whitespace-nowrap">
+                            <Globe size={11} /> 81 il
+                          </span>
+                        ) : (
+                          <span className="text-gray-200">—</span>
+                        )}
+                      </td>
                       <td className="py-3 pr-4 whitespace-nowrap">
                         {p.is_price_on_request
                           ? <span className="text-xs font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">Fiyat Alınız</span>
@@ -341,8 +355,22 @@ function UrunYonetimiInner() {
                   </label>
                 </div>
                 <Field label="Kategori">
-                  <input value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-                    placeholder="Ör: Kartvizitler" className={inputCls} />
+                  <select
+                    value={form.category}
+                    onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+                    className={inputCls}
+                  >
+                    <option value="">— Kategori Seç —</option>
+                    {dbCategories.map(c => (
+                      <option key={c.id} value={c.name}>{c.name}</option>
+                    ))}
+                  </select>
+                  {form.category.toLowerCase() === "ambalaj" && (
+                    <p className="flex items-center gap-1.5 text-xs text-[#0f75bc] font-semibold mt-2 bg-blue-50 px-3 py-1.5 rounded-xl">
+                      <Globe size={12} />
+                      Bu ürün kaydedildiğinde 81 ilde otomatik SEO sayfası oluşur.
+                    </p>
+                  )}
                 </Field>
               </div>
 
