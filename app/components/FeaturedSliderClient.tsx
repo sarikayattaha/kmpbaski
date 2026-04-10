@@ -29,7 +29,7 @@ function getCardRating(p: Product): { avg: number; count: number } {
     return { avg: Math.round(avg * 10) / 10, count: reviews.length };
   }
   // Statik fallback
-  const seed = p.slug.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  const seed = (p.slug ?? p.name ?? "").split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
   const count = 4 + (seed % 3);
   const picked = seededShuffle(STATIC_RATINGS, seed).slice(0, count);
   const avg = picked.reduce((s, r) => s + r, 0) / count;
