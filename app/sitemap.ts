@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
-import { SITE_URL, CITIES, AMBALAJ_SEO_PRODUCTS } from "@/lib/seo";
+import { SITE_URL, CITIES } from "@/lib/seo";
 import { getSupabase } from "@/lib/supabase";
+import { getAmbalajCategories } from "@/lib/ambalaj-data";
 
 export const revalidate = 86400; // 24 saatte bir yenile
 
@@ -62,10 +63,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  // ── Şehir × Ürün sayfaları (48 adet) ──────────────────────────────────────
+  // ── Şehir × Kategori sayfaları (DB'den dinamik) ───────────────────────────
+  const categories = await getAmbalajCategories();
   const cityPages: MetadataRoute.Sitemap = CITIES.flatMap(city =>
-    AMBALAJ_SEO_PRODUCTS.map(product => ({
-      url: `${SITE_URL}/ambalaj/${city.slug}/${product.slug}`,
+    categories.map(cat => ({
+      url: `${SITE_URL}/ambalaj/${city.slug}/${cat.slug}`,
       lastModified: now,
       changeFrequency: "monthly" as const,
       priority: 0.7,

@@ -1,7 +1,7 @@
 /**
  * POST /api/index-pages
  *
- * Tüm şehir+ürün sayfalarını Google Indexing API'ye bildirir.
+ * Tüm şehir+kategori sayfalarını Google Indexing API'ye bildirir.
  * Deploy sonrası veya içerik güncellemesinde çağrılır.
  *
  * Koruma: CRON_SECRET header ile basit token kontrolü.
@@ -14,7 +14,8 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { CITIES, AMBALAJ_SEO_PRODUCTS, SITE_URL } from "@/lib/seo";
+import { CITIES, SITE_URL } from "@/lib/seo";
+import { getAmbalajCategories } from "@/lib/ambalaj-data";
 import { notifyGoogle } from "@/lib/google-indexing";
 
 export async function POST(req: NextRequest) {
@@ -26,11 +27,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Tüm şehir × ürün URL'lerini oluştur
+  // DB'den kategorileri çek, şehir × kategori URL'lerini oluştur
+  const categories = await getAmbalajCategories();
   const urls: string[] = CITIES.flatMap(city =>
-    AMBALAJ_SEO_PRODUCTS.map(
-      product => `${SITE_URL}/ambalaj/${city.slug}/${product.slug}`
-    )
+    categories.map(cat => `${SITE_URL}/ambalaj/${city.slug}/${cat.slug}`)
   );
 
   // Sitemap ve ambalaj ana sayfasını da ekle
@@ -57,10 +57,9 @@ export async function POST(req: NextRequest) {
 
 // GET: hangi sayfaların bildirileceğini önizle
 export async function GET() {
+  const categories = await getAmbalajCategories();
   const urls = CITIES.flatMap(city =>
-    AMBALAJ_SEO_PRODUCTS.map(
-      product => `${SITE_URL}/ambalaj/${city.slug}/${product.slug}`
-    )
+    categories.map(cat => `${SITE_URL}/ambalaj/${city.slug}/${cat.slug}`)
   );
   return NextResponse.json({ total: urls.length, urls });
 }

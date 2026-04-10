@@ -17,7 +17,7 @@ export function pageTitle(base: string): string {
   return `${base} - ${currentMonthYear()} | ${SITE_NAME}`;
 }
 
-// ── Şehirler ──────────────────────────────────────────────────────────────────
+// ── Şehirler (81 il) ──────────────────────────────────────────────────────────
 
 export type City = {
   slug: string;
@@ -27,73 +27,89 @@ export type City = {
 };
 
 export const CITIES: City[] = [
-  { slug: "istanbul",  name: "İstanbul",  locative: "İstanbul'da"  },
-  { slug: "ankara",    name: "Ankara",    locative: "Ankara'da"    },
-  { slug: "izmir",     name: "İzmir",     locative: "İzmir'de"     },
-  { slug: "bursa",     name: "Bursa",     locative: "Bursa'da"     },
-  { slug: "gaziantep", name: "Gaziantep", locative: "Gaziantep'te" },
-  { slug: "antalya",   name: "Antalya",   locative: "Antalya'da"   },
-];
-
-// ── Ambalaj ürün listesi (6 şehir × 7 ürün = 42 sayfa) ───────────────────────
-
-export type AmbalajSeoProduct = {
-  slug: string;
-  name: string;
-  description: string;
-  /** Hangi kağıt/malzeme kullanılır — FAQ için */
-  materials: string;
-};
-
-export const AMBALAJ_SEO_PRODUCTS: AmbalajSeoProduct[] = [
-  {
-    slug: "baklava-kutusu",
-    name: "Baklava Kutusu",
-    description: "Markalı ve özel baskılı baklava kutusu imalatı. Lüks sunum için özel tasarım, toptan fiyat.",
-    materials: "300-400 g/m² Bristol karton, mat veya parlak selefon kaplama, UV lak",
-  },
-  {
-    slug: "pide-kutusu",
-    name: "Pide Kutusu",
-    description: "Fırın ve restoranlar için dayanıklı, markalı pide kutusu üretimi. Hava delikli ve gıda güvenli.",
-    materials: "Mikro oluklu E-tipi karton, kraft iç kaplama, gıda onaylı baskı mürekkepleri",
-  },
-  {
-    slug: "lahmacun-kutusu",
-    name: "Lahmacun Kutusu",
-    description: "Pratik taşıma ve sunum için özel tasarımlı lahmacun kutusu, tam renk baskı seçeneği.",
-    materials: "Mikro oluklu B-tipi karton, yağa dayanıklı iç kaplama, tek veya çift taraf baskı",
-  },
-  {
-    slug: "pizza-kutusu",
-    name: "Pizza Kutusu",
-    description: "Restoranlar ve fast-food işletmeleri için markalı pizza kutusu baskısı.",
-    materials: "Mikro oluklu C/E-tipi karton, gıda güvenli baskı, havalandırma deliği seçeneği",
-  },
-  {
-    slug: "pasta-kutusu",
-    name: "Pasta Kutusu",
-    description: "Butik pastane ve cafe'ler için özel pasta kutusu tasarım ve baskısı.",
-    materials: "350-400 g/m² Bristol karton, mat selefon, isteğe göre PET pencere seçeneği",
-  },
-  {
-    slug: "karton-canta",
-    name: "Karton Çanta",
-    description: "Kurumsal etkinlik, mağaza ve hediye için özel baskılı karton çanta üretimi.",
-    materials: "250-350 g/m² parlak veya mat kağıt, kordela veya pvc sap, güçlendirilmiş taban",
-  },
-  {
-    slug: "durum-kagidi",
-    name: "Dürüm Kağıdı",
-    description: "Dürüm ve wrap ürünleri için markalı, gıda güvenli baskılı kağıt üretimi.",
-    materials: "40-50 g/m² greaseproof (yağa dayanıklı) kağıt, gıda onaylı soya bazlı mürekkep",
-  },
+  { slug: "adana",           name: "Adana",           locative: "Adana'da"           },
+  { slug: "adiyaman",        name: "Adıyaman",        locative: "Adıyaman'da"        },
+  { slug: "afyonkarahisar",  name: "Afyonkarahisar",  locative: "Afyonkarahisar'da"  },
+  { slug: "agri",            name: "Ağrı",            locative: "Ağrı'da"            },
+  { slug: "amasya",          name: "Amasya",          locative: "Amasya'da"          },
+  { slug: "ankara",          name: "Ankara",          locative: "Ankara'da"          },
+  { slug: "antalya",         name: "Antalya",         locative: "Antalya'da"         },
+  { slug: "artvin",          name: "Artvin",          locative: "Artvin'de"          },
+  { slug: "aydin",           name: "Aydın",           locative: "Aydın'da"           },
+  { slug: "balikesir",       name: "Balıkesir",       locative: "Balıkesir'de"       },
+  { slug: "bilecik",         name: "Bilecik",         locative: "Bilecik'te"         },
+  { slug: "bingol",          name: "Bingöl",          locative: "Bingöl'de"          },
+  { slug: "bitlis",          name: "Bitlis",          locative: "Bitlis'te"          },
+  { slug: "bolu",            name: "Bolu",            locative: "Bolu'da"            },
+  { slug: "burdur",          name: "Burdur",          locative: "Burdur'da"          },
+  { slug: "bursa",           name: "Bursa",           locative: "Bursa'da"           },
+  { slug: "canakkale",       name: "Çanakkale",       locative: "Çanakkale'de"       },
+  { slug: "cankiri",         name: "Çankırı",         locative: "Çankırı'da"         },
+  { slug: "corum",           name: "Çorum",           locative: "Çorum'da"           },
+  { slug: "denizli",         name: "Denizli",         locative: "Denizli'de"         },
+  { slug: "diyarbakir",      name: "Diyarbakır",      locative: "Diyarbakır'da"      },
+  { slug: "edirne",          name: "Edirne",          locative: "Edirne'de"          },
+  { slug: "elazig",          name: "Elazığ",          locative: "Elazığ'da"          },
+  { slug: "erzincan",        name: "Erzincan",        locative: "Erzincan'da"        },
+  { slug: "erzurum",         name: "Erzurum",         locative: "Erzurum'da"         },
+  { slug: "eskisehir",       name: "Eskişehir",       locative: "Eskişehir'de"       },
+  { slug: "gaziantep",       name: "Gaziantep",       locative: "Gaziantep'te"       },
+  { slug: "giresun",         name: "Giresun",         locative: "Giresun'da"         },
+  { slug: "gumushane",       name: "Gümüşhane",       locative: "Gümüşhane'de"       },
+  { slug: "hakkari",         name: "Hakkari",         locative: "Hakkari'de"         },
+  { slug: "hatay",           name: "Hatay",           locative: "Hatay'da"           },
+  { slug: "isparta",         name: "Isparta",         locative: "Isparta'da"         },
+  { slug: "mersin",          name: "Mersin",          locative: "Mersin'de"          },
+  { slug: "istanbul",        name: "İstanbul",        locative: "İstanbul'da"        },
+  { slug: "izmir",           name: "İzmir",           locative: "İzmir'de"           },
+  { slug: "kars",            name: "Kars",            locative: "Kars'ta"            },
+  { slug: "kastamonu",       name: "Kastamonu",       locative: "Kastamonu'da"       },
+  { slug: "kayseri",         name: "Kayseri",         locative: "Kayseri'de"         },
+  { slug: "kirklareli",      name: "Kırklareli",      locative: "Kırklareli'nde"     },
+  { slug: "kirsehir",        name: "Kırşehir",        locative: "Kırşehir'de"        },
+  { slug: "kocaeli",         name: "Kocaeli",         locative: "Kocaeli'nde"        },
+  { slug: "konya",           name: "Konya",           locative: "Konya'da"           },
+  { slug: "kutahya",         name: "Kütahya",         locative: "Kütahya'da"         },
+  { slug: "malatya",         name: "Malatya",         locative: "Malatya'da"         },
+  { slug: "manisa",          name: "Manisa",          locative: "Manisa'da"          },
+  { slug: "kahramanmaras",   name: "Kahramanmaraş",   locative: "Kahramanmaraş'ta"   },
+  { slug: "mardin",          name: "Mardin",          locative: "Mardin'de"          },
+  { slug: "mugla",           name: "Muğla",           locative: "Muğla'da"           },
+  { slug: "mus",             name: "Muş",             locative: "Muş'ta"             },
+  { slug: "nevsehir",        name: "Nevşehir",        locative: "Nevşehir'de"        },
+  { slug: "nigde",           name: "Niğde",           locative: "Niğde'de"           },
+  { slug: "ordu",            name: "Ordu",            locative: "Ordu'da"            },
+  { slug: "rize",            name: "Rize",            locative: "Rize'de"            },
+  { slug: "sakarya",         name: "Sakarya",         locative: "Sakarya'da"         },
+  { slug: "samsun",          name: "Samsun",          locative: "Samsun'da"          },
+  { slug: "siirt",           name: "Siirt",           locative: "Siirt'te"           },
+  { slug: "sinop",           name: "Sinop",           locative: "Sinop'ta"           },
+  { slug: "sivas",           name: "Sivas",           locative: "Sivas'ta"           },
+  { slug: "tekirdag",        name: "Tekirdağ",        locative: "Tekirdağ'da"        },
+  { slug: "tokat",           name: "Tokat",           locative: "Tokat'ta"           },
+  { slug: "trabzon",         name: "Trabzon",         locative: "Trabzon'da"         },
+  { slug: "tunceli",         name: "Tunceli",         locative: "Tunceli'de"         },
+  { slug: "sanliurfa",       name: "Şanlıurfa",       locative: "Şanlıurfa'da"       },
+  { slug: "usak",            name: "Uşak",            locative: "Uşak'ta"            },
+  { slug: "van",             name: "Van",             locative: "Van'da"             },
+  { slug: "yozgat",          name: "Yozgat",          locative: "Yozgat'ta"          },
+  { slug: "zonguldak",       name: "Zonguldak",       locative: "Zonguldak'ta"       },
+  { slug: "aksaray",         name: "Aksaray",         locative: "Aksaray'da"         },
+  { slug: "bayburt",         name: "Bayburt",         locative: "Bayburt'ta"         },
+  { slug: "karaman",         name: "Karaman",         locative: "Karaman'da"         },
+  { slug: "kirikkale",       name: "Kırıkkale",       locative: "Kırıkkale'de"       },
+  { slug: "batman",          name: "Batman",          locative: "Batman'da"          },
+  { slug: "sirnak",          name: "Şırnak",          locative: "Şırnak'ta"          },
+  { slug: "bartin",          name: "Bartın",          locative: "Bartın'da"          },
+  { slug: "ardahan",         name: "Ardahan",         locative: "Ardahan'da"         },
+  { slug: "igdir",           name: "Iğdır",           locative: "Iğdır'da"           },
+  { slug: "yalova",          name: "Yalova",          locative: "Yalova'da"          },
+  { slug: "karabuk",         name: "Karabük",         locative: "Karabük'te"         },
+  { slug: "kilis",           name: "Kilis",           locative: "Kilis'te"           },
+  { slug: "osmaniye",        name: "Osmaniye",        locative: "Osmaniye'de"        },
+  { slug: "duzce",           name: "Düzce",           locative: "Düzce'de"           },
 ];
 
 export function getCityBySlug(slug: string): City | null {
   return CITIES.find(c => c.slug === slug) ?? null;
-}
-
-export function getSeoProductBySlug(slug: string): AmbalajSeoProduct | null {
-  return AMBALAJ_SEO_PRODUCTS.find(p => p.slug === slug) ?? null;
 }

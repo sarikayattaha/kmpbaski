@@ -1,8 +1,10 @@
-import { CITIES, AMBALAJ_SEO_PRODUCTS } from "@/lib/seo";
+import { CITIES } from "@/lib/seo";
+import type { AmbalajCategoryData } from "@/lib/ambalaj-data";
 
 type Props = {
   currentCitySlug: string;
   currentProductSlug: string;
+  allCategories: AmbalajCategoryData[];
 };
 
 /**
@@ -10,16 +12,18 @@ type Props = {
  * – Aynı şehir → diğer ürünler
  * – Aynı ürün → diğer şehirler
  *
- * Google botunun tüm 42 sayfayı birbirine bağlı görmesini sağlar.
+ * Google botunun tüm şehir × kategori sayfalarını birbirine bağlı görmesini sağlar.
  */
-export default function InternalLinkCloud({ currentCitySlug, currentProductSlug }: Props) {
-  const city    = CITIES.find(c => c.slug === currentCitySlug);
-  const product = AMBALAJ_SEO_PRODUCTS.find(p => p.slug === currentProductSlug);
+export default function InternalLinkCloud({
+  currentCitySlug,
+  currentProductSlug,
+  allCategories,
+}: Props) {
+  const city = CITIES.find(c => c.slug === currentCitySlug);
+  if (!city) return null;
 
-  if (!city || !product) return null;
-
-  const otherProductsInCity = AMBALAJ_SEO_PRODUCTS.filter(p => p.slug !== currentProductSlug);
-  const otherCitiesForProduct = CITIES.filter(c => c.slug !== currentCitySlug);
+  const otherCategories = allCategories.filter(p => p.slug !== currentProductSlug);
+  const otherCities     = CITIES.filter(c => c.slug !== currentCitySlug);
 
   return (
     <nav
@@ -35,7 +39,7 @@ export default function InternalLinkCloud({ currentCitySlug, currentProductSlug 
               {city.name} İçin Diğer Ambalaj Ürünlerimiz
             </h3>
             <div className="flex flex-wrap gap-x-4 gap-y-2">
-              {otherProductsInCity.map(p => (
+              {otherCategories.map(p => (
                 <a
                   key={p.slug}
                   href={`/ambalaj/${city.slug}/${p.slug}`}
@@ -50,16 +54,16 @@ export default function InternalLinkCloud({ currentCitySlug, currentProductSlug 
           {/* Aynı ürün, diğer şehirler */}
           <div>
             <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">
-              {product.name} — Diğer Şehirlerimiz
+              Diğer Şehirlerimiz
             </h3>
             <div className="flex flex-wrap gap-x-4 gap-y-2">
-              {otherCitiesForProduct.map(c => (
+              {otherCities.map(c => (
                 <a
                   key={c.slug}
-                  href={`/ambalaj/${c.slug}/${product.slug}`}
+                  href={`/ambalaj/${c.slug}/${currentProductSlug}`}
                   className="text-xs text-[#0f75bc] hover:text-[#07446c] hover:underline transition-colors"
                 >
-                  {c.name} {product.name}
+                  {c.name}
                 </a>
               ))}
             </div>

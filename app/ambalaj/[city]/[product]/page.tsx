@@ -1,5 +1,4 @@
 export const dynamic = "force-dynamic";
-export const dynamicParams = false;
 
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -12,39 +11,28 @@ import InternalLinkCloud from "@/app/components/InternalLinkCloud";
 import { BreadcrumbSchema, ProductSchema } from "@/app/components/SEO/Schema";
 import {
   CITIES,
-  AMBALAJ_SEO_PRODUCTS,
   SITE_URL,
   SITE_NAME,
   currentMonthYear,
   getCityBySlug,
-  getSeoProductBySlug,
 } from "@/lib/seo";
+import { getAmbalajCategories } from "@/lib/ambalaj-data";
 
 type Params = { city: string; product: string };
 type Props  = { params: Promise<Params> };
-
-// ── Statik path listesi (6 şehir × 7 ürün = 42 sayfa) ───────────────────────
-
-export function generateStaticParams(): Params[] {
-  return CITIES.flatMap(city =>
-    AMBALAJ_SEO_PRODUCTS.map(product => ({
-      city:    city.slug,
-      product: product.slug,
-    }))
-  );
-}
 
 // ── Metadata ──────────────────────────────────────────────────────────────────
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { city: citySlug, product: productSlug } = await params;
-  const city    = getCityBySlug(citySlug);
-  const product = getSeoProductBySlug(productSlug);
-  if (!city || !product) return {};
+  const city       = getCityBySlug(citySlug);
+  const categories = await getAmbalajCategories();
+  const category   = categories.find(c => c.slug === productSlug);
+  if (!city || !category) return {};
 
   const monthYear   = currentMonthYear();
-  const title       = `${city.name} ${product.name} Fiyatları - ${monthYear} | ${SITE_NAME}`;
-  const description = `${city.locative} ${product.name.toLowerCase()} imalatı, özel baskı ve toptan satış. Markanıza özel tasarım, hızlı üretim, rekabetçi fiyat. KMP Baskı'dan teklif alın.`;
+  const title       = `${city.name} ${category.name} Fiyatları - ${monthYear} | ${SITE_NAME}`;
+  const description = `${city.locative} ${category.name.toLowerCase()} imalatı, özel baskı ve toptan satış. Markanıza özel tasarım, hızlı üretim, rekabetçi fiyat. KMP Baskı'dan teklif alın.`;
   const url         = `${SITE_URL}/ambalaj/${citySlug}/${productSlug}`;
 
   return {
@@ -66,20 +54,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function CityProductPage({ params }: Props) {
   const { city: citySlug, product: productSlug } = await params;
-  const city    = getCityBySlug(citySlug);
-  const product = getSeoProductBySlug(productSlug);
-  if (!city || !product) notFound();
+
+  const [city, categories] = await Promise.all([
+    Promise.resolve(getCityBySlug(citySlug)),
+    getAmbalajCategories(),
+  ]);
+
+  const category = categories.find(c => c.slug === productSlug);
+  if (!city || !category) notFound();
 
   const pageUrl   = `${SITE_URL}/ambalaj/${citySlug}/${productSlug}`;
   const monthYear = currentMonthYear();
   const waText    = encodeURIComponent(
-    `Merhaba, ${city.name} için ${product.name} hakkında fiyat teklifi almak istiyorum.`
+    `Merhaba, ${city.name} için ${category.name} hakkında fiyat teklifi almak istiyorum.`
   );
 
   const features = [
     {
       title: "Özel Tasarım",
-      desc: `Markanıza özel ${product.name.toLowerCase()} tasarımı, minimum adet kısıtı olmadan.`,
+      desc: `Markanıza özel ${category.name.toLowerCase()} tasarımı, minimum adet kısıtı olmadan.`,
     },
     {
       title: "Hızlı Üretim",
@@ -99,12 +92,12 @@ export default async function CityProductPage({ params }: Props) {
           { name: "Ana Sayfa",         url: SITE_URL },
           { name: "Ambalaj Çözümleri", url: `${SITE_URL}/ambalaj` },
           { name: city.name,           url: `${SITE_URL}/ambalaj/${citySlug}` },
-          { name: product.name,        url: pageUrl },
+          { name: category.name,       url: pageUrl },
         ]}
       />
       <ProductSchema
-        name={`${city.name} ${product.name}`}
-        description={product.description}
+        name={`${city.name} ${category.name}`}
+        description={`${city.locative} ${category.name.toLowerCase()} imalatı ve toptan satış.`}
         url={pageUrl}
         category="Ambalaj"
       />
@@ -120,7 +113,7 @@ export default async function CityProductPage({ params }: Props) {
           <span>/</span>
           <span className="text-[#07446c] font-semibold">{city.name}</span>
           <span>/</span>
-          <span className="text-[#07446c] font-semibold">{product.name}</span>
+          <span className="text-[#07446c] font-semibold">{category.name}</span>
         </div>
       </div>
 
@@ -133,13 +126,13 @@ export default async function CityProductPage({ params }: Props) {
               {city.name} · Ambalaj Çözümleri · {monthYear}
             </p>
             <h1 className="text-3xl md:text-5xl font-black leading-tight mb-5">
-              {city.name} {product.name}
+              {city.name} {category.name}
               <br className="hidden md:block" />
               <span className="text-[#93c5fd]"> Fiyatları ve İmalatı</span>
             </h1>
             <p className="text-blue-100 text-base md:text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
               {city.locative} faaliyet gösteren işletmeler için özel tasarımlı{" "}
-              {product.name.toLowerCase()} üretimi. Markanıza özel baskı, hızlı teslimat,
+              {category.name.toLowerCase()} üretimi. Markanıza özel baskı, hızlı teslimat,
               rekabetçi fiyat.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -185,15 +178,12 @@ export default async function CityProductPage({ params }: Props) {
           <div className="max-w-3xl mx-auto px-6 py-12 text-center">
             <Package size={40} className="text-[#0f75bc]/30 mx-auto mb-4" />
             <h2 className="text-xl font-black text-[#07446c] mb-3">
-              {city.name} {product.name} — Malzeme ve Özellikler
+              {city.name} {category.name} — Özellikler
             </h2>
             <p className="text-gray-500 leading-relaxed mb-3">
-              {product.description}
-            </p>
-            <p className="text-sm text-gray-400 leading-relaxed">
-              <span className="font-semibold text-gray-500">Kullanılan Malzemeler:</span>{" "}
-              {product.materials}. {city.locative} tüm sektörler için özelleştirilebilir
-              ebat, baskı ve malzeme seçenekleri sunuyoruz.
+              {city.locative} tüm sektörler için özelleştirilebilir ebat, baskı ve malzeme
+              seçenekleriyle {category.name.toLowerCase()} üretimi yapıyoruz. Markanıza özel
+              tasarım ve hızlı teslimat için bizimle iletişime geçin.
             </p>
           </div>
         </section>
@@ -201,10 +191,10 @@ export default async function CityProductPage({ params }: Props) {
         {/* CTA */}
         <section className="max-w-4xl mx-auto px-6 py-14 text-center">
           <h2 className="text-2xl font-black text-[#07446c] mb-3">
-            {city.name} {product.name} için Fiyat Teklifi Al
+            {city.name} {category.name} için Fiyat Teklifi Al
           </h2>
           <p className="text-gray-400 text-sm mb-8 max-w-md mx-auto">
-            WhatsApp'tan görseli, ölçüyü ve adedi paylaşın — en kısa sürede size özel
+            WhatsApp&apos;tan görseli, ölçüyü ve adedi paylaşın — en kısa sürede size özel
             teklif gönderelim.
           </p>
           <a
@@ -218,7 +208,7 @@ export default async function CityProductPage({ params }: Props) {
         </section>
 
         {/* Sıkça Sorulan Sorular + FAQ Schema */}
-        <DynamicFAQ product={product} city={city} />
+        <DynamicFAQ productName={category.name} city={city} />
 
       </main>
 
@@ -226,6 +216,7 @@ export default async function CityProductPage({ params }: Props) {
       <InternalLinkCloud
         currentCitySlug={citySlug}
         currentProductSlug={productSlug}
+        allCategories={categories}
       />
 
       {/* SEO Sözlük */}

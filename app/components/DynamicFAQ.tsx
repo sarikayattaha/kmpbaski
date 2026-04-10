@@ -1,21 +1,21 @@
-import type { AmbalajSeoProduct, City } from "@/lib/seo";
+import type { City } from "@/lib/seo";
 
 type Props = {
-  product: AmbalajSeoProduct;
+  productName: string;
   city: City;
 };
 
 type FAQ = { question: string; answer: string };
 
-function buildFAQs(product: AmbalajSeoProduct, city: City): FAQ[] {
+function buildFAQs(productName: string, city: City): FAQ[] {
   return [
     {
-      question: `${city.name} içinde ${product.name} teslimat süresi nedir?`,
-      answer: `${city.locative} ${product.name.toLowerCase()} siparişleri, tasarım onayından sonra genellikle 3–7 iş günü içinde teslim edilmektedir. Adet ve baskı karmaşıklığına göre bu süre değişebilir; acil teslimat için WhatsApp hattımızdan bilgi alabilirsiniz.`,
+      question: `${city.name} içinde ${productName} teslimat süresi nedir?`,
+      answer: `${city.locative} ${productName.toLowerCase()} siparişleri, tasarım onayından sonra genellikle 3–7 iş günü içinde teslim edilmektedir. Adet ve baskı karmaşıklığına göre bu süre değişebilir; acil teslimat için WhatsApp hattımızdan bilgi alabilirsiniz.`,
     },
     {
-      question: `${product.name} imalatında hangi kağıt türleri kullanılır?`,
-      answer: `${product.name} üretiminde kullanılan başlıca malzemeler: ${product.materials}. Ürün gereksinimlerine ve sipariş miktarına göre en uygun malzeme kombinasyonu belirlenmektedir.`,
+      question: `${productName} için minimum sipariş adedi nedir?`,
+      answer: `${productName} siparişlerinde minimum adet kısıtı yoktur; küçük adetli prototip siparişlerden büyük toptan üretimlere kadar her miktarda hizmet veriyoruz. Yüksek adetlerde birim fiyatı önemli ölçüde düşmektedir; detaylı fiyat almak için WhatsApp hattımıza görseli ve adedi iletmeniz yeterli.`,
     },
     {
       question: `KMP Baskı ${city.name} bölgesine özel indirim yapıyor mu?`,
@@ -24,8 +24,8 @@ function buildFAQs(product: AmbalajSeoProduct, city: City): FAQ[] {
   ];
 }
 
-export default function DynamicFAQ({ product, city }: Props) {
-  const faqs = buildFAQs(product, city);
+export default function DynamicFAQ({ productName, city }: Props) {
+  const faqs = buildFAQs(productName, city);
 
   const schemaData = {
     "@context": "https://schema.org",
@@ -56,7 +56,7 @@ export default function DynamicFAQ({ product, city }: Props) {
           Sıkça Sorulan Sorular
         </h2>
         <p className="text-sm text-gray-400 mb-6">
-          {city.name} {product.name} hakkında merak edilenler
+          {city.name} {productName} hakkında merak edilenler
         </p>
 
         <div className="space-y-3">
