@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import { pageTitle, SITE_URL, SITE_NAME } from "@/lib/seo";
 import { BreadcrumbSchema } from "@/app/components/SEO/Schema";
+import GlossarySection from "@/app/components/GlossarySection";
 import { getSupabase, type AmbalajCategory, type AmbalajProduct } from "@/lib/supabase";
 
 export function generateMetadata(): Metadata {
@@ -115,6 +116,7 @@ export default async function AmbalajPage() {
 
       </main>
 
+      <GlossarySection topic="ambalaj" />
       <Footer />
     </div>
   );

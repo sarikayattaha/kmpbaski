@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { MessageCircle, CheckCircle, Package, Phone } from "lucide-react";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
+import GlossarySection from "@/app/components/GlossarySection";
 import { BreadcrumbSchema, ProductSchema } from "@/app/components/SEO/Schema";
 import {
   CITIES,
@@ -212,6 +213,7 @@ export default async function CityProductPage({ params }: Props) {
 
       </main>
 
+      <GlossarySection topic="ambalaj" />
       <Footer />
     </div>
   );
