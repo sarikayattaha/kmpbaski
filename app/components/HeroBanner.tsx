@@ -88,6 +88,9 @@ export default function HeroBanner() {
                 alt={b.title}
                 width={420}
                 height={320}
+                sizes="(max-width: 1024px) 90vw, 420px"
+                fetchPriority={current === 0 ? "high" : "low"}
+                loading={current === 0 ? "eager" : "lazy"}
                 className="object-contain max-h-[300px] w-auto rounded-2xl"
               />
             </div>

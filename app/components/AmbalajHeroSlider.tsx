@@ -104,8 +104,10 @@ export default function AmbalajHeroSlider() {
                 alt={b.title}
                 width={420}
                 height={320}
+                sizes="(max-width: 1024px) 90vw, 420px"
+                fetchPriority={current === 0 && imgIndex === 0 ? "high" : "low"}
+                loading={current === 0 && imgIndex === 0 ? "eager" : "lazy"}
                 className="object-contain max-h-[300px] w-auto rounded-2xl transition-opacity duration-700"
-                priority={current === 0 && imgIndex === 0}
               />
               {/* Görsel nokta indikatörleri */}
               {images.length > 1 && (

@@ -21,5 +21,16 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', Arial, Helvetica, sans-serif;
+  /* Geist font next/font/google üzerinden yükleniyor — CSS değişkeniyle bağla */
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+/* ── WhatsApp buton animasyonu ────────────────────────────────────────────── */
+@keyframes wa-pulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.25); }
+}
+
+.wa-badge {
+  animation: wa-pulse 1.8s ease-in-out infinite;
 }

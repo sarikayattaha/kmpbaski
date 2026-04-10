@@ -184,7 +184,8 @@ export default function Navbar() {
           {/* Logo */}
           <a href="/" className="flex items-center gap-2 flex-shrink-0">
             <Image src="/kmpbaskilogo.png" alt="KMP Baskı" width={36} height={36}
-              className="object-contain h-8 md:h-10 w-auto" priority />
+              className="object-contain h-8 md:h-10 w-auto"
+              fetchPriority="high" loading="eager" />
             <span className="text-lg md:text-xl font-black tracking-tight leading-none">
               <span className="text-[#07446c]">KMP</span>
               <span className="text-[#25aae1]"> BASKI</span>
