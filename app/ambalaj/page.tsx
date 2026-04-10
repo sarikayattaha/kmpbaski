@@ -1,6 +1,26 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
+import { pageTitle, SITE_URL, SITE_NAME } from "@/lib/seo";
+import { BreadcrumbSchema } from "@/app/components/SEO/Schema";
 import { getSupabase, type AmbalajCategory, type AmbalajProduct } from "@/lib/supabase";
+
+export function generateMetadata(): Metadata {
+  const title = pageTitle("Ambalaj Çözümleri ve Özel Kutu Baskısı");
+  return {
+    title,
+    description:
+      "Baklava kutusu, pasta kutusu, pizza kutusu ve daha fazlası. Markanıza özel ambalaj tasarım ve baskısı. Toptan fiyat, hızlı üretim.",
+    openGraph: {
+      title,
+      url: `${SITE_URL}/ambalaj`,
+      siteName: SITE_NAME,
+      locale: "tr_TR",
+      type: "website",
+    },
+    alternates: { canonical: `${SITE_URL}/ambalaj` },
+  };
+}
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import Image from "next/image";
@@ -24,6 +44,13 @@ export default async function AmbalajPage() {
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] flex flex-col">
+      <BreadcrumbSchema
+        items={[
+          { name: "Ana Sayfa",         url: SITE_URL },
+          { name: "Ambalaj Çözümleri", url: `${SITE_URL}/ambalaj` },
+        ]}
+      />
+
       <Navbar />
 
       {/* Breadcrumb */}

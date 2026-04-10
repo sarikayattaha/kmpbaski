@@ -1,11 +1,42 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
 import { getSupabase, type AmbalajCategory, type AmbalajProduct } from "@/lib/supabase";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import Image from "next/image";
 import { Package, ChevronRight, MessageCircle } from "lucide-react";
 import { notFound } from "next/navigation";
+import { pageTitle, SITE_URL, SITE_NAME } from "@/lib/seo";
+import { BreadcrumbSchema, ProductSchema } from "@/app/components/SEO/Schema";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = getSupabase();
+  if (!supabase) return {};
+  const { data } = await supabase
+    .from("ambalaj_categories")
+    .select("name")
+    .eq("slug", slug)
+    .single();
+  if (!data) return {};
+  const title = pageTitle(`${data.name} - Özel Ambalaj ve Kutu Baskısı`);
+  return {
+    title,
+    description: `${data.name} için özel tasarım ve baskı çözümleri. Markanıza özel üretim, toptan fiyat. KMP Baskı'dan teklif alın.`,
+    openGraph: {
+      title,
+      url: `${SITE_URL}/ambalaj/${slug}`,
+      siteName: SITE_NAME,
+      locale: "tr_TR",
+    },
+    alternates: { canonical: `${SITE_URL}/ambalaj/${slug}` },
+  };
+}
 
 export default async function AmbalajCategoryPage({
   params,
@@ -36,6 +67,21 @@ export default async function AmbalajCategoryPage({
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] flex flex-col">
+      <BreadcrumbSchema
+        items={[
+          { name: "Ana Sayfa",           url: SITE_URL },
+          { name: "Ambalaj Çözümleri",   url: `${SITE_URL}/ambalaj` },
+          { name: cat.name,              url: `${SITE_URL}/ambalaj/${cat.slug}` },
+        ]}
+      />
+      <ProductSchema
+        name={cat.name}
+        description={`${cat.name} için özel tasarım ve baskı çözümleri. Markanıza özel üretim, toptan fiyat.`}
+        url={`${SITE_URL}/ambalaj/${cat.slug}`}
+        image={cat.cover_image ?? undefined}
+        category="Ambalaj"
+      />
+
       <Navbar />
 
       {/* Breadcrumb */}
