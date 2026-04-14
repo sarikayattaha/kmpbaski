@@ -126,7 +126,7 @@ function UrunYonetimiInner() {
   const uploadOne = async (file: File): Promise<string | null> => {
     const ext  = file.name.split(".").pop();
     const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const { error } = await supabase.storage.from("product-images").upload(path, file, { upsert: true });
+    const { error } = await supabase.storage.from("product-images").upload(path, file);
     if (error) { showToast("Görsel yüklenemedi: " + error.message, "error"); return null; }
     return supabase.storage.from("product-images").getPublicUrl(path).data.publicUrl;
   };

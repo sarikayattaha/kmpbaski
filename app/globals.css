@@ -34,3 +34,12 @@ body {
 .wa-badge {
   animation: wa-pulse 1.8s ease-in-out infinite;
 }
+
+/* ── Scrollbar gizle (tüm tarayıcılar) ───────────────────────────────────── */
+.scrollbar-none {
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE / Edge */
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;               /* Chrome / Safari */
+}

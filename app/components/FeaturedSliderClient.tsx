@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
@@ -134,7 +134,8 @@ function ArrowBtn({
 
 // ── Ana bileşen ───────────────────────────────────────────────────────────────
 export default function FeaturedSliderClient({ products }: { products: Product[] }) {
-  const trackRef = useRef<HTMLDivElement>(null);
+  const trackRef  = useRef<HTMLDivElement>(null);
+  const hoveredRef = useRef(false);
 
   const scroll = (dir: "left" | "right") => {
     if (!trackRef.current) return;
@@ -146,8 +147,26 @@ export default function FeaturedSliderClient({ products }: { products: Product[]
     });
   };
 
+  /* ── Autoplay: her 5 saniyede sağa kay, sona gelince başa dön ── */
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (hoveredRef.current || !trackRef.current) return;
+      const { scrollLeft, clientWidth, scrollWidth } = trackRef.current;
+      if (scrollLeft + clientWidth >= scrollWidth - 10) {
+        trackRef.current.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        scroll("right");
+      }
+    }, 5000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
-    <section className="bg-white py-12 border-t border-gray-50">
+    <section
+      className="bg-white py-12 border-t border-gray-50"
+      onMouseEnter={() => { hoveredRef.current = true; }}
+      onMouseLeave={() => { hoveredRef.current = false; }}
+    >
       <div className="max-w-7xl mx-auto px-4">
 
         {/* Başlık */}
