@@ -31,25 +31,27 @@ export async function getAmbalajProductImages(
 }
 
 /**
- * 81 il SEO sayfası oluşturmak için kaynak ürün listesini döner.
+ * 81 il SEO sayfası oluşturmak için kategori listesini döner.
  *
- * Kaynak: ana `products` tablosu, category = "Ambalaj" filtresi.
- *
- * Admin → Ürün Yönetimi'nden kategori "Ambalaj" seçilerek eklenen her ürün
- * otomatik olarak 81 şehirde SEO sayfası kazanır; başka bir işlem gerekmez.
+ * Kaynak: `ambalaj_categories` tablosu (Admin → Ambalaj Yönetimi).
+ * Her kategori otomatik olarak 81 şehirde SEO sayfası (/ambalaj/{şehir}/{slug}) kazanır.
  */
 export async function getAmbalajCategories(): Promise<AmbalajCategoryData[]> {
   const supabase = getSupabase();
-  if (!supabase) return [];
+  if (!supabase) {
+    console.warn("[ambalaj-data] Supabase bağlantısı kurulamadı (env eksik?).");
+    return [];
+  }
   const { data, error } = await supabase
-    .from("products")
+    .from("ambalaj_categories")
     .select("id, name, slug")
-    .ilike("category", "ambalaj")
     .not("slug", "is", null)
     .order("created_at", { ascending: true });
   if (error) {
-    console.error("[ambalaj-data] Supabase error:", error.message);
+    console.error("[ambalaj-data] ambalaj_categories sorgu hatası:", error.message);
     return [];
   }
-  return (data ?? []).filter(p => p.slug);
+  const rows = (data ?? []).filter(p => p.slug);
+  console.log(`[ambalaj-data] ${rows.length} kategori yüklendi.`);
+  return rows;
 }
