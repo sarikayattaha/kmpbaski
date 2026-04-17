@@ -92,7 +92,7 @@ export default function LinkSearch({ products }: { products: LinkProduct[] }) {
             return (
               <a
                 key={product.id}
-                href={`/ambalaj/istanbul/${product.slug}`}
+                href={`/tum-urunler`}
                 className={`${color.bg} ${color.text} rounded-2xl p-4 flex flex-col justify-between min-h-[110px] shadow-md active:scale-95 transition-transform`}
               >
                 <span className={`${color.icon} mb-2`}>

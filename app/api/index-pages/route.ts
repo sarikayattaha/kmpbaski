@@ -5,51 +5,35 @@
  * POST /api/index-pages?limit=200&offset=0
  *   → Google Indexing API'ye gerçekten bildirim gönderir.
  *   → Koruma: Authorization: Bearer <CRON_SECRET>
- *
- * Sıralama:
- *   1. Statik sayfalar (anasayfa, /ambalaj)
- *   2. Yüksek trafikli iller önce, ardından geri kalan 71 il
- *   3. Her il içinde kategoriler DB'deki creation sırasıyla (en yeni önce)
- *
- * Kota: Google Indexing API ücretsiz kotası günlük 200 URL.
- * limit=200 ile her gün bir batch gönderin; ertesi gün offset=200 ile devam edin.
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { CITIES, SITE_URL }          from "@/lib/seo";
-import { getAmbalajCategories }       from "@/lib/ambalaj-data";
-import { notifyGoogle }               from "@/lib/google-indexing";
-
-// Nüfus/trafik önceliğine göre sıralanmış iller
-const PRIORITY_SLUGS = [
-  "istanbul", "ankara", "izmir", "bursa", "antalya",
-  "gaziantep", "konya", "adana", "mersin", "kocaeli",
-];
-
-function buildOrderedUrls(categories: { slug: string }[]): string[] {
-  const priorityCities = PRIORITY_SLUGS
-    .map(s => CITIES.find(c => c.slug === s))
-    .filter(Boolean) as typeof CITIES;
-
-  const otherCities = CITIES.filter(c => !PRIORITY_SLUGS.includes(c.slug));
-  const orderedCities = [...priorityCities, ...otherCities];
-
-  // En yeni kategoriler önce (DB'den created_at desc ile geliyor)
-  const urls: string[] = [];
-  for (const city of orderedCities) {
-    for (const cat of categories) {
-      urls.push(`${SITE_URL}/ambalaj/${city.slug}/${cat.slug}`);
-    }
-  }
-
-  // Statik sayfaları en başa ekle
-  urls.unshift(`${SITE_URL}/ambalaj`, SITE_URL);
-  return urls;
-}
+import { SITE_URL }          from "@/lib/seo";
+import { getSupabase }        from "@/lib/supabase";
+import { notifyGoogle }       from "@/lib/google-indexing";
 
 function parseIntParam(value: string | null, fallback: number): number {
   const n = parseInt(value ?? "", 10);
   return isNaN(n) || n < 0 ? fallback : n;
+}
+
+async function buildAllUrls(): Promise<string[]> {
+  const urls: string[] = [SITE_URL, `${SITE_URL}/tum-urunler`];
+
+  const supabase = getSupabase();
+  if (supabase) {
+    const { data } = await supabase
+      .from("products")
+      .select("slug")
+      .not("slug", "is", null)
+      .order("created_at", { ascending: false });
+
+    for (const prod of data ?? []) {
+      if (prod.slug) urls.push(`${SITE_URL}/urun/${prod.slug}`);
+    }
+  }
+
+  return urls;
 }
 
 // GET: önizleme — Google'a hiçbir şey göndermez
@@ -58,20 +42,16 @@ export async function GET(req: NextRequest) {
   const limit  = parseIntParam(searchParams.get("limit"),  200);
   const offset = parseIntParam(searchParams.get("offset"), 0);
 
-  const categories = await getAmbalajCategories();
-  // En yeni önce: getAmbalajCategories created_at asc döner, biz tersine çeviririz
-  categories.reverse();
-
-  const allUrls = buildOrderedUrls(categories);
+  const allUrls = await buildAllUrls();
   const batch   = allUrls.slice(offset, offset + limit);
 
   return NextResponse.json({
-    total:      allUrls.length,
+    total:     allUrls.length,
     offset,
     limit,
-    batchSize:  batch.length,
-    hasMore:    offset + limit < allUrls.length,
-    urls:       batch,
+    batchSize: batch.length,
+    hasMore:   offset + limit < allUrls.length,
+    urls:      batch,
   });
 }
 
@@ -88,10 +68,7 @@ export async function POST(req: NextRequest) {
   const limit  = parseIntParam(searchParams.get("limit"),  200);
   const offset = parseIntParam(searchParams.get("offset"), 0);
 
-  const categories = await getAmbalajCategories();
-  categories.reverse(); // en yeni önce
-
-  const allUrls = buildOrderedUrls(categories);
+  const allUrls = await buildAllUrls();
   const batch   = allUrls.slice(offset, offset + limit);
 
   const results: { url: string; success: boolean; message: string }[] = [];
@@ -106,7 +83,6 @@ export async function POST(req: NextRequest) {
       console.error(`Google Indexing: ${url} FAILED — ${result.message}`);
     }
 
-    // Rate-limit önlemi (Google: maks 200 istek/sn)
     await new Promise(r => setTimeout(r, 250));
   }
 
@@ -114,13 +90,13 @@ export async function POST(req: NextRequest) {
   const failedCount  = batch.length - successCount;
 
   return NextResponse.json({
-    total:      allUrls.length,
+    total:     allUrls.length,
     offset,
     limit,
-    batchSize:  batch.length,
-    hasMore:    offset + limit < allUrls.length,
-    success:    successCount,
-    failed:     failedCount,
+    batchSize: batch.length,
+    hasMore:   offset + limit < allUrls.length,
+    success:   successCount,
+    failed:    failedCount,
     results,
   });
 }

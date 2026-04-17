@@ -279,10 +279,6 @@ export default function Navbar() {
               </a>
             ))}
           </nav>
-          <a href="/ambalaj"
-            className="ml-2 whitespace-nowrap flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg font-bold text-white bg-[#07446c] hover:bg-[#0f75bc] transition-colors">
-            Ambalaj Çözümleri
-          </a>
         </div>
 
         {megaOpen && (
@@ -378,11 +374,6 @@ export default function Navbar() {
 
           {/* Hızlı linkler */}
           <div className="px-4 pt-2 pb-1 space-y-1.5">
-            <a href="/ambalaj" onClick={() => setMobileOpen(false)}
-              className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-bold text-white bg-[#07446c]">
-              <span className="flex items-center gap-2"><span className="text-base">📦</span> Ambalaj Çözümleri</span>
-              <ChevronRight size={15} />
-            </a>
             <a href="/tum-urunler" onClick={() => setMobileOpen(false)}
               className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-bold text-[#0f75bc] bg-[#e0f2fe]">
               <span className="flex items-center gap-2"><AlignJustify size={15} /> Tüm Ürünler</span>

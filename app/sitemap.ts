@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
-import { SITE_URL, CITIES } from "@/lib/seo";
+import { SITE_URL } from "@/lib/seo";
 import { getSupabase } from "@/lib/supabase";
-import { getAmbalajCategories } from "@/lib/ambalaj-data";
 
 export const revalidate = 86400; // 24 saatte bir yenile
 
@@ -17,12 +16,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1.0,
     },
     {
-      url: `${SITE_URL}/ambalaj`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
       url: `${SITE_URL}/tum-urunler`,
       lastModified: now,
       changeFrequency: "weekly",
@@ -30,32 +23,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // ── Supabase'den ambalaj kategorileri ──────────────────────────────────────
+  // ── Ürün sayfaları ─────────────────────────────────────────────────────────
   const supabase = getSupabase();
-  const categoryPages: MetadataRoute.Sitemap = [];
-  const productPages: MetadataRoute.Sitemap  = [];
+  const productPages: MetadataRoute.Sitemap = [];
 
   if (supabase) {
-    const [catRes, prodRes] = await Promise.all([
-      supabase.from("ambalaj_categories").select("id, slug, updated_at"),
-      supabase.from("ambalaj_products").select("category_id, created_at"),
-    ]);
+    const { data } = await supabase
+      .from("products")
+      .select("slug, updated_at")
+      .not("slug", "is", null);
 
-    for (const cat of catRes.data ?? []) {
-      categoryPages.push({
-        url: `${SITE_URL}/ambalaj/${cat.slug}`,
-        lastModified: cat.updated_at ? new Date(cat.updated_at) : now,
-        changeFrequency: "monthly",
-        priority: 0.8,
-      });
-    }
-
-    for (const prod of prodRes.data ?? []) {
-      const cat = (catRes.data ?? []).find(c => c.id === prod.category_id);
-      if (cat) {
+    for (const prod of data ?? []) {
+      if (prod.slug) {
         productPages.push({
-          url: `${SITE_URL}/ambalaj/${cat.slug}`,
-          lastModified: prod.created_at ? new Date(prod.created_at) : now,
+          url: `${SITE_URL}/urun/${prod.slug}`,
+          lastModified: prod.updated_at ? new Date(prod.updated_at) : now,
           changeFrequency: "monthly",
           priority: 0.7,
         });
@@ -63,16 +45,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  // ── Şehir × Kategori sayfaları (DB'den dinamik) ───────────────────────────
-  const categories = await getAmbalajCategories();
-  const cityPages: MetadataRoute.Sitemap = CITIES.flatMap(city =>
-    categories.map(cat => ({
-      url: `${SITE_URL}/ambalaj/${city.slug}/${cat.slug}`,
-      lastModified: now,
-      changeFrequency: "monthly" as const,
-      priority: 0.7,
-    }))
-  );
-
-  return [...staticPages, ...categoryPages, ...cityPages];
+  return [...staticPages, ...productPages];
 }
