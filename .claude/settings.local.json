@@ -17,7 +17,8 @@
       "Bash(grep -E \"^jose$|^google|^jsonwebtoken|^googleapis\")",
       "Bash(vercel logs:*)",
       "Bash(npx vercel:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(xargs grep *)"
     ]
   }
 }

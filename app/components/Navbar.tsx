@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
-  Search, User, Phone, Mail, Clock,
+  Search, Phone, Mail, Clock,
   Menu, X, ChevronDown, AlignJustify, Loader2, ChevronRight,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -31,16 +31,6 @@ export default function Navbar() {
   const searchDebounce = useRef<ReturnType<typeof setTimeout>>(undefined);
   const searchRef      = useRef<HTMLDivElement>(null);
   const mobileSearchRef = useRef<HTMLDivElement>(null);
-
-  const [authUser, setAuthUser] = useState<string | null>(null);
-
-  /* ── Auth ── */
-  useEffect(() => {
-    const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
-      setAuthUser(session?.user?.id ?? "");
-    });
-    return () => listener.subscription.unsubscribe();
-  }, []);
 
   /* ── Ürün menüsü (mega menu) ── */
   useEffect(() => {
@@ -115,8 +105,6 @@ export default function Navbar() {
   };
 
   const activeCat  = menuData[activeCategory];
-  const isLoggedIn = authUser !== null && authUser !== "";
-  const profileHref = isLoggedIn ? "/profile" : "/login";
 
   /* Arama sonuçları kutusu (ortak) */
   const SearchDropdown = () => (
@@ -220,15 +208,6 @@ export default function Navbar() {
               onClick={() => { setMobileSearchOpen(!mobileSearchOpen); setMobileOpen(false); }}>
               <Search size={20} />
             </button>
-
-            {/* Profil */}
-            <a href={profileHref}
-              className={`p-2.5 rounded-xl transition-colors ${
-                isLoggedIn ? "bg-[#e0f2fe] text-[#0f75bc] hover:bg-[#bae6fd]" : "text-gray-400 hover:bg-gray-100"
-              }`}
-              title={isLoggedIn ? "Profilim" : "Giriş Yap"}>
-              <User size={20} />
-            </a>
 
             {/* Mobil: hamburger */}
             <button className="md:hidden p-2.5 rounded-xl text-[#07446c] hover:bg-blue-50 transition-colors"
@@ -362,15 +341,6 @@ export default function Navbar() {
       {/* ── MOBİL MENÜ ── */}
       {mobileOpen && (
         <div className="md:hidden border-t bg-white overflow-y-auto" style={{ maxHeight: "calc(100dvh - 56px)" }}>
-
-          {/* Profil / Giriş */}
-          <div className="px-4 pt-3 pb-2 border-b border-gray-100">
-            <a href={profileHref} onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gray-50 text-sm font-semibold text-[#07446c]">
-              <User size={17} />
-              {isLoggedIn ? "Profilim" : "Giriş Yap"}
-            </a>
-          </div>
 
           {/* Hızlı linkler */}
           <div className="px-4 pt-2 pb-1 space-y-1.5">
