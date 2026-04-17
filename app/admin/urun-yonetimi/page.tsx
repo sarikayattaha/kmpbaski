@@ -196,9 +196,6 @@ function UrunYonetimiInner() {
           <p className="text-blue-200 text-xs mt-0.5">Ürün ekle, düzenle ve sil</p>
         </div>
         <div className="flex items-center gap-3">
-          <a href="/admin/ambalaj" className="text-xs text-blue-300 hover:text-white transition-colors">
-            Ambalaj Yönetimi →
-          </a>
           <a href="/admin/kategori-yonetimi" className="text-xs text-blue-300 hover:text-white transition-colors">
             Kategori Yönetimi →
           </a>
