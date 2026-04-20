@@ -102,7 +102,6 @@ function UrunYonetimiInner() {
     setLoading(true);
     try {
       const { data } = await supabase.from("products").select("*")
-        .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false });
       setProducts((data as Product[]) ?? []);
     } catch { setProducts([]); }
