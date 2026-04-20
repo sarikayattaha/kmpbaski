@@ -82,3 +82,8 @@ CREATE POLICY "Anon upload banner images"
 
 CREATE POLICY "Anon delete banner images"
   ON storage.objects FOR DELETE USING (bucket_id = 'banner-images');
+
+-- Fırsat etiketi ve sürükle-bırak sıralama için yeni kolonlar
+-- Supabase Dashboard > SQL Editor'da çalıştırın
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS is_firsat BOOLEAN DEFAULT false;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS sort_order INTEGER;

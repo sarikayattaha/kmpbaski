@@ -46,7 +46,7 @@ export default function CatalogClient({
     }
     if (activeCategory) result = result.filter((p) => p.category === activeCategory);
     if (activeFilter === "yeni")    result = result.slice(0, Math.ceil(result.length * 0.5) || result.length);
-    if (activeFilter === "firsat")  result = result.filter((_, i) => i % 2 === 0);
+    if (activeFilter === "firsat")  result = result.filter((p) => p.is_firsat);
     if (activeFilter === "populer") result = result.filter((p) => p.is_featured);
     return result;
   }, [products, activeCategory, activeFilter, searchQuery]);
@@ -212,11 +212,18 @@ function ProductGridCard({ product: p }: { product: Product }) {
             <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
           </div>
         )}
-        {p.is_featured && (
-          <span className="absolute top-2.5 left-2.5 bg-[#e30613] text-white text-[9px] font-black px-2 py-1 rounded-full uppercase tracking-wide">
-            Popüler
-          </span>
-        )}
+        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1">
+          {p.is_featured && (
+            <span className="bg-[#e30613] text-white text-[9px] font-black px-2 py-1 rounded-full uppercase tracking-wide">
+              Popüler
+            </span>
+          )}
+          {p.is_firsat && (
+            <span className="bg-orange-500 text-white text-[9px] font-black px-2 py-1 rounded-full uppercase tracking-wide flex items-center gap-1">
+              <Flame size={8} /> Fırsat
+            </span>
+          )}
+        </div>
       </div>
       <div className="p-4 flex flex-col flex-1">
         <span className="inline-flex items-center gap-1 text-[9px] font-bold text-[#25aae1] uppercase tracking-wider mb-1.5">
@@ -267,7 +274,19 @@ function ProductListRow({ product: p }: { product: Product }) {
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <span className="text-[9px] font-bold text-[#25aae1] uppercase tracking-wider">{p.category}</span>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-[9px] font-bold text-[#25aae1] uppercase tracking-wider">{p.category}</span>
+          {p.is_firsat && (
+            <span className="bg-orange-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wide flex items-center gap-0.5">
+              <Flame size={7} /> Fırsat
+            </span>
+          )}
+          {p.is_featured && (
+            <span className="bg-[#e30613] text-white text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+              Popüler
+            </span>
+          )}
+        </div>
         <h3 className="text-sm font-bold text-[#07446c] group-hover:text-[#0f75bc] transition-colors leading-snug mt-0.5 truncate">
           {p.name}
         </h3>

@@ -7,7 +7,7 @@ import Image from "next/image";
 import { supabase, type Product, type Category } from "@/lib/supabase";
 import {
   Plus, Trash2, LogOut, Loader2, CheckCircle,
-  AlertCircle, ImageIcon, Star, Upload, ExternalLink, Pencil, MessageSquare, X, Globe,
+  AlertCircle, ImageIcon, Star, Upload, ExternalLink, Pencil, MessageSquare, X, Globe, Flame, GripVertical,
 } from "lucide-react";
 import { type Review } from "@/lib/supabase";
 import AdminGuard from "@/app/admin/_components/AdminGuard";
@@ -41,7 +41,7 @@ const inputCls = "w-full border border-blue-100 rounded-xl px-4 py-2.5 text-sm f
 
 /* Boş form state */
 const emptyForm = () => ({
-  name: "", slug: "", price: "", features: "", category: "", isFeatured: false, isPriceOnRequest: false,
+  name: "", slug: "", price: "", features: "", category: "", isFeatured: false, isPriceOnRequest: false, isFirsat: false,
 });
 
 const emptyReview = (): Review => ({ name: "", rating: 5, date: "", comment: "" });
@@ -62,6 +62,9 @@ function UrunYonetimiInner() {
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [newFiles, setNewFiles]             = useState<{ file: File; preview: string }[]>([]);
   const [saving, setSaving]   = useState(false);
+  const [sortSaving, setSortSaving] = useState(false);
+  const dragIdxRef = useRef<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
@@ -72,11 +75,35 @@ function UrunYonetimiInner() {
 
   const handleLogout = () => { sessionStorage.removeItem("kmp_admin"); window.location.href = "/admin/login"; };
 
+  /* ── Drag-drop sıralama ── */
+  const handleDragStart = (idx: number) => { dragIdxRef.current = idx; };
+  const handleDragOver = (e: React.DragEvent, idx: number) => { e.preventDefault(); setDragOverIdx(idx); };
+  const handleDragEnd = () => setDragOverIdx(null);
+  const handleDrop = async (dropIdx: number) => {
+    const fromIdx = dragIdxRef.current;
+    setDragOverIdx(null);
+    dragIdxRef.current = null;
+    if (fromIdx === null || fromIdx === dropIdx) return;
+    const reordered = [...products];
+    const [moved] = reordered.splice(fromIdx, 1);
+    reordered.splice(dropIdx, 0, moved);
+    setProducts(reordered);
+    setSortSaving(true);
+    const results = await Promise.all(
+      reordered.map((p, i) => supabase.from("products").update({ sort_order: i }).eq("id", p.id))
+    );
+    setSortSaving(false);
+    const hasError = results.some((r) => (r as { error: unknown }).error);
+    showToast(hasError ? "Sıralama kaydedilemedi!" : "Sıralama kaydedildi!", hasError ? "error" : "success");
+  };
+
   /* ── Yükle ── */
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const { data } = await supabase.from("products").select("*").order("created_at", { ascending: false });
+      const { data } = await supabase.from("products").select("*")
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: false });
       setProducts((data as Product[]) ?? []);
     } catch { setProducts([]); }
     finally { setLoading(false); }
@@ -114,7 +141,7 @@ function UrunYonetimiInner() {
   /* ── Düzenlemeye aç ── */
   const startEdit = (p: Product) => {
     setEditId(p.id);
-    setForm({ name: p.name, slug: p.slug, price: p.price ?? "", features: p.features ?? "", category: p.category, isFeatured: p.is_featured, isPriceOnRequest: p.is_price_on_request ?? false });
+    setForm({ name: p.name, slug: p.slug, price: p.price ?? "", features: p.features ?? "", category: p.category, isFeatured: p.is_featured, isPriceOnRequest: p.is_price_on_request ?? false, isFirsat: p.is_firsat ?? false });
     setReviews(Array.isArray(p.reviews) ? p.reviews : []);
     const imgs = Array.isArray(p.images) && p.images.length > 0 ? p.images : p.image_url ? [p.image_url] : [];
     setExistingImages(imgs);
@@ -154,6 +181,7 @@ function UrunYonetimiInner() {
       category:            form.category,
       is_featured:         form.isFeatured,
       is_price_on_request: form.isPriceOnRequest,
+      is_firsat:           form.isFirsat,
       reviews:             reviews.filter(r => r.name.trim() && r.comment.trim()),
       images:              allImages,
       image_url:           allImages[0] ?? "",
@@ -188,6 +216,11 @@ function UrunYonetimiInner() {
   return (
     <div className="min-h-screen bg-[#f0f8ff]">
       {toast && <Toast msg={toast.msg} type={toast.type} />}
+      {sortSaving && (
+        <div className="fixed bottom-6 left-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl bg-[#07446c] text-white text-sm font-semibold">
+          <Loader2 size={18} className="animate-spin" /> Sıralama kaydediliyor…
+        </div>
+      )}
 
       {/* Header */}
       <div className="bg-[#07446c] text-white px-6 py-4 flex items-center justify-between">
@@ -238,14 +271,24 @@ function UrunYonetimiInner() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-blue-50">
-                    {["Görsel", "Ürün Adı", "Kategori", "81 İl SEO", "Fiyat", "Slug", "Öne Çıkan", ""].map((h, i) => (
+                    {["", "Görsel", "Ürün Adı", "Kategori", "81 İl SEO", "Fiyat", "Slug", "Öne Çıkan", "Fırsat", ""].map((h, i) => (
                       <th key={i} className="text-left text-xs font-bold text-gray-400 uppercase tracking-wide pb-3 pr-4">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {products.map((p) => (
-                    <tr key={p.id} className="border-b border-blue-50 hover:bg-slate-50 transition-colors">
+                  {products.map((p, i) => (
+                    <tr
+                      key={p.id}
+                      draggable
+                      onDragStart={() => handleDragStart(i)}
+                      onDragOver={(e) => handleDragOver(e, i)}
+                      onDragEnd={handleDragEnd}
+                      onDrop={() => handleDrop(i)}
+                      className={`border-b border-blue-50 transition-colors cursor-default ${dragOverIdx === i ? "bg-blue-50 border-t-2 border-t-[#0f75bc]" : "hover:bg-slate-50"}`}>
+                      <td className="py-3 pr-2 cursor-grab text-gray-300 hover:text-gray-500 select-none">
+                        <GripVertical size={14} />
+                      </td>
                       <td className="py-3 pr-4">
                         <div className="w-12 h-10 rounded-lg overflow-hidden bg-gradient-to-br from-[#e0f2fe] to-[#bae6fd] relative flex-shrink-0">
                           {p.image_url ? (
@@ -282,6 +325,9 @@ function UrunYonetimiInner() {
                       </td>
                       <td className="py-3 pr-4">
                         {p.is_featured ? <Star size={15} className="text-amber-400 fill-amber-400" /> : <span className="text-gray-200">—</span>}
+                      </td>
+                      <td className="py-3 pr-4">
+                        {p.is_firsat ? <Flame size={15} className="text-orange-500 fill-orange-400" /> : <span className="text-gray-200">—</span>}
                       </td>
                       <td className="py-3">
                         <div className="flex items-center gap-1">
@@ -376,11 +422,20 @@ function UrunYonetimiInner() {
                   rows={6} placeholder={"90x50 mm ebat\n350 gr kuşe kağıt\nSelofan kaplama\n500 adet"} className={`${inputCls} resize-none`} />
               </Field>
 
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={form.isFeatured} onChange={(e) => setForm((f) => ({ ...f, isFeatured: e.target.checked }))}
-                  className="w-4 h-4 rounded accent-[#0f75bc]" />
-                <span className="text-sm font-semibold text-[#07446c]">Öne çıkan ürün</span>
-              </label>
+              <div className="flex flex-col gap-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={form.isFeatured} onChange={(e) => setForm((f) => ({ ...f, isFeatured: e.target.checked }))}
+                    className="w-4 h-4 rounded accent-[#0f75bc]" />
+                  <span className="text-sm font-semibold text-[#07446c]">Öne çıkan ürün</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={form.isFirsat} onChange={(e) => setForm((f) => ({ ...f, isFirsat: e.target.checked }))}
+                    className="w-4 h-4 rounded accent-orange-500" />
+                  <span className="text-sm font-semibold text-orange-600 flex items-center gap-1.5">
+                    <Flame size={14} /> Fırsat ürünü
+                  </span>
+                </label>
+              </div>
             </div>
 
             {/* Sağ: çoklu görsel */}

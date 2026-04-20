@@ -59,6 +59,8 @@ export type Product = {
   features: string       // satır satır özellikler (newline ile ayrılmış)
   is_featured: boolean
   is_price_on_request: boolean  // true ise fiyat yerine "Fiyat Alınız" gösterilir
+  is_firsat: boolean            // true ise "Fırsat" badge'i gösterilir
+  sort_order: number | null     // sürükle-bırak sıralama
   reviews: Review[]
   images: string[]
   created_at: string
