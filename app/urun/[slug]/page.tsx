@@ -39,7 +39,7 @@ export default async function ProductPage(props: {
 
       {/* Breadcrumb */}
       <div className="bg-gray-50 border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-2 text-xs text-gray-400">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center gap-2 text-xs text-gray-400">
           <a href="/" className="hover:text-[#0f75bc] transition-colors flex items-center gap-1">
             <ArrowLeft size={12} /> Ana Sayfa
           </a>
@@ -54,8 +54,8 @@ export default async function ProductPage(props: {
       </div>
 
       <main className="flex-1">
-        <div className="max-w-5xl mx-auto px-6 py-12">
-          <div className="grid md:grid-cols-2 gap-12 items-start">
+        <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-12">
+          <div className="grid md:grid-cols-2 gap-6 md:gap-12 items-start">
 
             {/* ── GÖRSEL GALERİ ── */}
             <ProductGallery

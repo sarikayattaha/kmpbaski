@@ -163,7 +163,7 @@ export default function FeaturedSliderClient({ products }: { products: Product[]
 
   return (
     <section
-      className="bg-white py-12 border-t border-gray-50"
+      className="bg-white py-8 md:py-12 border-t border-gray-50"
       onMouseEnter={() => { hoveredRef.current = true; }}
       onMouseLeave={() => { hoveredRef.current = false; }}
     >

@@ -41,7 +41,7 @@ export default function Footer() {
   return (
     <footer className="bg-[#07446c] text-blue-200">
       {/* Ana footer */}
-      <div className="max-w-7xl mx-auto px-4 py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="max-w-7xl mx-auto px-4 py-8 md:py-12 grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-8">
         {/* Kolon 1 */}
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-blue-300 mb-4">{col1.title}</p>

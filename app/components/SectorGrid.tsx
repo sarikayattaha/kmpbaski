@@ -23,9 +23,9 @@ const sectors = [
 
 export default function SectorGrid() {
   return (
-    <section className="bg-[#f8fafc] py-12 border-t border-gray-100">
+    <section className="bg-[#f8fafc] py-8 md:py-12 border-t border-gray-100">
       <div className="max-w-7xl mx-auto px-4">
-        <h2 className="text-2xl font-black text-[#07446c] mb-8">Sektörlere Göre Ürünler</h2>
+        <h2 className="text-xl md:text-2xl font-black text-[#07446c] mb-5 md:mb-8">Sektörlere Göre Ürünler</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
           {sectors.map((s, i) => (
             <Link

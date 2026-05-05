@@ -18,7 +18,8 @@
       "Bash(vercel logs:*)",
       "Bash(npx vercel:*)",
       "Bash(curl:*)",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Lenovo\\\\Desktop\\\\kmpbaski\\\\app\" -Recurse | ForEach-Object { $_.FullName.Replace\\(\"C:\\\\Users\\\\Lenovo\\\\Desktop\\\\kmpbaski\\\\\", \"\"\\) })"
     ]
   }
 }

@@ -109,7 +109,7 @@ export default function CatalogClient({
 
         {/* Başlık */}
         <div className="mb-5">
-          <h1 className="text-2xl font-black text-[#07446c] leading-tight">
+          <h1 className="text-xl md:text-2xl font-black text-[#07446c] leading-tight">
             {searchQuery
               ? `"${searchQuery}" için arama sonuçları`
               : (activeCategory ?? "Tüm Matbaa ve Baskı Ürünleri")}

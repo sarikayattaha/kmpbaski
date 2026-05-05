@@ -36,7 +36,7 @@ export default async function TumUrunlerPage({
 
       {/* Breadcrumb */}
       <div className="bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-2 text-xs text-gray-400">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center gap-2 text-xs text-gray-400">
           <a href="/" className="hover:text-[#0f75bc] transition-colors">Ana Sayfa</a>
           <span>/</span>
           <span className="text-[#07446c] font-semibold">Tüm Ürünler</span>
@@ -44,7 +44,7 @@ export default async function TumUrunlerPage({
       </div>
 
       <main className="flex-1">
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-8">
           <Suspense fallback={<CatalogSkeleton />}>
             <CatalogClient
               products={products}
