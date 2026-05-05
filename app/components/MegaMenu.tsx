@@ -106,7 +106,7 @@ export default function MegaMenu({
         </section>
 
         {/* ── SAĞ: Öne çıkan ürün kartları ────────────────────────────────── */}
-        <aside className="w-72 border-l border-gray-100 py-5 px-4 flex-shrink-0 bg-slate-50/60">
+        <aside className="w-80 border-l border-gray-100 py-5 px-4 flex-shrink-0 bg-gray-50">
           {activeCat && activeCat.products.length > 0 && (
             <>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">
@@ -117,22 +117,22 @@ export default function MegaMenu({
                   <Link
                     key={product.slug}
                     href={`/urun/${product.slug}`}
-                    className="flex flex-col items-center gap-2 rounded-xl hover:bg-white hover:shadow-md transition-all group p-1.5"
+                    className="flex flex-col items-center gap-2.5 group"
                   >
-                    <div className="w-full aspect-square rounded-lg overflow-hidden relative bg-gradient-to-br from-[#e8f4fc] to-[#ddf0fb] flex items-center justify-center">
+                    <div className="w-full aspect-square rounded-2xl overflow-hidden relative bg-white shadow-sm group-hover:shadow-md transition-shadow duration-200 flex items-center justify-center">
                       {product.image_url ? (
                         <Image
                           src={product.image_url}
                           alt={product.name}
                           fill
-                          sizes="128px"
-                          className="object-contain p-2 group-hover:scale-105 transition-transform duration-200"
+                          sizes="140px"
+                          className="object-contain p-3 group-hover:scale-105 transition-transform duration-200"
                         />
                       ) : (
                         <span className="text-3xl opacity-20">🖨️</span>
                       )}
                     </div>
-                    <p className="text-xs text-center text-gray-600 group-hover:text-[#0f75bc] leading-tight line-clamp-2 transition-colors font-medium w-full">
+                    <p className="text-xs text-center text-gray-700 group-hover:text-[#0f75bc] leading-snug line-clamp-2 transition-colors font-semibold w-full">
                       {product.name}
                     </p>
                   </Link>
