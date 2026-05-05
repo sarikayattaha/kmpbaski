@@ -81,7 +81,7 @@ export default function MegaMenu({
               </h3>
 
               <ul className="grid grid-cols-3 gap-x-8 gap-y-1.5">
-                {activeCat.products.map((product) => (
+                {activeCat.products.slice(0, 9).map((product) => (
                   <li key={product.slug}>
                     <Link
                       href={`/urun/${product.slug}`}
