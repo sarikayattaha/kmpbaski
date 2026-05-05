@@ -1,53 +1,175 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import {
-  Search, X, Package, ShoppingBag, FileText,
-  MessageCircle, ChevronRight, Globe,
+  Search, X, Package, MessageCircle,
+  ChevronRight, ArrowLeft,
 } from "lucide-react";
 
+// ── Tipler ────────────────────────────────────────────────────────────────────
 export type LinkProduct = {
-  id: string;
-  name: string;
-  slug: string;
+  id:        string;
+  name:      string;
+  slug:      string;
   image_url: string | null;
+  category:  string;
 };
 
-// ── İkon yardımcısı ───────────────────────────────────────────────────────────
+export type LinkCategory = {
+  name: string;
+};
 
-function ProductIcon({ name }: { name: string }) {
-  const n = name.toLowerCase();
-  if (n.includes("çanta") || n.includes("canta")) return <ShoppingBag size={26} />;
-  if (n.includes("kağıt") || n.includes("kagit") || n.includes("dürüm") || n.includes("durum") || n.includes("wrap")) return <FileText size={26} />;
-  return <Package size={26} />;
-}
+// ── Sabitler ──────────────────────────────────────────────────────────────────
+const WA_NUMBER  = "905541630031";
+const WA_DEFAULT = encodeURIComponent(
+  "Merhaba, baskı ve ambalaj fiyatları hakkında bilgi almak istiyorum."
+);
 
-// Renk paleti — kartlara sırayla atanır
-const PALETTE = [
-  { bg: "bg-[#07446c]", text: "text-white", icon: "text-[#93c5fd]" },
-  { bg: "bg-[#0f75bc]", text: "text-white", icon: "text-blue-200"  },
-  { bg: "bg-[#0e7490]", text: "text-white", icon: "text-cyan-200"  },
-  { bg: "bg-[#065f46]", text: "text-white", icon: "text-emerald-200" },
-  { bg: "bg-[#7c3aed]", text: "text-white", icon: "text-violet-200" },
-  { bg: "bg-[#b45309]", text: "text-white", icon: "text-amber-200"  },
-  { bg: "bg-[#be185d]", text: "text-white", icon: "text-pink-200"   },
+const CAT_COLORS = [
+  "bg-[#07446c]", "bg-[#0f75bc]", "bg-[#0e7490]", "bg-[#065f46]",
+  "bg-[#7c3aed]", "bg-[#b45309]", "bg-[#be185d]", "bg-[#0f766e]",
+  "bg-[#1d4ed8]", "bg-[#b91c1c]",
 ];
 
-const WA_NUMBER = "905541630031";
+// ── Alt bileşenler ────────────────────────────────────────────────────────────
+
+function CategoryGrid({
+  categories,
+  onSelect,
+}: {
+  categories: LinkCategory[];
+  onSelect: (name: string) => void;
+}) {
+  return (
+    <div className="space-y-3">
+      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest px-1">
+        Kategoriler
+      </p>
+      <div className="grid grid-cols-2 gap-3">
+        {categories.map((cat, i) => (
+          <button
+            key={cat.name}
+            onClick={() => onSelect(cat.name)}
+            className={`${CAT_COLORS[i % CAT_COLORS.length]} text-white rounded-2xl px-4 py-5 text-left flex items-center justify-between shadow-md active:scale-95 transition-transform`}
+          >
+            <span className="font-bold text-sm leading-tight">{cat.name}</span>
+            <ChevronRight size={16} className="opacity-60 flex-shrink-0" />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ProductGrid({ products }: { products: LinkProduct[] }) {
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      {products.map((product) => (
+        <Link
+          key={product.id}
+          href={`/urun/${product.slug}`}
+          className="flex flex-col items-center gap-2 group"
+        >
+          <div className="w-full aspect-square rounded-2xl overflow-hidden relative bg-white shadow-sm group-active:shadow-md transition-shadow">
+            {product.image_url ? (
+              <Image
+                src={product.image_url}
+                alt={product.name}
+                fill
+                sizes="(max-width: 512px) 45vw, 200px"
+                className="object-contain p-3"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <Package size={32} className="text-gray-200" />
+              </div>
+            )}
+          </div>
+          <p className="text-xs font-semibold text-center text-gray-700 group-hover:text-[#0f75bc] leading-tight line-clamp-2 transition-colors w-full">
+            {product.name}
+          </p>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function EmptyState({ query, onClear }: { query: string; onClear: () => void }) {
+  return (
+    <div className="text-center py-14 text-gray-400">
+      <Package size={40} className="mx-auto mb-3 opacity-25" />
+      <p className="text-sm font-semibold">&quot;{query}&quot; için ürün bulunamadı.</p>
+      <button
+        onClick={onClear}
+        className="mt-3 text-xs text-[#0f75bc] font-bold hover:underline"
+      >
+        Tüm kategorilere dön
+      </button>
+    </div>
+  );
+}
+
+function WhatsAppCTA() {
+  return (
+    <div className="pt-2">
+      <a
+        href={`https://wa.me/${WA_NUMBER}?text=${WA_DEFAULT}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center justify-center gap-3 bg-[#25D366] active:bg-[#17a34a] text-white font-black px-6 py-5 rounded-2xl shadow-lg text-base w-full transition-colors"
+      >
+        <MessageCircle size={22} />
+        WhatsApp ile Hızlı Teklif Al
+      </a>
+      <a
+        href="tel:+905541630031"
+        className="mt-2.5 block text-center text-xs text-gray-400 hover:text-[#0f75bc] transition-colors py-1"
+      >
+        veya ara: +90 554 163 00 31
+      </a>
+    </div>
+  );
+}
 
 // ── Ana bileşen ───────────────────────────────────────────────────────────────
+export default function LinkSearch({
+  products,
+  categories,
+}: {
+  products:   LinkProduct[];
+  categories: LinkCategory[];
+}) {
+  const [query, setQuery]         = useState("");
+  const [activeCat, setActiveCat] = useState<string | null>(null);
 
-export default function LinkSearch({ products }: { products: LinkProduct[] }) {
-  const [query, setQuery] = useState("");
+  const handleCatSelect = (name: string) => {
+    setActiveCat(name);
+    setQuery("");
+  };
 
-  const filtered = query.trim()
-    ? products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()))
-    : products;
+  const handleClear = () => {
+    setQuery("");
+    setActiveCat(null);
+  };
+
+  const isSearching    = query.trim().length > 0;
+  const showCategories = !isSearching && !activeCat;
+
+  const filtered = isSearching
+    ? products.filter(p =>
+        p.name.toLowerCase().includes(query.toLowerCase()) ||
+        p.category.toLowerCase().includes(query.toLowerCase())
+      )
+    : activeCat
+    ? products.filter(p => p.category === activeCat)
+    : [];
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
+    <div className="max-w-lg mx-auto px-4 pt-5 pb-8 space-y-5">
 
-      {/* ── Arama Kutusu ────────────────────────────────────────────────────── */}
+      {/* ── Arama ───────────────────────────────────────────────────────────── */}
       <div className="relative">
         <Search
           size={18}
@@ -55,98 +177,63 @@ export default function LinkSearch({ products }: { products: LinkProduct[] }) {
         />
         <input
           type="search"
+          inputMode="search"
           value={query}
-          onChange={e => setQuery(e.target.value)}
-          placeholder="Ürün ara… (baklava, pide, pizza…)"
-          className="w-full bg-white border border-blue-100 rounded-2xl pl-11 pr-10 py-3.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0f75bc] transition-all"
+          onChange={e => { setQuery(e.target.value); setActiveCat(null); }}
+          placeholder="Ürün ara… (kartvizit, kutu, çanta…)"
+          className="w-full bg-white border border-blue-100 rounded-2xl pl-11 pr-10 py-4 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0f75bc] transition-all"
         />
-        {query && (
+        {(query || activeCat) && (
           <button
-            onClick={() => setQuery("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"
+            onClick={handleClear}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
           >
             <X size={16} />
           </button>
         )}
       </div>
 
-      {/* ── Ürün Kartları ───────────────────────────────────────────────────── */}
-      {filtered.length === 0 ? (
-        <div className="text-center py-12 text-gray-400">
-          <Package size={36} className="mx-auto mb-3 opacity-30" />
-          <p className="text-sm font-medium">"{query}" için ürün bulunamadı.</p>
-          <button
-            onClick={() => setQuery("")}
-            className="mt-3 text-xs text-[#0f75bc] font-semibold hover:underline"
-          >
-            Tüm ürünleri göster
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 gap-3">
-          {filtered.map((product, i) => {
-            const color = PALETTE[i % PALETTE.length];
-            const waText = encodeURIComponent(
-              `Merhaba, ${product.name} hakkında fiyat teklifi almak istiyorum.`
-            );
-            return (
-              <a
-                key={product.id}
-                href={`/tum-urunler`}
-                className={`${color.bg} ${color.text} rounded-2xl p-4 flex flex-col justify-between min-h-[110px] shadow-md active:scale-95 transition-transform`}
+      {/* ── Kategoriler (varsayılan görünüm) ────────────────────────────────── */}
+      {showCategories && (
+        <CategoryGrid categories={categories} onSelect={handleCatSelect} />
+      )}
+
+      {/* ── Ürün listesi (kategori seçili veya arama yapılıyor) ─────────────── */}
+      {!showCategories && (
+        <div className="space-y-3">
+          {activeCat && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleClear}
+                className="flex items-center gap-1.5 text-sm font-semibold text-[#0f75bc]"
               >
-                <span className={`${color.icon} mb-2`}>
-                  <ProductIcon name={product.name} />
-                </span>
-                <div>
-                  <p className="font-black text-sm leading-tight">{product.name}</p>
-                  <p className="text-[11px] opacity-70 mt-0.5 flex items-center gap-0.5">
-                    81 il <Globe size={9} />
-                  </p>
-                </div>
-              </a>
-            );
-          })}
+                <ArrowLeft size={16} />
+                Geri
+              </button>
+              <span className="text-gray-300">|</span>
+              <span className="text-sm font-bold text-gray-700">{activeCat}</span>
+            </div>
+          )}
+
+          {filtered.length === 0
+            ? <EmptyState query={query} onClear={handleClear} />
+            : <ProductGrid products={filtered} />
+          }
         </div>
       )}
 
       {/* ── WhatsApp CTA ────────────────────────────────────────────────────── */}
-      <div className="bg-white border border-green-100 rounded-3xl p-5 shadow-sm text-center">
-        <p className="text-xs text-gray-400 font-semibold uppercase tracking-widest mb-1">
-          Hızlı Teklif Hattı
-        </p>
-        <p className="text-[#07446c] font-black text-base mb-1">
-          Ne istediğini söyle, fiyatı anında gelsin.
-        </p>
-        <p className="text-xs text-gray-400 mb-4">
-          Ortalama yanıt süresi: <strong className="text-gray-600">15 dakika</strong>
-        </p>
-        <a
-          href={`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Merhaba, ambalaj fiyatları hakkında bilgi almak istiyorum.")}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2.5 bg-[#25D366] hover:bg-[#1ebe57] active:bg-[#17a34a] text-white font-black px-6 py-4 rounded-2xl transition-colors shadow-lg text-sm w-full"
-        >
-          <MessageCircle size={20} />
-          WhatsApp ile Teklif Al
-          <ChevronRight size={16} className="opacity-70" />
-        </a>
-        <a
-          href="tel:+905541630031"
-          className="mt-2 block text-xs text-gray-400 hover:text-[#0f75bc] transition-colors py-1"
-        >
-          veya ara: +90 554 163 00 31
-        </a>
-      </div>
+      <WhatsAppCTA />
 
-      {/* ── Tüm Site Linki ──────────────────────────────────────────────────── */}
-      <div className="text-center pb-4">
-        <a
+      {/* ── Ana site linki ──────────────────────────────────────────────────── */}
+      <div className="text-center pb-2">
+        <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-[#0f75bc] transition-colors font-medium"
+          className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-[#0f75bc] transition-colors"
         >
-          kmpbaski.com&apos;u tam olarak görüntüle <ChevronRight size={12} />
-        </a>
+          kmpbaski.com&apos;u tam görüntüle
+          <ChevronRight size={12} />
+        </Link>
       </div>
 
     </div>
