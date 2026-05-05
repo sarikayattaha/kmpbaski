@@ -55,13 +55,6 @@ export default function MegaMenu({
                   }`}
                 >
                   <span className="truncate">{cat.name}</span>
-                  <span
-                    className={`text-xs flex-shrink-0 ml-1.5 tabular-nums ${
-                      activeCategory === idx ? "text-[#0f75bc]/50" : "text-gray-400"
-                    }`}
-                  >
-                    {cat.products.length}
-                  </span>
                 </button>
               ))}
               <div className="border-t border-gray-200 mt-2 pt-2 px-4">
@@ -92,10 +85,9 @@ export default function MegaMenu({
                   <li key={product.slug}>
                     <Link
                       href={`/urun/${product.slug}`}
-                      className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#0f75bc] transition-colors py-1 group"
+                      className="block text-sm font-medium text-gray-700 hover:text-[#0f75bc] transition-colors py-1 truncate"
                     >
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#25aae1] flex-shrink-0 group-hover:bg-[#0f75bc] transition-colors" />
-                      <span className="truncate">{product.name}</span>
+                      {product.name}
                     </Link>
                   </li>
                 ))}
@@ -114,33 +106,33 @@ export default function MegaMenu({
         </section>
 
         {/* ── SAĞ: Öne çıkan ürün kartları ────────────────────────────────── */}
-        <aside className="w-60 border-l border-gray-100 py-5 px-4 flex-shrink-0 bg-slate-50/60">
+        <aside className="w-72 border-l border-gray-100 py-5 px-4 flex-shrink-0 bg-slate-50/60">
           {activeCat && activeCat.products.length > 0 && (
             <>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">
                 Öne Çıkanlar
               </p>
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-2 gap-3">
                 {activeCat.products.slice(0, 4).map((product) => (
                   <Link
                     key={product.slug}
                     href={`/urun/${product.slug}`}
-                    className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl border border-transparent hover:border-[#bae6fd] hover:bg-white hover:shadow-sm transition-all group"
+                    className="flex flex-col items-center gap-2 rounded-xl hover:bg-white hover:shadow-md transition-all group p-1.5"
                   >
-                    <div className="w-16 h-16 rounded-lg overflow-hidden relative bg-gradient-to-br from-[#e8f4fc] to-[#ddf0fb] flex items-center justify-center flex-shrink-0">
+                    <div className="w-full aspect-square rounded-lg overflow-hidden relative bg-gradient-to-br from-[#e8f4fc] to-[#ddf0fb] flex items-center justify-center">
                       {product.image_url ? (
                         <Image
                           src={product.image_url}
                           alt={product.name}
                           fill
-                          sizes="64px"
-                          className="object-contain p-1.5 group-hover:scale-110 transition-transform duration-200"
+                          sizes="128px"
+                          className="object-contain p-2 group-hover:scale-105 transition-transform duration-200"
                         />
                       ) : (
-                        <span className="text-2xl opacity-20">🖨️</span>
+                        <span className="text-3xl opacity-20">🖨️</span>
                       )}
                     </div>
-                    <p className="text-[10px] text-center text-gray-500 group-hover:text-[#0f75bc] leading-tight line-clamp-2 transition-colors font-medium w-full">
+                    <p className="text-xs text-center text-gray-600 group-hover:text-[#0f75bc] leading-tight line-clamp-2 transition-colors font-medium w-full">
                       {product.name}
                     </p>
                   </Link>
