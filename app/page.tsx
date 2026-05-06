@@ -14,8 +14,14 @@ export default function Home() {
       <Navbar />
 
       <main className="flex-1">
-        {/* Dinamik hero banner (Supabase) */}
-        <HeroBanner />
+        {/* Hero banner — full-width background image, CTA pinned to bottom-right */}
+        <HeroBanner
+          src="https://zqkpgbfxjkwcxaomjifb.supabase.co/storage/v1/object/public/banners/hero-default.jpg"
+          alt="Profesyonel baskı çözümleri — KMP Baskı"
+          overlay
+          cta={{ label: 'Hemen Sipariş Ver', href: '/tum-urunler' }}
+          ctaPosition="bottom-right"
+        />
 
         {/* Hızlı bilgi çubuğu */}
         <InfoBar />
