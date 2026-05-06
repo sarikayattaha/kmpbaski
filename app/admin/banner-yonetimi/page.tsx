@@ -28,7 +28,8 @@ function BannerYonetimiInner() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const [btnText, setBtnText] = useState("");
+  const [showBtn, setShowBtn] = useState(false);
+  const [btnText, setBtnText] = useState("Hemen Sipariş Ver");
   const [btnLink, setBtnLink] = useState("/tum-urunler");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -114,7 +115,7 @@ function BannerYonetimiInner() {
     const { error } = await supabase.from("banners").insert({
       title: "",
       image_url: urlData.publicUrl,
-      button_text: btnText.trim() || "Hemen Sipariş Ver",
+      button_text: showBtn ? (btnText.trim() || "Hemen Sipariş Ver") : "",
       button_link: btnLink.trim() || "/tum-urunler",
       button_x: Math.round(btnPos.x * 10) / 10,
       button_y: Math.round(btnPos.y * 10) / 10,
@@ -125,7 +126,8 @@ function BannerYonetimiInner() {
     if (error) return showToast("Kayıt hatası: " + error.message, "error");
 
     showToast("Banner başarıyla eklendi!", "success");
-    setBtnText("");
+    setShowBtn(false);
+    setBtnText("Hemen Sipariş Ver");
     setBtnLink("/tum-urunler");
     setFile(null);
     setPreview(null);
@@ -210,23 +212,25 @@ function BannerYonetimiInner() {
                 <Image src={preview} alt="Önizleme" fill className="object-cover pointer-events-none" />
                 <div className="absolute inset-0 bg-black/35 pointer-events-none" />
 
-                {/* Sürüklenebilir buton */}
-                <div
-                  className={`absolute z-10 ${dragging ? "cursor-grabbing" : "cursor-grab"}`}
-                  style={{
-                    left: `${btnPos.x}%`,
-                    top: `${btnPos.y}%`,
-                    transform: "translate(-50%, -50%)",
-                    touchAction: "none",
-                  }}
-                  onPointerDown={onPointerDown}
-                  onPointerMove={onPointerMove}
-                  onPointerUp={onPointerUp}
-                >
-                  <span className="inline-block bg-[#0f75bc] text-white font-bold px-4 py-2 rounded-xl text-xs shadow-lg ring-2 ring-white/60 whitespace-nowrap select-none">
-                    {btnText || "Hemen Sipariş Ver"}
-                  </span>
-                </div>
+                {/* Sürüklenebilir buton — sadece toggle açıksa */}
+                {showBtn && (
+                  <div
+                    className={`absolute z-10 ${dragging ? "cursor-grabbing" : "cursor-grab"}`}
+                    style={{
+                      left: `${btnPos.x}%`,
+                      top: `${btnPos.y}%`,
+                      transform: "translate(-50%, -50%)",
+                      touchAction: "none",
+                    }}
+                    onPointerDown={onPointerDown}
+                    onPointerMove={onPointerMove}
+                    onPointerUp={onPointerUp}
+                  >
+                    <span className="inline-block bg-[#0f75bc] text-white font-bold px-4 py-2 rounded-xl text-xs shadow-lg ring-2 ring-white/60 whitespace-nowrap select-none">
+                      {btnText || "Hemen Sipariş Ver"}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <button
@@ -240,11 +244,36 @@ function BannerYonetimiInner() {
 
           <input id="banner-upload" type="file" accept="image/*" className="hidden" ref={fileRef} onChange={onFileChange} />
 
-          {/* Buton ayarları */}
-          <div className="grid sm:grid-cols-2 gap-4 mb-3">
-            <div>
+          {/* Banner linki */}
+          <div className="mb-4">
+            <label className="block text-xs font-bold text-[#07446c] mb-1.5 uppercase tracking-wide">
+              Banner Linki
+            </label>
+            <input
+              value={btnLink}
+              onChange={(e) => setBtnLink(e.target.value)}
+              placeholder="/tum-urunler"
+              className="w-full border border-blue-100 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f75bc]"
+            />
+            <p className="text-[11px] text-slate-400 mt-1">Görsele tıklandığında gidilecek sayfa.</p>
+          </div>
+
+          {/* Buton toggle */}
+          <label className="flex items-center gap-3 cursor-pointer mb-4 select-none w-fit">
+            <div
+              onClick={() => setShowBtn((v) => !v)}
+              className={`relative w-10 h-5 rounded-full transition-colors ${showBtn ? "bg-[#0f75bc]" : "bg-slate-200"}`}
+            >
+              <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${showBtn ? "translate-x-5" : "translate-x-0.5"}`} />
+            </div>
+            <span className="text-sm font-semibold text-[#07446c]">Buton ekle</span>
+          </label>
+
+          {/* Buton ayarları — sadece toggle açıksa göster */}
+          {showBtn && (
+            <div className="mb-5">
               <label className="block text-xs font-bold text-[#07446c] mb-1.5 uppercase tracking-wide">
-                Buton Metni <span className="text-slate-400 normal-case font-normal">(isteğe bağlı)</span>
+                Buton Metni
               </label>
               <input
                 value={btnText}
@@ -253,21 +282,7 @@ function BannerYonetimiInner() {
                 className="w-full border border-blue-100 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f75bc]"
               />
             </div>
-            <div>
-              <label className="block text-xs font-bold text-[#07446c] mb-1.5 uppercase tracking-wide">
-                Banner Linki
-              </label>
-              <input
-                value={btnLink}
-                onChange={(e) => setBtnLink(e.target.value)}
-                placeholder="/tum-urunler"
-                className="w-full border border-blue-100 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f75bc]"
-              />
-            </div>
-          </div>
-          <p className="text-[11px] text-slate-400 mb-5">
-            Banner linki, görsele tıklandığında gidilecek sayfadır. Buton metni boş bırakılırsa sadece görsel tıklanabilir olur.
-          </p>
+          )}
 
           <button
             onClick={handleAdd}
