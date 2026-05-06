@@ -28,7 +28,7 @@ function BannerYonetimiInner() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const [btnText, setBtnText] = useState("Hemen Sipariş Ver");
+  const [btnText, setBtnText] = useState("");
   const [btnLink, setBtnLink] = useState("/tum-urunler");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -125,7 +125,7 @@ function BannerYonetimiInner() {
     if (error) return showToast("Kayıt hatası: " + error.message, "error");
 
     showToast("Banner başarıyla eklendi!", "success");
-    setBtnText("Hemen Sipariş Ver");
+    setBtnText("");
     setBtnLink("/tum-urunler");
     setFile(null);
     setPreview(null);
@@ -241,20 +241,21 @@ function BannerYonetimiInner() {
           <input id="banner-upload" type="file" accept="image/*" className="hidden" ref={fileRef} onChange={onFileChange} />
 
           {/* Buton ayarları */}
-          <div className="grid sm:grid-cols-2 gap-4 mb-5">
+          <div className="grid sm:grid-cols-2 gap-4 mb-3">
             <div>
               <label className="block text-xs font-bold text-[#07446c] mb-1.5 uppercase tracking-wide">
-                Buton Metni
+                Buton Metni <span className="text-slate-400 normal-case font-normal">(isteğe bağlı)</span>
               </label>
               <input
                 value={btnText}
                 onChange={(e) => setBtnText(e.target.value)}
+                placeholder="Örn: Hemen Sipariş Ver"
                 className="w-full border border-blue-100 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0f75bc]"
               />
             </div>
             <div>
               <label className="block text-xs font-bold text-[#07446c] mb-1.5 uppercase tracking-wide">
-                Buton Linki
+                Banner Linki
               </label>
               <input
                 value={btnLink}
@@ -264,6 +265,9 @@ function BannerYonetimiInner() {
               />
             </div>
           </div>
+          <p className="text-[11px] text-slate-400 mb-5">
+            Banner linki, görsele tıklandığında gidilecek sayfadır. Buton metni boş bırakılırsa sadece görsel tıklanabilir olur.
+          </p>
 
           <button
             onClick={handleAdd}

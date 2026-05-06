@@ -13,7 +13,7 @@ interface HeroBannerProps {
 
 export default function HeroBanner({
   fallbackSrc,
-  overlay = true,
+  overlay = false,
   className = "",
 }: HeroBannerProps) {
   const [banner, setBanner] = useState<Banner | null>(null);
@@ -36,7 +36,8 @@ export default function HeroBanner({
   if (loading) {
     return (
       <div
-        className={`relative w-full overflow-hidden h-[280px] sm:h-[380px] md:h-[520px] bg-slate-100 animate-pulse ${className}`}
+        className={`relative w-full overflow-hidden bg-slate-100 animate-pulse ${className}`}
+        style={{ aspectRatio: "1920 / 520", minHeight: 160 }}
       />
     );
   }
@@ -45,10 +46,14 @@ export default function HeroBanner({
 
   const btnX = banner?.button_x ?? 85;
   const btnY = banner?.button_y ?? 80;
+  const link = banner?.button_link && banner.button_link !== "#"
+    ? banner.button_link
+    : null;
 
   return (
     <section
-      className={`relative w-full overflow-hidden h-[280px] sm:h-[380px] md:h-[520px] ${className}`}
+      className={`relative w-full overflow-hidden ${className}`}
+      style={{ aspectRatio: "1920 / 520", minHeight: 160 }}
     >
       <Image
         src={src}
@@ -63,6 +68,16 @@ export default function HeroBanner({
         <div className="absolute inset-0 bg-black/35" aria-hidden="true" />
       )}
 
+      {/* Tüm bannera tıklanabilir şeffaf overlay — butonun arkasında (z-5) */}
+      {link && (
+        <Link
+          href={link}
+          className="absolute inset-0 z-[5]"
+          aria-label={banner?.button_text || "Banner linkine git"}
+        />
+      )}
+
+      {/* İsteğe bağlı buton — overlay'in üstünde (z-10) */}
       {banner?.button_text && (
         <div
           className="absolute z-10"
@@ -73,7 +88,7 @@ export default function HeroBanner({
           }}
         >
           <Link
-            href={banner.button_link || "#"}
+            href={link || "#"}
             className="inline-block bg-[#0f75bc] hover:bg-[#07446c] active:scale-95 text-white font-bold px-6 py-3 rounded-2xl text-sm transition-all shadow-lg shadow-black/25 whitespace-nowrap"
           >
             {banner.button_text}
