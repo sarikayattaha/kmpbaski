@@ -15,7 +15,7 @@ export default function Home() {
 
       <main className="flex-1">
         {/* Hero banner — Supabase'deki ilk banner'ı tam genişlik gösterir */}
-        <HeroBanner ctaPosition="bottom-right" />
+        <HeroBanner />
 
         {/* Hızlı bilgi çubuğu */}
         <InfoBar />
