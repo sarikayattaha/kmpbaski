@@ -5,27 +5,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { supabase, type Banner } from "@/lib/supabase";
 
-type CTAPosition = "top-left" | "top-right" | "bottom-left" | "bottom-right" | "center";
-
 interface HeroBannerProps {
-  /** Supabase'den banner bulunamazsa gösterilecek yedek görsel URL'i */
   fallbackSrc?: string;
-  ctaPosition?: CTAPosition;
   overlay?: boolean;
   className?: string;
 }
 
-const CTA_POSITIONS: Record<CTAPosition, string> = {
-  "top-left":     "top-6 left-6 md:top-10 md:left-10",
-  "top-right":    "top-6 right-6 md:top-10 md:right-10",
-  "bottom-left":  "bottom-6 left-6 md:bottom-10 md:left-10",
-  "bottom-right": "bottom-6 right-6 md:bottom-10 md:right-10",
-  center:         "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-};
-
 export default function HeroBanner({
   fallbackSrc,
-  ctaPosition = "bottom-right",
   overlay = true,
   className = "",
 }: HeroBannerProps) {
@@ -56,6 +43,9 @@ export default function HeroBanner({
 
   if (!src) return null;
 
+  const btnX = banner?.button_x ?? 85;
+  const btnY = banner?.button_y ?? 80;
+
   return (
     <section
       className={`relative w-full overflow-hidden h-[280px] sm:h-[380px] md:h-[520px] ${className}`}
@@ -74,7 +64,14 @@ export default function HeroBanner({
       )}
 
       {banner?.button_text && (
-        <div className={`absolute z-10 ${CTA_POSITIONS[ctaPosition]}`}>
+        <div
+          className="absolute z-10"
+          style={{
+            left: `${btnX}%`,
+            top: `${btnY}%`,
+            transform: "translate(-50%, -50%)",
+          }}
+        >
           <Link
             href={banner.button_link || "#"}
             className="inline-block bg-[#0f75bc] hover:bg-[#07446c] active:scale-95 text-white font-bold px-6 py-3 rounded-2xl text-sm transition-all shadow-lg shadow-black/25 whitespace-nowrap"

@@ -87,3 +87,8 @@ CREATE POLICY "Anon delete banner images"
 -- Supabase Dashboard > SQL Editor'da çalıştırın
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS is_firsat BOOLEAN DEFAULT false;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS sort_order INTEGER;
+
+-- Banner buton konumu için yeni kolonlar (sürükle-bırak)
+-- Supabase Dashboard > SQL Editor'da çalıştırın
+ALTER TABLE public.banners ADD COLUMN IF NOT EXISTS button_x FLOAT DEFAULT 85;
+ALTER TABLE public.banners ADD COLUMN IF NOT EXISTS button_y FLOAT DEFAULT 80;

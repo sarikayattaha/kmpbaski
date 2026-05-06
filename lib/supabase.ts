@@ -38,6 +38,8 @@ export type Banner = {
   image_url: string
   button_text: string
   button_link: string
+  button_x: number
+  button_y: number
   order_index: number
   created_at: string
 }
