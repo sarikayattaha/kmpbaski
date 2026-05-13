@@ -175,9 +175,6 @@ export default function ContactFormSection() {
               Teklif İsteyin <ArrowRight size={18} />
             </button>
 
-            <p className="text-center text-xs text-gray-300">
-              Ücretsiz · Sağlayıcı değil · 30 dakikada dönüş
-            </p>
           </form>
 
         </div>
