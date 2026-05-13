@@ -26,7 +26,10 @@ export default function Home() {
         {/* Öne Çıkan Ürünler — admin'de is_featured işaretli ürünler */}
         <FeaturedSlider />
 
-        {/* Gıda Kutuları — category="Gıda Kutuları" olan ürünler */}
+        {/* Sektörlere Göre Ürünler */}
+        <SectorGrid />
+
+        {/* Gıda Kutuları — is_gida_kutusu=true olan ürünler */}
         <GidaKutulariSlider />
 
         {/* 3 Adımda Kusursuz Baskı */}
@@ -34,9 +37,6 @@ export default function Home() {
 
         {/* Teklif / İletişim Formu */}
         <ContactFormSection />
-
-        {/* Sektörlere Göre Ürünler */}
-        <SectorGrid />
       </main>
 
       {/* Footer */}
