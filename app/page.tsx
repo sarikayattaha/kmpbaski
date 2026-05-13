@@ -5,6 +5,7 @@ import HeroBanner from "@/app/components/HeroBanner";
 import InfoBar from "@/app/components/InfoBar";
 import FeaturedSlider from "@/app/components/FeaturedSlider";
 import GidaKutulariSlider from "@/app/components/GidaKutulariSlider";
+import HowItWorksSection from "@/app/components/HowItWorksSection";
 import SectorGrid from "@/app/components/SectorGrid";
 import Footer from "@/app/components/Footer";
 
@@ -26,6 +27,9 @@ export default function Home() {
 
         {/* Gıda Kutuları — category="Gıda Kutuları" olan ürünler */}
         <GidaKutulariSlider />
+
+        {/* 3 Adımda Kusursuz Baskı */}
+        <HowItWorksSection />
 
         {/* Sektörlere Göre Ürünler */}
         <SectorGrid />
