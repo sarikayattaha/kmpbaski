@@ -1,19 +1,22 @@
-const steps = [
+import { Phone, FileCheck2, Truck } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
+const steps: { num: string; Icon: LucideIcon; title: string; desc: string }[] = [
   {
     num: "01",
-    emoji: "📞",
+    Icon: Phone,
     title: "Bize Ulaşın ve Planlayalım",
     desc: "WhatsApp veya telefon üzerinden projenizi anlatın. Uzman ekibimiz, projenize en uygun baskı spesifikasyonlarını belirleyerek en kısa zamanda size özel fiyat çalışmasını sunar.",
   },
   {
     num: "02",
-    emoji: "🎨",
+    Icon: FileCheck2,
     title: "Teknik Kontrol ve Onay",
     desc: "Baskıya hazır dosyanızı gönderin veya profesyonel tasarım ekibimizle birlikte kurgulayalım. Kağıt kalitesinden baskı detaylarına kadar tüm aşamalar sizin onayınızla ilerler.",
   },
   {
     num: "03",
-    emoji: "🚀",
+    Icon: Truck,
     title: "Hızlı Üretim ve Teslimat",
     desc: "Üretim merkezimizde titizlikle hazırlanan siparişleriniz, Türkiye geneli güvenli kargo seçenekleriyle tam zamanında kapınıza gelir.",
   },
@@ -44,12 +47,14 @@ export default function HowItWorksSection() {
               key={step.num}
               className="relative bg-[#f8fafc] rounded-3xl p-8 flex flex-col gap-4"
             >
-              {/* Numara + emoji */}
+              {/* Numara + ikon */}
               <div className="flex items-center gap-3">
                 <span className="text-5xl font-black text-gray-100 select-none leading-none">
                   {step.num}
                 </span>
-                <span className="text-3xl leading-none">{step.emoji}</span>
+                <div className="w-10 h-10 rounded-xl bg-[#0f75bc]/10 flex items-center justify-center">
+                  <step.Icon size={20} className="text-[#0f75bc]" />
+                </div>
               </div>
 
               {/* Ayraç çizgi (son kart hariç, yalnızca desktop) */}
