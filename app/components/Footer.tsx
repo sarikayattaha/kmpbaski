@@ -105,7 +105,7 @@ export default function Footer() {
               alt="KMP Baskı"
               width={36}
               height={36}
-              className="object-contain h-9 w-auto brightness-0 invert opacity-80"
+              className="object-contain h-9 w-auto"
             />
             <span className="text-lg font-black tracking-tight">
               <span className="text-white">KMP</span>
