@@ -41,7 +41,7 @@ const inputCls = "w-full border border-blue-100 rounded-xl px-4 py-2.5 text-sm f
 
 /* Boş form state */
 const emptyForm = () => ({
-  name: "", slug: "", price: "", features: "", category: "", isFeatured: false, isPriceOnRequest: false, isFirsat: false,
+  name: "", slug: "", price: "", features: "", category: "", isFeatured: false, isPriceOnRequest: false, isFirsat: false, isGidaKutusu: false,
 });
 
 const emptyReview = (): Review => ({ name: "", rating: 5, date: "", comment: "" });
@@ -141,7 +141,7 @@ function UrunYonetimiInner() {
   /* ── Düzenlemeye aç ── */
   const startEdit = (p: Product) => {
     setEditId(p.id);
-    setForm({ name: p.name, slug: p.slug, price: p.price ?? "", features: p.features ?? "", category: p.category, isFeatured: p.is_featured, isPriceOnRequest: p.is_price_on_request ?? false, isFirsat: p.is_firsat ?? false });
+    setForm({ name: p.name, slug: p.slug, price: p.price ?? "", features: p.features ?? "", category: p.category, isFeatured: p.is_featured, isPriceOnRequest: p.is_price_on_request ?? false, isFirsat: p.is_firsat ?? false, isGidaKutusu: p.is_gida_kutusu ?? false });
     setReviews(Array.isArray(p.reviews) ? p.reviews : []);
     const imgs = Array.isArray(p.images) && p.images.length > 0 ? p.images : p.image_url ? [p.image_url] : [];
     setExistingImages(imgs);
@@ -182,6 +182,7 @@ function UrunYonetimiInner() {
       is_featured:         form.isFeatured,
       is_price_on_request: form.isPriceOnRequest,
       is_firsat:           form.isFirsat,
+      is_gida_kutusu:      form.isGidaKutusu,
       reviews:             reviews.filter(r => r.name.trim() && r.comment.trim()),
       images:              allImages,
       image_url:           allImages[0] ?? "",
@@ -434,6 +435,11 @@ function UrunYonetimiInner() {
                   <span className="text-sm font-semibold text-orange-600 flex items-center gap-1.5">
                     <Flame size={14} /> Fırsat ürünü
                   </span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={form.isGidaKutusu} onChange={(e) => setForm((f) => ({ ...f, isGidaKutusu: e.target.checked }))}
+                    className="w-4 h-4 rounded accent-green-600" />
+                  <span className="text-sm font-semibold text-green-700">Gıda kutusu ürünü</span>
                 </label>
               </div>
             </div>

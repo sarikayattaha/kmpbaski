@@ -62,6 +62,7 @@ export type Product = {
   is_featured: boolean
   is_price_on_request: boolean  // true ise fiyat yerine "Fiyat Alınız" gösterilir
   is_firsat: boolean            // true ise "Fırsat" badge'i gösterilir
+  is_gida_kutusu: boolean       // true ise Gıda Kutuları slider'ında gösterilir
   sort_order: number | null     // sürükle-bırak sıralama
   reviews: Review[]
   images: string[]

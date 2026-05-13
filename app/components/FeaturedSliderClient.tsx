@@ -133,7 +133,15 @@ function ArrowBtn({
 }
 
 // ── Ana bileşen ───────────────────────────────────────────────────────────────
-export default function FeaturedSliderClient({ products }: { products: Product[] }) {
+export default function FeaturedSliderClient({
+  products,
+  title = "Öne Çıkan Ürünler",
+  viewAllHref = "/tum-urunler",
+}: {
+  products: Product[];
+  title?: string;
+  viewAllHref?: string;
+}) {
   const trackRef  = useRef<HTMLDivElement>(null);
   const hoveredRef = useRef(false);
 
@@ -171,9 +179,9 @@ export default function FeaturedSliderClient({ products }: { products: Product[]
 
         {/* Başlık */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-black text-[#07446c]">Öne Çıkan Ürünler</h2>
+          <h2 className="text-2xl font-black text-[#07446c]">{title}</h2>
           <Link
-            href="/tum-urunler"
+            href={viewAllHref}
             className="flex items-center gap-1 text-sm font-semibold text-[#0f75bc] hover:text-[#07446c] transition-colors"
           >
             Tümünü Gör <ChevronRight size={16} />
