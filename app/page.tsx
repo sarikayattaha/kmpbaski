@@ -6,6 +6,7 @@ import InfoBar from "@/app/components/InfoBar";
 import FeaturedSlider from "@/app/components/FeaturedSlider";
 import GidaKutulariSlider from "@/app/components/GidaKutulariSlider";
 import HowItWorksSection from "@/app/components/HowItWorksSection";
+import ContactFormSection from "@/app/components/ContactFormSection";
 import SectorGrid from "@/app/components/SectorGrid";
 import Footer from "@/app/components/Footer";
 
@@ -30,6 +31,9 @@ export default function Home() {
 
         {/* 3 Adımda Kusursuz Baskı */}
         <HowItWorksSection />
+
+        {/* Teklif / İletişim Formu */}
+        <ContactFormSection />
 
         {/* Sektörlere Göre Ürünler */}
         <SectorGrid />
