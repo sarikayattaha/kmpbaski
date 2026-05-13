@@ -63,7 +63,7 @@ export default function ContactFormSection() {
               Projenizi Anlatın
             </h2>
             <p className="text-gray-500 text-base leading-relaxed">
-              30 dakika içinde yanıt veriyoruz.
+              En hızlı şekilde yanıt veriyoruz.
             </p>
           </div>
 
