@@ -6,7 +6,7 @@ import { Printer, Package, Gift, ArrowRight, Users, Clock, Star, BadgeCheck } fr
 const STATS = [
   { value: "1000+", label: "Mutlu Müşteri",      Icon: Users       },
   { value: "30+",   label: "Yıl Deneyim",         Icon: Star        },
-  { value: "24sa",  label: "İçinde Yanıt",        Icon: Clock       },
+  { value: "24 Saat",  label: "İçinde Yanıt",      Icon: Clock       },
   { value: "%100",  label: "Yerli Üretim",         Icon: BadgeCheck  },
 ];
 
