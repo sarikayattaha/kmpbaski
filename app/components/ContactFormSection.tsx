@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Printer, Package, Gift, ArrowRight } from "lucide-react";
+import { Printer, Package, Gift, ArrowRight, Users, Clock, Star, BadgeCheck } from "lucide-react";
+
+const STATS = [
+  { value: "1000+", label: "Mutlu Müşteri",      Icon: Users       },
+  { value: "30+",   label: "Yıl Deneyim",         Icon: Star        },
+  { value: "24sa",  label: "İçinde Yanıt",        Icon: Clock       },
+  { value: "%100",  label: "Yerli Üretim",         Icon: BadgeCheck  },
+];
 
 const PROJECT_TYPES = [
   { value: "Baskı",     label: "Baskı",     Icon: Printer },
@@ -54,7 +61,7 @@ export default function ContactFormSection() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid md:grid-cols-2 gap-12 items-start">
 
-          {/* Sol: başlık */}
+          {/* Sol: başlık + istatistikler */}
           <div className="md:pt-4">
             <p className="text-xs font-bold tracking-[0.2em] uppercase text-[#0f75bc] mb-3">
               İletişim
@@ -62,9 +69,26 @@ export default function ContactFormSection() {
             <h2 className="text-3xl md:text-4xl font-black text-[#07446c] mb-4 leading-tight">
               Projenizi Anlatın
             </h2>
-            <p className="text-gray-500 text-base leading-relaxed">
+            <p className="text-gray-500 text-base leading-relaxed mb-10">
               En hızlı şekilde yanıt veriyoruz.
             </p>
+
+            <div className="grid grid-cols-2 gap-4">
+              {STATS.map(({ value, label, Icon }) => (
+                <div
+                  key={label}
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3"
+                >
+                  <div className="w-9 h-9 rounded-xl bg-[#0f75bc]/10 flex items-center justify-center">
+                    <Icon size={18} className="text-[#0f75bc]" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-black text-[#07446c] leading-none">{value}</p>
+                    <p className="text-xs text-gray-400 mt-1 font-medium">{label}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Sağ: form */}
