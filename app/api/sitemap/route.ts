@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { SITE_URL } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function GET() {
   const now = new Date().toISOString();
