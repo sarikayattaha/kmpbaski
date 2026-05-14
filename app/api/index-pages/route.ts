@@ -8,9 +8,10 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { SITE_URL }          from "@/lib/seo";
 import { getSupabase }        from "@/lib/supabase";
 import { notifyGoogle }       from "@/lib/google-indexing";
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://kmpbaski.com";
 
 function parseIntParam(value: string | null, fallback: number): number {
   const n = parseInt(value ?? "", 10);

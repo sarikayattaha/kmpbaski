@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { SITE_URL } from "@/lib/seo";
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://kmpbaski.com";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
