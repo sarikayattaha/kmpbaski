@@ -4,6 +4,7 @@ import "./globals.css";
 import WhatsAppButton from "./components/WhatsAppButton";
 import { OrganizationSchema, WebSiteSchema } from "@/app/components/SEO/Schema";
 import { SITE_NAME, SITE_URL } from "@/lib/seo";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,6 +49,7 @@ export default function RootLayout({
         {children}
         <WhatsAppButton />
       </body>
+      <GoogleAnalytics gaId="G-8L0PPR3DMD" />
     </html>
   );
 }
