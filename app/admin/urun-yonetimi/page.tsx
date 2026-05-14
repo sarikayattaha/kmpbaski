@@ -7,7 +7,7 @@ import Image from "next/image";
 import { supabase, type Product, type Category } from "@/lib/supabase";
 import {
   Plus, Trash2, LogOut, Loader2, CheckCircle,
-  AlertCircle, ImageIcon, Star, Upload, ExternalLink, Pencil, MessageSquare, X, Globe, Flame, GripVertical,
+  AlertCircle, ImageIcon, Star, Upload, ExternalLink, Pencil, MessageSquare, X, Globe, Flame, GripVertical, Send,
 } from "lucide-react";
 import { type Review } from "@/lib/supabase";
 import AdminGuard from "@/app/admin/_components/AdminGuard";
@@ -71,6 +71,21 @@ function UrunYonetimiInner() {
   const showToast = (msg: string, type: "success" | "error") => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 3500);
+  };
+
+  const [indexing, setIndexing] = useState(false);
+  const handleIndexing = async () => {
+    if (!confirm("Tüm ürün URL'leri Google'a gönderilsin mi?")) return;
+    setIndexing(true);
+    try {
+      const res = await fetch("/api/index-pages", { method: "POST" });
+      const data = await res.json();
+      showToast(`Google'a gönderildi: ${data.success} başarılı, ${data.failed} hatalı`, data.failed === 0 ? "success" : "error");
+    } catch {
+      showToast("Google'a gönderme başarısız.", "error");
+    } finally {
+      setIndexing(false);
+    }
   };
 
   const handleLogout = () => { sessionStorage.removeItem("kmp_admin"); window.location.href = "/admin/login"; };
@@ -236,6 +251,14 @@ function UrunYonetimiInner() {
           <a href="/admin/banner-yonetimi" className="text-xs text-blue-300 hover:text-white transition-colors">
             Banner Yönetimi →
           </a>
+          <button
+            onClick={handleIndexing}
+            disabled={indexing}
+            className="flex items-center gap-2 bg-green-500 hover:bg-green-600 disabled:opacity-60 px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
+          >
+            {indexing ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
+            {indexing ? "Gönderiliyor…" : "Google'a Gönder"}
+          </button>
           <button onClick={handleLogout}
             className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-semibold transition-colors">
             <LogOut size={15} /> Çıkış
