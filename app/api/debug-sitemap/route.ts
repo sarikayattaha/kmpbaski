@@ -15,7 +15,7 @@ export async function GET() {
     const supabase = createClient(url, key);
     const { data, error } = await supabase
       .from("products")
-      .select("slug, updated_at")
+      .select("slug")
       .not("slug", "is", null);
 
     if (error) {
@@ -32,7 +32,7 @@ export async function GET() {
         .filter((p) => p.slug)
         .map((p) => ({
           loc:     `${SITE}/urun/${p.slug}`,
-          lastmod: p.updated_at ? new Date(p.updated_at).toISOString() : now,
+          lastmod: now,
           freq:    "monthly",
           pri:     "0.7",
         })),

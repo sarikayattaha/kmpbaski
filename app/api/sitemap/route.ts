@@ -21,14 +21,14 @@ export async function GET() {
     const supabase = createClient(supabaseUrl, supabaseKey);
     const { data } = await supabase
       .from("products")
-      .select("slug, updated_at")
+      .select("slug")
       .not("slug", "is", null);
 
     for (const prod of data ?? []) {
       if (prod.slug) {
         urls.push({
           loc: `${SITE_URL}/urun/${prod.slug}`,
-          lastmod: prod.updated_at ? new Date(prod.updated_at).toISOString() : now,
+          lastmod: now,
           changefreq: "monthly",
           priority: "0.7",
         });
