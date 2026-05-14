@@ -1,53 +1,58 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://kmpbaski.com";
-
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const now = new Date().toISOString();
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  const urls: { loc: string; lastmod: string; changefreq: string; priority: string }[] = [
-    { loc: SITE_URL,                  lastmod: now, changefreq: "weekly",  priority: "1.0" },
-    { loc: `${SITE_URL}/tum-urunler`, lastmod: now, changefreq: "weekly",  priority: "0.8" },
-  ];
+  if (!url || !key) {
+    return NextResponse.json({ error: "Env eksik", url: !!url, key: !!key });
+  }
 
-  if (supabaseUrl && supabaseKey) {
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    const { data } = await supabase
+  try {
+    const supabase = createClient(url, key);
+    const { data, error } = await supabase
       .from("products")
       .select("slug, updated_at")
       .not("slug", "is", null);
 
-    for (const prod of data ?? []) {
-      if (prod.slug) {
-        urls.push({
-          loc: `${SITE_URL}/urun/${prod.slug}`,
-          lastmod: prod.updated_at ? new Date(prod.updated_at).toISOString() : now,
-          changefreq: "monthly",
-          priority: "0.7",
-        });
-      }
+    if (error) {
+      return NextResponse.json({ error: error.message });
     }
+
+    const SITE = "https://kmpbaski.com";
+    const now  = new Date().toISOString();
+
+    const rows = [
+      { loc: SITE,                  lastmod: now, freq: "weekly",  pri: "1.0" },
+      { loc: `${SITE}/tum-urunler`, lastmod: now, freq: "weekly",  pri: "0.8" },
+      ...(data ?? [])
+        .filter((p) => p.slug)
+        .map((p) => ({
+          loc:     `${SITE}/urun/${p.slug}`,
+          lastmod: p.updated_at ? new Date(p.updated_at).toISOString() : now,
+          freq:    "monthly",
+          pri:     "0.7",
+        })),
+    ];
+
+    const xml =
+      `<?xml version="1.0" encoding="UTF-8"?>\n` +
+      `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+      rows.map((r) =>
+        `  <url>\n    <loc>${r.loc}</loc>\n    <lastmod>${r.lastmod}</lastmod>\n    <changefreq>${r.freq}</changefreq>\n    <priority>${r.pri}</priority>\n  </url>`
+      ).join("\n") +
+      `\n</urlset>`;
+
+    return new NextResponse(xml, {
+      headers: {
+        "Content-Type": "application/xml",
+        "Cache-Control": "no-store",
+      },
+    });
+  } catch (err) {
+    return NextResponse.json({ error: String(err) });
   }
-
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map((u) => `  <url>
-    <loc>${u.loc}</loc>
-    <lastmod>${u.lastmod}</lastmod>
-    <changefreq>${u.changefreq}</changefreq>
-    <priority>${u.priority}</priority>
-  </url>`).join("\n")}
-</urlset>`;
-
-  return new NextResponse(xml, {
-    headers: {
-      "Content-Type": "application/xml",
-      "Cache-Control": "no-store",
-    },
-  });
 }
