@@ -48,8 +48,8 @@ export default function RootLayout({
         <WebSiteSchema />
         {children}
         <WhatsAppButton />
+        <GoogleAnalytics gaId="G-8L0PPR3DMD" />
       </body>
-      <GoogleAnalytics gaId="G-8L0PPR3DMD" />
     </html>
   );
 }
