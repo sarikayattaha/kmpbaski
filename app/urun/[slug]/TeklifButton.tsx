@@ -45,7 +45,7 @@ export default function TeklifButton({ product }: { product: Product }) {
       onClick={handleClick}
       className="
         group w-full flex items-center justify-center gap-3
-        bg-[#25d366] text-white font-black text-lg px-6 py-4 rounded-2xl
+        bg-[#25d366] text-white font-black text-xl px-6 py-4 rounded-2xl
         shadow-lg shadow-green-400/25
         transition-all duration-200
         hover:bg-[#1da851] hover:shadow-xl hover:shadow-green-400/40 hover:scale-[1.02]
