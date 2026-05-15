@@ -44,7 +44,7 @@ export default function TeklifButton({ product }: { product: Product }) {
     <button onClick={handleClick}
       className="w-full flex items-center justify-center gap-2.5 bg-[#25d366] hover:bg-[#1da851] active:bg-[#179443] text-white font-black px-6 py-4 rounded-2xl transition-colors shadow-lg shadow-green-400/20 text-sm">
       <MessageCircle size={18} />
-      Fiyat Teklifi Al
+      {product.is_price_on_request ? "Fiyat teklifi almak için tıkla" : "Fiyat Teklifi Al"}
     </button>
   );
 }

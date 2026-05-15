@@ -148,12 +148,7 @@ export default async function ProductPage(props: {
               </h1>
 
               {/* Fiyat */}
-              {product.is_price_on_request ? (
-                <div className="bg-orange-50 border border-orange-200 rounded-2xl px-5 py-4 inline-block">
-                  <p className="text-xs text-orange-500 font-semibold mb-0.5">Fiyat Bilgisi</p>
-                  <p className="text-3xl font-black text-orange-500 leading-none tracking-wide">Fiyat Alınız</p>
-                </div>
-              ) : product.price ? (
+              {!product.is_price_on_request && product.price && (
                 <div className="bg-[#f0fdf4] border border-green-100 rounded-2xl px-5 py-4 inline-block">
                   <p className="text-xs text-green-600 font-semibold mb-0.5">Başlayan Fiyat</p>
                   <p className="text-3xl font-black text-[#07446c] leading-none">
@@ -161,7 +156,7 @@ export default async function ProductPage(props: {
                     <span className="text-sm font-normal text-gray-400 ml-2">+KDV</span>
                   </p>
                 </div>
-              ) : null}
+              )}
 
               {/* Özellikler listesi */}
               {featureLines.length > 0 && (
