@@ -32,7 +32,27 @@ import Footer from "@/app/components/Footer";
 import TeklifButton from "./TeklifButton";
 import ProductGallery from "./ProductGallery";
 import ReviewsSection from "@/app/components/ReviewsSection";
-import { Tag, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { FAQSchema } from "@/app/components/SEO/Schema";
+import { Tag, ArrowLeft, CheckCircle2, ChevronDown } from "lucide-react";
+
+const PRODUCT_FAQS = [
+  {
+    q: "Minimum sipariş adedi nedir?",
+    a: "Minimum sipariş adedi ürüne göre farklılık göstermektedir. En doğru bilgi için müşteri hizmetlerimizi arayarak detaylı bilgi alabilirsiniz.",
+  },
+  {
+    q: "Teslimat süresi ne kadar?",
+    a: "Teslimat süresi ürün ve sipariş miktarına göre değişmektedir. Genellikle 2-5 iş günü içinde teslim edilmektedir. Kesin süre için müşteri hizmetlerimizi arayarak teyit ediniz.",
+  },
+  {
+    q: "Fiyat teklifi nasıl alabilirim?",
+    a: `Teklif formumuzu doldurabilir ya da +90 554 163 00 31 numaralı müşteri hizmetleri hattımızı arayabilirsiniz. En kısa sürede size geri dönüş yapıyoruz.`,
+  },
+  {
+    q: "Özel boyut veya tasarım yaptırabilir miyim?",
+    a: "Evet, özel ölçü ve tasarım talepleriniz için müşteri hizmetlerimizle iletişime geçmeniz yeterlidir. Uzman ekibimiz size en uygun çözümü sunar.",
+  },
+];
 
 export default async function ProductPage(props: {
   params: Promise<{ slug: string }>;
@@ -150,6 +170,27 @@ export default async function ProductPage(props: {
       </main>
 
       <ReviewsSection slug={slug} reviews={product.reviews} />
+
+      {/* FAQ */}
+      <FAQSchema faqs={PRODUCT_FAQS} />
+      <section className="bg-[#f8fafc] border-t border-gray-100 py-12">
+        <div className="max-w-3xl mx-auto px-4">
+          <h2 className="text-2xl font-black text-[#07446c] mb-6">Sıkça Sorulan Sorular</h2>
+          <div className="space-y-3">
+            {PRODUCT_FAQS.map((faq) => (
+              <details key={faq.q} className="group bg-white border border-gray-100 rounded-2xl overflow-hidden">
+                <summary className="flex items-center justify-between px-6 py-4 cursor-pointer list-none font-bold text-[#07446c] text-sm hover:bg-[#f0f9ff] transition-colors">
+                  {faq.q}
+                  <ChevronDown size={16} className="text-[#0f75bc] flex-shrink-0 group-open:rotate-180 transition-transform duration-200" />
+                </summary>
+                <p className="px-6 pb-4 pt-1 text-sm text-gray-600 leading-relaxed border-t border-gray-50">
+                  {faq.a}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <Footer />
     </div>
