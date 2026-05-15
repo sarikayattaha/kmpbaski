@@ -72,8 +72,7 @@ export default function HakkimizdaPage() {
               </h2>
               <div className="space-y-4 text-gray-600 leading-relaxed text-[15px]">
                 <p>
-                  KMP Baskı, onlarca yıllık sektör deneyimiyle İstanbul Zeytinburnu
-                  Matbaacılar Sitesi&apos;nden hizmet vermektedir.
+                  KMP Baskı, onlarca yıllık sektör deneyimiyle İstanbul&apos;da hizmet vermektedir.
                 </p>
                 <p>
                   Kartvizit, broşür, katalog, tabela, ambalaj ve promosyon ürünleri
