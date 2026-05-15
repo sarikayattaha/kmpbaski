@@ -32,8 +32,12 @@ import Footer from "@/app/components/Footer";
 import TeklifButton from "./TeklifButton";
 import ProductGallery from "./ProductGallery";
 import ReviewsSection from "@/app/components/ReviewsSection";
-import { FAQSchema } from "@/app/components/SEO/Schema";
+import { FAQSchema, ProductSchema, BreadcrumbSchema } from "@/app/components/SEO/Schema";
 import { Tag, ArrowLeft, CheckCircle2, ChevronDown } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { SITE_URL } from "@/lib/seo";
+import { toSlug } from "@/lib/seo";
 
 const PRODUCT_FAQS = [
   {
@@ -72,14 +76,37 @@ export default async function ProductPage(props: {
 
   const product = data as Product;
 
+  // İlgili ürünler — aynı kategori, mevcut ürün hariç, max 4
+  const { data: relatedData } = await supabase
+    .from("products")
+    .select("id, name, slug, image_url, price, is_price_on_request")
+    .eq("category", product.category)
+    .neq("slug", slug)
+    .limit(4);
+
+  const relatedProducts = (relatedData ?? []) as Pick<Product, "id" | "name" | "slug" | "image_url" | "price" | "is_price_on_request">[];
+
   // Özellikler: satır satır listele
   const featureLines = (product.features ?? "")
     .split("\n")
     .map((l) => l.trim())
     .filter(Boolean);
 
+  const productUrl = `${SITE_URL}/urun/${slug}`;
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
+      <ProductSchema
+        name={product.name}
+        url={productUrl}
+        image={product.image_url}
+        category={product.category}
+      />
+      <BreadcrumbSchema items={[
+        { name: "Ana Sayfa", url: SITE_URL },
+        { name: product.category, url: `${SITE_URL}/kategori/${toSlug(product.category)}` },
+        { name: product.name, url: productUrl },
+      ]} />
       <Navbar />
 
       {/* Breadcrumb */}
@@ -191,6 +218,52 @@ export default async function ProductPage(props: {
           </div>
         </div>
       </section>
+
+      {/* İlgili ürünler */}
+      {relatedProducts.length > 0 && (
+        <section className="bg-white border-t border-gray-100 py-12">
+          <div className="max-w-5xl mx-auto px-4 md:px-6">
+            <h2 className="text-2xl font-black text-[#07446c] mb-6">
+              {product.category} Kategorisindeki Diğer Ürünler
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {relatedProducts.map((p) => (
+                <Link
+                  key={p.id}
+                  href={`/urun/${p.slug}`}
+                  className="group bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col"
+                >
+                  <div className="relative h-36 bg-[#f0f9ff] flex items-center justify-center overflow-hidden">
+                    {p.image_url ? (
+                      <Image
+                        src={p.image_url}
+                        alt={p.name}
+                        fill
+                        sizes="(max-width: 768px) 50vw, 25vw"
+                        className="object-contain p-3 group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <span className="text-4xl opacity-20">🖨️</span>
+                    )}
+                  </div>
+                  <div className="p-3 flex flex-col flex-1">
+                    <p className="font-bold text-[#07446c] text-xs leading-snug group-hover:text-[#0f75bc] transition-colors line-clamp-2">
+                      {p.name}
+                    </p>
+                    <div className="mt-auto pt-2">
+                      {p.is_price_on_request ? (
+                        <span className="text-xs font-black text-orange-500">Fiyat Alınız</span>
+                      ) : p.price ? (
+                        <span className="text-sm font-black text-[#07446c]">{p.price}</span>
+                      ) : null}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <Footer />
     </div>
