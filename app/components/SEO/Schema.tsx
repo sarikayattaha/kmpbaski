@@ -14,8 +14,8 @@ export function OrganizationSchema() {
     name: SITE_NAME,
     url: SITE_URL,
     telephone: SITE_PHONE,
-    logo: `${SITE_URL}/icon.png`,
-    image: `${SITE_URL}/icon.png`,
+    logo: `${SITE_URL}/kmpbaskilogo.png`,
+    image: `${SITE_URL}/kmpbaskilogo.png`,
     priceRange: "₺₺",
     address: {
       "@type": "PostalAddress",

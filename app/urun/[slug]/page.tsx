@@ -1,7 +1,32 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getSupabase, type Product } from "@/lib/supabase";
+
+export async function generateMetadata(props: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await props.params;
+  const supabase = getSupabase();
+  if (!supabase) return {};
+  const { data } = await supabase
+    .from("products")
+    .select("name, description, image_url")
+    .eq("slug", slug)
+    .single();
+  if (!data) return {};
+  return {
+    title: data.name,
+    description: data.description
+      ? String(data.description).slice(0, 160)
+      : `${data.name} baskı hizmeti — hızlı teslimat, kalite garantisi. KMP Baskı'dan fiyat alın.`,
+    alternates: { canonical: `/urun/${slug}` },
+    openGraph: {
+      images: data.image_url ? [{ url: data.image_url }] : [],
+    },
+  };
+}
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import TeklifButton from "./TeklifButton";

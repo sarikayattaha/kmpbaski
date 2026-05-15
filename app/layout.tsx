@@ -26,10 +26,15 @@ export const metadata: Metadata = {
   description:
     "Kartvizit, broşür, katalog, tabela, ambalaj ve promosyon baskıda profesyonel çözümler. KMP Baskı ile kaliteyi keşfedin.",
   metadataBase: new URL(SITE_URL),
+  icons: {
+    icon: "/kmpbaskilogo.png",
+    apple: "/kmpbaskilogo.png",
+  },
   openGraph: {
     siteName: SITE_NAME,
     locale: "tr_TR",
     type: "website",
+    images: [{ url: "/kmpbaskilogo.png", width: 512, height: 512, alt: SITE_NAME }],
   },
 };
 

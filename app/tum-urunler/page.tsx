@@ -1,6 +1,13 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
 import { Suspense } from "react";
+
+export const metadata: Metadata = {
+  title: "Tüm Ürünler",
+  description: "Kartvizit, broşür, katalog, tabela, ambalaj ve daha fazlası. KMP Baskı'nın tüm baskı ürünlerini keşfedin, fiyat alın.",
+  alternates: { canonical: "/tum-urunler" },
+};
 import { getSupabase, type Product } from "@/lib/supabase";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
