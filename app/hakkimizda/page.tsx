@@ -19,7 +19,7 @@ const STATS = [
 ];
 
 const VALUES = [
-  { title: "Kalite", desc: "Her baskıda en yüksek kalite standartlarını koruyoruz. İtalyan ve Alman makinelerimizle kusursuz sonuçlar üretiyoruz." },
+  { title: "Kalite", desc: "Her baskıda en yüksek kalite standartlarını koruyoruz. Alman ve Japon makinelerimizle kusursuz sonuçlar üretiyoruz." },
   { title: "Hız",    desc: "Siparişlerinizi en kısa sürede teslim ediyoruz. Acil siparişler için ekspres seçeneklerimiz mevcuttur." },
   { title: "Güven",  desc: "Müşteri memnuniyeti her zaman önceliğimizdir. 1000'den fazla mutlu müşterimiz buna tanıklık ediyor." },
   { title: "Yerli Üretim", desc: "Tüm ürünlerimizi Türkiye'de, kendi tesislerimizde üretiyoruz. Dışa bağımlılık yok." },
@@ -40,7 +40,7 @@ export default function HakkimizdaPage() {
             Profesyonel Baskı<br />ve Ambalaj Çözümleri
           </h1>
           <p className="text-blue-200 text-lg leading-relaxed max-w-2xl mx-auto">
-            KMP Baskı olarak İstanbul Zeytinburnu&apos;ndan Türkiye&apos;nin dört bir yanına
+            KMP Baskı olarak İstanbul&apos;dan tüm Dünya&apos;ya
             kaliteli baskı ve ambalaj hizmetleri sunuyoruz.
           </p>
         </div>
