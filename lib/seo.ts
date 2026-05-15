@@ -1,3 +1,12 @@
+export function toSlug(str: string): string {
+  return str
+    .toLowerCase()
+    .replace(/ş/g, "s").replace(/ç/g, "c").replace(/ğ/g, "g")
+    .replace(/ü/g, "u").replace(/ö/g, "o").replace(/ı/g, "i").replace(/İ/g, "i")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
 const MONTHS_TR = [
   "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
   "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık",

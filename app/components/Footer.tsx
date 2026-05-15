@@ -16,10 +16,10 @@ const col1 = {
 const col2 = {
   title: "Hakkımızda",
   links: [
-    { label: "Hakkımızda", href: "#" },
-    { label: "Sıkça Sorulan Sorular", href: "#" },
-    { label: "İletişim", href: "#" },
-    { label: "Teklif İste", href: "#" },
+    { label: "Hakkımızda", href: "/hakkimizda" },
+    { label: "Sıkça Sorulan Sorular", href: "/sss" },
+    { label: "İletişim", href: "/iletisim" },
+    { label: "Teklif İste", href: "/iletisim" },
     { label: "Kariyer", href: "#" },
     { label: "Blog", href: "#" },
   ],
