@@ -4,36 +4,36 @@ import { Clock, Phone, MapPin } from "lucide-react";
 const col1 = {
   title: "Müşteri İlişkileri",
   links: [
-    "Üyelik Sözleşmesi",
-    "İade / Değişim",
-    "KVKK Aydınlatma Metni",
-    "Güvenli Alışveriş",
-    "Kargo",
-    "Yardım Merkezi",
+    { label: "Üyelik Sözleşmesi", href: "#" },
+    { label: "İade / Değişim", href: "#" },
+    { label: "KVKK Aydınlatma Metni", href: "#" },
+    { label: "Güvenli Alışveriş", href: "#" },
+    { label: "Kargo", href: "#" },
+    { label: "Yardım Merkezi", href: "#" },
   ],
 };
 
 const col2 = {
   title: "Hakkımızda",
   links: [
-    "Hakkımızda",
-    "Sıkça Sorulan Sorular",
-    "İletişim",
-    "Teklif İste",
-    "Kariyer",
-    "Blog",
+    { label: "Hakkımızda", href: "#" },
+    { label: "Sıkça Sorulan Sorular", href: "#" },
+    { label: "İletişim", href: "#" },
+    { label: "Teklif İste", href: "#" },
+    { label: "Kariyer", href: "#" },
+    { label: "Blog", href: "#" },
   ],
 };
 
 const col3 = {
-  title: "Tüm Ürünler",
+  title: "Ürünler",
   links: [
-    "Tüm Matbaa Baskı Ürünleri",
-    "Kartvizitler",
-    "Broşür & Katalog",
-    "Tabela & Afiş",
-    "Ambalaj Ürünleri",
-    "Promosyon Ürünleri",
+    { label: "Tüm Ürünler", href: "/tum-urunler" },
+    { label: "Karton Çanta", href: "/urun/karton-canta" },
+    { label: "Taşlama Kutu", href: "/urun/taslama-kutu" },
+    { label: "Broşür & Katalog", href: "/tum-urunler?kategori=Broş%C3%BCr" },
+    { label: "Ambalaj Ürünleri", href: "/tum-urunler?kategori=Ambalaj" },
+    { label: "Promosyon Ürünleri", href: "/tum-urunler?kategori=Promosyon" },
   ],
 };
 
@@ -47,8 +47,8 @@ export default function Footer() {
           <p className="text-xs font-bold uppercase tracking-widest text-blue-300 mb-4">{col1.title}</p>
           <ul className="space-y-2">
             {col1.links.map((l) => (
-              <li key={l}>
-                <a href="#" className="text-sm text-blue-200 hover:text-white transition-colors">{l}</a>
+              <li key={l.label}>
+                <a href={l.href} className="text-sm text-blue-200 hover:text-white transition-colors">{l.label}</a>
               </li>
             ))}
           </ul>
@@ -59,8 +59,8 @@ export default function Footer() {
           <p className="text-xs font-bold uppercase tracking-widest text-blue-300 mb-4">{col2.title}</p>
           <ul className="space-y-2">
             {col2.links.map((l) => (
-              <li key={l}>
-                <a href="#" className="text-sm text-blue-200 hover:text-white transition-colors">{l}</a>
+              <li key={l.label}>
+                <a href={l.href} className="text-sm text-blue-200 hover:text-white transition-colors">{l.label}</a>
               </li>
             ))}
           </ul>
@@ -71,8 +71,8 @@ export default function Footer() {
           <p className="text-xs font-bold uppercase tracking-widest text-blue-300 mb-4">{col3.title}</p>
           <ul className="space-y-2">
             {col3.links.map((l) => (
-              <li key={l}>
-                <a href="#" className="text-sm text-blue-200 hover:text-white transition-colors">{l}</a>
+              <li key={l.label}>
+                <a href={l.href} className="text-sm text-blue-200 hover:text-white transition-colors">{l.label}</a>
               </li>
             ))}
           </ul>
