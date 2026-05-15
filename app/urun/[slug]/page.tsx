@@ -196,6 +196,52 @@ export default async function ProductPage(props: {
         </div>
       </main>
 
+      {/* İlgili ürünler */}
+      {relatedProducts.length > 0 && (
+        <section className="bg-white border-t border-gray-100 py-12">
+          <div className="max-w-5xl mx-auto px-4 md:px-6">
+            <h2 className="text-2xl font-black text-[#07446c] mb-6">
+              {product.category} Kategorisindeki Diğer Ürünler
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {relatedProducts.map((p) => (
+                <Link
+                  key={p.id}
+                  href={`/urun/${p.slug}`}
+                  className="group bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col"
+                >
+                  <div className="relative h-36 bg-white flex items-center justify-center overflow-hidden">
+                    {p.image_url ? (
+                      <Image
+                        src={p.image_url}
+                        alt={p.name}
+                        fill
+                        sizes="(max-width: 768px) 50vw, 25vw"
+                        className="object-contain p-3 group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <span className="text-4xl opacity-20">🖨️</span>
+                    )}
+                  </div>
+                  <div className="p-3 flex flex-col flex-1 border-t border-gray-50">
+                    <p className="font-bold text-[#07446c] text-xs leading-snug group-hover:text-[#0f75bc] transition-colors line-clamp-2">
+                      {p.name}
+                    </p>
+                    <div className="mt-auto pt-2">
+                      {p.is_price_on_request ? (
+                        <span className="text-xs font-black text-orange-500">Fiyat Alınız</span>
+                      ) : p.price ? (
+                        <span className="text-sm font-black text-[#07446c]">{p.price}</span>
+                      ) : null}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       <ReviewsSection slug={slug} reviews={product.reviews} />
 
       {/* FAQ */}
@@ -218,52 +264,6 @@ export default async function ProductPage(props: {
           </div>
         </div>
       </section>
-
-      {/* İlgili ürünler */}
-      {relatedProducts.length > 0 && (
-        <section className="bg-white border-t border-gray-100 py-12">
-          <div className="max-w-5xl mx-auto px-4 md:px-6">
-            <h2 className="text-2xl font-black text-[#07446c] mb-6">
-              {product.category} Kategorisindeki Diğer Ürünler
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {relatedProducts.map((p) => (
-                <Link
-                  key={p.id}
-                  href={`/urun/${p.slug}`}
-                  className="group bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col"
-                >
-                  <div className="relative h-36 bg-[#f0f9ff] flex items-center justify-center overflow-hidden">
-                    {p.image_url ? (
-                      <Image
-                        src={p.image_url}
-                        alt={p.name}
-                        fill
-                        sizes="(max-width: 768px) 50vw, 25vw"
-                        className="object-contain p-3 group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <span className="text-4xl opacity-20">🖨️</span>
-                    )}
-                  </div>
-                  <div className="p-3 flex flex-col flex-1">
-                    <p className="font-bold text-[#07446c] text-xs leading-snug group-hover:text-[#0f75bc] transition-colors line-clamp-2">
-                      {p.name}
-                    </p>
-                    <div className="mt-auto pt-2">
-                      {p.is_price_on_request ? (
-                        <span className="text-xs font-black text-orange-500">Fiyat Alınız</span>
-                      ) : p.price ? (
-                        <span className="text-sm font-black text-[#07446c]">{p.price}</span>
-                      ) : null}
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       <Footer />
     </div>
