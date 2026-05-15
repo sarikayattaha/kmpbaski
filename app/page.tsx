@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 import Navbar from "@/app/components/Navbar";
 import HeroBanner from "@/app/components/HeroBanner";

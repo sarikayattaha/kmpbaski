@@ -43,11 +43,23 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL
+    ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin
+    : null;
+
   return (
     <html
       lang="tr"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        {supabaseHost && (
+          <>
+            <link rel="preconnect" href={supabaseHost} />
+            <link rel="dns-prefetch" href={supabaseHost} />
+          </>
+        )}
+      </head>
       <body className="min-h-full flex flex-col">
         <OrganizationSchema />
         <WebSiteSchema />
