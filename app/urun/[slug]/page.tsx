@@ -21,7 +21,7 @@ export async function generateMetadata(props: {
     description: data.description
       ? String(data.description).slice(0, 160)
       : `${data.name} baskı hizmeti — hızlı teslimat, kalite garantisi. KMP Baskı'dan fiyat alın.`,
-    alternates: { canonical: `/urun/${slug}` },
+    alternates: { canonical: `${SITE_URL}/urun/${slug}` },
     openGraph: {
       images: data.image_url ? [{ url: data.image_url }] : [],
     },

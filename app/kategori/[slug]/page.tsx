@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { getSupabase, type Product } from "@/lib/supabase";
-import { toSlug, SITE_NAME } from "@/lib/seo";
+import { toSlug, SITE_NAME, SITE_URL } from "@/lib/seo";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import { Tag } from "lucide-react";
@@ -39,7 +39,7 @@ export async function generateMetadata(props: {
   return {
     title: `${data.name} Baskı`,
     description: `${data.name} baskı ürünleri — ${data.products.length} çeşit. Hızlı teslimat, kalite garantisi. ${SITE_NAME}'dan fiyat alın.`,
-    alternates: { canonical: `/kategori/${slug}` },
+    alternates: { canonical: `${SITE_URL}/kategori/${slug}` },
   };
 }
 
