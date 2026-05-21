@@ -156,12 +156,6 @@ export function ProductSchema({
     ...(image && { image }),
     ...(category && { category }),
     brand: { "@type": "Brand", name: SITE_NAME },
-    offers: {
-      "@type": "Offer",
-      availability: "https://schema.org/InStock",
-      priceCurrency: "TRY",
-      seller: { "@type": "Organization", name: SITE_NAME },
-    },
   };
   return (
     <script
