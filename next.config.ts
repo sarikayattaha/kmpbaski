@@ -1,16 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  async redirects() {
-    return [
-      {
-        source: "/:path*",
-        has: [{ type: "host", value: "www.kmpbaski.com" }],
-        destination: "https://kmpbaski.com/:path*",
-        permanent: true,
-      },
-    ];
-  },
   async rewrites() {
     return [
       { source: "/sitemap.xml", destination: "/api/debug-sitemap" },
