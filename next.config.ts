@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
-    minimumCacheTTL: 2592000, // 30 gün — aynı görsel tekrar optimize edilmez
+    unoptimized: true, // Vercel image optimization kotasını tüketmez; görseller Supabase'den direkt gelir
     remotePatterns: [
       {
         protocol: "https",
