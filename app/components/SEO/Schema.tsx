@@ -62,6 +62,31 @@ export function WebSiteSchema() {
   );
 }
 
+// ── SiteNavigationElement — Google sitelink sinyali ──────────────────────────
+
+export function SiteNavigationSchema() {
+  const navItems = [
+    { name: "Karton Çanta",       url: `${SITE_URL}/urun/karton-canta` },
+    { name: "Kraft Karton Çanta", url: `${SITE_URL}/urun/kraft-karton-canta` },
+    { name: "Taşlama Kutu",       url: `${SITE_URL}/urun/taslama-kutu` },
+    { name: "Küp Bloknot",        url: `${SITE_URL}/urun/kup-bloknot` },
+  ];
+
+  const data = navItems.map((item) => ({
+    "@context": "https://schema.org",
+    "@type": "SiteNavigationElement",
+    name: item.name,
+    url: item.url,
+  }));
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: ld(data) }}
+    />
+  );
+}
+
 // ── FAQPage ───────────────────────────────────────────────────────────────────
 
 export function FAQSchema({ faqs }: { faqs: { q: string; a: string }[] }) {

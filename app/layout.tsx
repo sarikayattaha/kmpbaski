@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import WhatsAppButton from "./components/WhatsAppButton";
-import { OrganizationSchema, WebSiteSchema } from "@/app/components/SEO/Schema";
+import { OrganizationSchema, WebSiteSchema, SiteNavigationSchema } from "@/app/components/SEO/Schema";
 import { SITE_NAME, SITE_URL } from "@/lib/seo";
 import { GoogleAnalytics } from "@next/third-parties/google";
 
@@ -63,6 +63,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <OrganizationSchema />
         <WebSiteSchema />
+        <SiteNavigationSchema />
         {children}
         <WhatsAppButton />
         <GoogleAnalytics gaId="G-8L0PPR3DMD" />

@@ -17,6 +17,14 @@ export async function GET() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+  // Öne çıkarılacak ürün slug'ları — Google sitelink'lerini yönlendirmek için yüksek priority
+  const featuredSlugs = new Set([
+    "karton-canta",
+    "kraft-karton-canta",
+    "taslama-kutu",
+    "kup-bloknot",
+  ]);
+
   if (supabaseUrl && supabaseKey) {
     const supabase = createClient(supabaseUrl, supabaseKey);
     const { data } = await supabase
@@ -30,7 +38,7 @@ export async function GET() {
           loc: `${SITE_URL}/urun/${prod.slug}`,
           lastmod: now,
           changefreq: "monthly",
-          priority: "0.7",
+          priority: featuredSlugs.has(prod.slug) ? "0.95" : "0.6",
         });
       }
     }
