@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import WhatsAppButton from "./components/WhatsAppButton";
+import AuthRecoveryRedirect from "./components/AuthRecoveryRedirect";
 import { OrganizationSchema, WebSiteSchema, SiteNavigationSchema } from "@/app/components/SEO/Schema";
 import { SITE_NAME, SITE_URL } from "@/lib/seo";
 import { GoogleAnalytics } from "@next/third-parties/google";
@@ -66,6 +67,7 @@ export default function RootLayout({
         <SiteNavigationSchema />
         {children}
         <WhatsAppButton />
+        <AuthRecoveryRedirect />
         <GoogleAnalytics gaId="G-8L0PPR3DMD" />
       </body>
     </html>
