@@ -40,7 +40,7 @@ function KategoriYonetimiInner() {
     setTimeout(() => setToast(null), 3500);
   };
 
-  const handleLogout = () => { sessionStorage.removeItem("kmp_admin"); window.location.href = "/admin/login"; };
+  const handleLogout = async () => { await supabase.auth.signOut(); window.location.href = "/admin/login"; };
 
   const fetchCategories = async () => {
     setLoading(true);

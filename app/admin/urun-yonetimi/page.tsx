@@ -88,7 +88,7 @@ function UrunYonetimiInner() {
     }
   };
 
-  const handleLogout = () => { sessionStorage.removeItem("kmp_admin"); window.location.href = "/admin/login"; };
+  const handleLogout = async () => { await supabase.auth.signOut(); window.location.href = "/admin/login"; };
 
   /* ── Drag-drop sıralama ── */
   const handleDragStart = (idx: number) => { dragIdxRef.current = idx; };

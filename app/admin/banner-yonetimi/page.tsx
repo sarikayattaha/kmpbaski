@@ -172,7 +172,7 @@ function BannerYonetimiInner() {
           <a href="/admin/urun-yonetimi" className="text-xs text-blue-300 hover:text-white transition-colors">Ürün Yönetimi →</a>
           <a href="/admin/kategori-yonetimi" className="text-xs text-blue-300 hover:text-white transition-colors">Kategori Yönetimi →</a>
           <button
-            onClick={() => { sessionStorage.removeItem("kmp_admin"); window.location.href = "/admin/login"; }}
+            onClick={async () => { await supabase.auth.signOut(); window.location.href = "/admin/login"; }}
             className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
           >
             <LogOut size={15} /> Çıkış

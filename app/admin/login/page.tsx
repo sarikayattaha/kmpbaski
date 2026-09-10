@@ -3,22 +3,26 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ImageIcon } from "lucide-react";
-
-const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_KEY ?? "kmpbaski2024";
+import { supabase } from "@/lib/supabase";
 
 export default function AdminLogin() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
-  const [passErr, setPassErr] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [loginErr, setLoginErr] = useState(false);
 
-  const handleLogin = () => {
-    if (pass === ADMIN_KEY) {
-      sessionStorage.setItem("kmp_admin", "1");
-      router.replace("/admin/urun-yonetimi");
-    } else {
-      setPassErr(true);
-      setTimeout(() => setPassErr(false), 1500);
+  const handleLogin = async () => {
+    if (loading) return;
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
+    setLoading(false);
+    if (error) {
+      setLoginErr(true);
+      setTimeout(() => setLoginErr(false), 1500);
+      return;
     }
+    router.replace("/admin/urun-yonetimi");
   };
 
   return (
@@ -32,23 +36,34 @@ export default function AdminLogin() {
           <p className="text-sm text-slate-400 mt-1">Yönetim Paneli</p>
         </div>
         <input
+          type="email"
+          placeholder="E-posta"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+          className={`w-full border rounded-xl px-4 py-3 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-[#0f75bc] transition-all ${
+            loginErr ? "border-red-400 bg-red-50" : "border-blue-100"
+          }`}
+        />
+        <input
           type="password"
-          placeholder="Yönetici şifresi"
+          placeholder="Şifre"
           value={pass}
           onChange={(e) => setPass(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleLogin()}
           className={`w-full border rounded-xl px-4 py-3 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-[#0f75bc] transition-all ${
-            passErr ? "border-red-400 bg-red-50" : "border-blue-100"
+            loginErr ? "border-red-400 bg-red-50" : "border-blue-100"
           }`}
         />
         <button
           onClick={handleLogin}
-          className="w-full bg-[#0f75bc] hover:bg-[#07446c] text-white font-bold py-3 rounded-xl transition-colors"
+          disabled={loading}
+          className="w-full bg-[#0f75bc] hover:bg-[#07446c] text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-60"
         >
-          Giriş Yap
+          {loading ? "Giriş yapılıyor..." : "Giriş Yap"}
         </button>
-        {passErr && (
-          <p className="text-xs text-red-500 text-center mt-2">Hatalı şifre.</p>
+        {loginErr && (
+          <p className="text-xs text-red-500 text-center mt-2">Hatalı e-posta veya şifre.</p>
         )}
       </div>
     </div>
