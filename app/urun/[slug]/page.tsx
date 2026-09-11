@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getSupabase, type Product } from "@/lib/supabase";
+import { SITE_URL, toSlug } from "@/lib/seo";
 
 export async function generateMetadata(props: {
   params: Promise<{ slug: string }>;
@@ -36,8 +37,6 @@ import { FAQSchema, ProductSchema, BreadcrumbSchema } from "@/app/components/SEO
 import { Tag, ArrowLeft, CheckCircle2, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { SITE_URL } from "@/lib/seo";
-import { toSlug } from "@/lib/seo";
 
 const PRODUCT_FAQS = [
   {
@@ -66,12 +65,13 @@ export default async function ProductPage(props: {
   const supabase = getSupabase();
   if (!supabase) notFound();
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("products")
     .select("*")
     .eq("slug", slug)
     .single();
 
+  if (error) console.error(`[urun/${slug}] Supabase hatası:`, error.message);
   if (!data) notFound();
 
   const product = data as Product;
@@ -101,6 +101,8 @@ export default async function ProductPage(props: {
         url={productUrl}
         image={product.image_url}
         category={product.category}
+        price={product.price}
+        isPriceOnRequest={product.is_price_on_request}
       />
       <BreadcrumbSchema items={[
         { name: "Ana Sayfa", url: SITE_URL },

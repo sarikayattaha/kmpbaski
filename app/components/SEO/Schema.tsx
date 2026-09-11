@@ -134,19 +134,39 @@ export function BreadcrumbSchema({
 
 // ── Product ───────────────────────────────────────────────────────────────────
 
+// Serbest metin fiyatları ("₺120", "120,00 ₺", "1.200,50 TL") schema.org'un
+// beklediği ondalık-noktalı sayı formatına çevirir. Ayrıştırılamayan veya
+// anlamsız (<= 0) değerlerde null döner — offers o zaman hiç eklenmez.
+function parsePrice(raw?: string): string | null {
+  if (!raw) return null;
+  const cleaned = raw.replace(/[^\d.,]/g, "").trim();
+  if (!cleaned) return null;
+  const normalized = cleaned.includes(",")
+    ? cleaned.replace(/\./g, "").replace(",", ".")
+    : cleaned;
+  const num = parseFloat(normalized);
+  if (!isFinite(num) || num <= 0) return null;
+  return num.toFixed(2);
+}
+
 export function ProductSchema({
   name,
   description,
   url,
   image,
   category,
+  price,
+  isPriceOnRequest,
 }: {
   name: string;
   description?: string;
   url: string;
   image?: string;
   category?: string;
+  price?: string;
+  isPriceOnRequest?: boolean;
 }) {
+  const parsedPrice = isPriceOnRequest ? null : parsePrice(price);
   const data = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -156,6 +176,15 @@ export function ProductSchema({
     ...(image && { image }),
     ...(category && { category }),
     brand: { "@type": "Brand", name: SITE_NAME },
+    ...(parsedPrice && {
+      offers: {
+        "@type": "Offer",
+        url,
+        priceCurrency: "TRY",
+        price: parsedPrice,
+        availability: "https://schema.org/InStock",
+      },
+    }),
   };
   return (
     <script

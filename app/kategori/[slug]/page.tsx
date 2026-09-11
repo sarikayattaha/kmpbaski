@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { cache } from "react";
 import { getSupabase, type Product } from "@/lib/supabase";
 import { toSlug, SITE_NAME, SITE_URL } from "@/lib/seo";
 import Navbar from "@/app/components/Navbar";
@@ -10,25 +11,28 @@ import { Tag } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-async function getCategoryData(slug: string): Promise<{ name: string; products: Product[] } | null> {
+// cache(): generateMetadata ve sayfa bileşeni aynı slug için bu fonksiyonu
+// ayrı ayrı çağırıyor — React bu sarmalayıcıyla istek başına sonucu
+// paylaşıp ikinci sorguyu önlüyor.
+const getCategoryData = cache(async (slug: string): Promise<{ name: string; products: Product[] } | null> => {
   const supabase = getSupabase();
   if (!supabase) return null;
 
-  const { data } = await supabase
-    .from("products")
-    .select("*")
-    .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: false });
-
-  if (!data) return null;
-
-  const allProducts = data as Product[];
-  const categoryName = allProducts.find((p) => toSlug(p.category) === slug)?.category;
+  const { data: categories, error: categoriesError } = await supabase.from("categories").select("name");
+  if (categoriesError) console.error(`[kategori/${slug}] categories sorgu hatası:`, categoriesError.message);
+  const categoryName = categories?.find((c) => toSlug(c.name) === slug)?.name;
   if (!categoryName) return null;
 
-  const products = allProducts.filter((p) => p.category === categoryName);
-  return { name: categoryName, products };
-}
+  const { data: products, error: productsError } = await supabase
+    .from("products")
+    .select("*")
+    .eq("category", categoryName)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false });
+  if (productsError) console.error(`[kategori/${slug}] products sorgu hatası:`, productsError.message);
+
+  return { name: categoryName, products: (products ?? []) as Product[] };
+});
 
 export async function generateMetadata(props: {
   params: Promise<{ slug: string }>;

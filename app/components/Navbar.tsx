@@ -15,6 +15,12 @@ import MegaMenu, { type NavCategory, type NavProduct } from "./MegaMenu";
 type SearchResult   = { name: string; slug: string; image_url: string; category: string };
 type NavbarCategory = { name: string; navbar_order: number };
 
+// Navbar her sayfada yeniden mount oluyor (paylaşılan bir layout'ta değil) —
+// modül seviyesinde tutulan bu cache, aynı tarayıcı oturumunda gezinirken
+// mega menü/kategori verisinin her sayfa geçişinde yeniden çekilmesini önler.
+let menuDataCache: NavCategory[] | null = null;
+let navbarCatsCache: NavbarCategory[] | null = null;
+
 // ── Bileşen ──────────────────────────────────────────────────────────────────
 export default function Navbar() {
   const router = useRouter();
@@ -40,6 +46,7 @@ export default function Navbar() {
 
   /* ── Ürün menüsü (mega menu) ── */
   useEffect(() => {
+    if (menuDataCache) { setMenuData(menuDataCache); setMenuLoading(false); return; }
     supabase
       .from("products")
       .select("name, slug, image_url, category")
@@ -51,19 +58,26 @@ export default function Navbar() {
           if (!map[p.category]) map[p.category] = [];
           map[p.category].push({ name: p.name, slug: p.slug, image_url: p.image_url });
         }
-        setMenuData(Object.entries(map).map(([name, products]) => ({ name, products })));
+        const built = Object.entries(map).map(([name, products]) => ({ name, products }));
+        menuDataCache = built;
+        setMenuData(built);
         setMenuLoading(false);
       });
   }, []);
 
   /* ── Navbar kategori barı ── */
   useEffect(() => {
+    if (navbarCatsCache) { setNavbarCats(navbarCatsCache); return; }
     supabase
       .from("categories")
       .select("name, navbar_order")
       .eq("show_in_navbar", true)
       .order("navbar_order", { ascending: true })
-      .then(({ data }) => setNavbarCats((data as NavbarCategory[]) ?? []));
+      .then(({ data }) => {
+        const cats = (data as NavbarCategory[]) ?? [];
+        navbarCatsCache = cats;
+        setNavbarCats(cats);
+      });
   }, []);
 
   /* ── Dışa tıklayınca kapat ── */
