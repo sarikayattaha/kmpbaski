@@ -65,12 +65,6 @@ export default function AdminLogin() {
         {loginErr && (
           <p className="text-xs text-red-500 text-center mt-2">Hatalı e-posta veya şifre.</p>
         )}
-        <a
-          href="/admin/reset-password"
-          className="block text-center text-xs text-slate-400 hover:text-[#0f75bc] mt-4"
-        >
-          Şifremi unuttum
-        </a>
       </div>
     </div>
   );

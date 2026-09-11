@@ -1,11 +1,16 @@
 "use client";
 
+import { usePathname } from "next/navigation";
+
 export default function WhatsAppButton() {
-  const phone   = "905541630031";
+  const pathname = usePathname();
+  const phone     = "905541630031";
   const message = encodeURIComponent(
     "Merhaba, kmpbaski.com üzerinden ulaşıyorum, bir konu hakkında bilgi alabilir miyim?"
   );
   const href = `https://wa.me/${phone}?text=${message}`;
+
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
     <a
