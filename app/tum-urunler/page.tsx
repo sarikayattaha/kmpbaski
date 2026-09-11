@@ -1,7 +1,6 @@
 export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
-import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Tüm Ürünler",
@@ -57,38 +56,17 @@ export default async function TumUrunlerPage({
 
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-8">
-          <Suspense fallback={<CatalogSkeleton />}>
-            <CatalogClient
-              products={products}
-              categories={categories}
-              activeCategory={kategori ?? null}
-              activeFilter={filtre ?? null}
-              searchQuery={q ?? null}
-            />
-          </Suspense>
+          <CatalogClient
+            products={products}
+            categories={categories}
+            activeCategory={kategori ?? null}
+            activeFilter={filtre ?? null}
+            searchQuery={q ?? null}
+          />
         </div>
       </main>
 
       <Footer />
-    </div>
-  );
-}
-
-function CatalogSkeleton() {
-  return (
-    <div className="flex gap-8">
-      <div className="w-64 flex-shrink-0 hidden md:block">
-        <div className="bg-white rounded-2xl p-5 space-y-3">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="h-8 bg-gray-100 rounded-lg animate-pulse" />
-          ))}
-        </div>
-      </div>
-      <div className="flex-1 grid grid-cols-2 md:grid-cols-3 gap-5">
-        {[...Array(9)].map((_, i) => (
-          <div key={i} className="bg-white rounded-2xl h-72 animate-pulse" />
-        ))}
-      </div>
     </div>
   );
 }

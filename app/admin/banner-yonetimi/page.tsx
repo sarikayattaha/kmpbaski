@@ -335,9 +335,9 @@ function BannerYonetimiInner() {
                   </div>
 
                   <div className="flex items-center gap-1 flex-shrink-0">
-                    <button onClick={() => moveOrder(b, "up")} className="p-2 rounded-lg text-slate-400 hover:bg-blue-50 hover:text-[#0f75bc] transition-colors"><ArrowUp size={15} /></button>
-                    <button onClick={() => moveOrder(b, "down")} className="p-2 rounded-lg text-slate-400 hover:bg-blue-50 hover:text-[#0f75bc] transition-colors"><ArrowDown size={15} /></button>
-                    <button onClick={() => handleDelete(b)} className="p-2 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-500 transition-colors"><Trash2 size={15} /></button>
+                    <button onClick={() => moveOrder(b, "up")} aria-label="Yukarı taşı" className="p-2 rounded-lg text-slate-400 hover:bg-blue-50 hover:text-[#0f75bc] transition-colors"><ArrowUp size={15} /></button>
+                    <button onClick={() => moveOrder(b, "down")} aria-label="Aşağı taşı" className="p-2 rounded-lg text-slate-400 hover:bg-blue-50 hover:text-[#0f75bc] transition-colors"><ArrowDown size={15} /></button>
+                    <button onClick={() => handleDelete(b)} aria-label={`${b.title} bannerını sil`} className="p-2 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-500 transition-colors"><Trash2 size={15} /></button>
                   </div>
                 </div>
               ))}

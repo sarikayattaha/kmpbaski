@@ -356,11 +356,11 @@ function UrunYonetimiInner() {
                       </td>
                       <td className="py-3">
                         <div className="flex items-center gap-1">
-                          <button onClick={() => startEdit(p)}
+                          <button onClick={() => startEdit(p)} aria-label={`${p.name} ürününü düzenle`}
                             className="p-2 rounded-lg text-slate-300 hover:bg-blue-50 hover:text-[#0f75bc] transition-colors">
                             <Pencil size={14} />
                           </button>
-                          <button onClick={() => handleDelete(p)}
+                          <button onClick={() => handleDelete(p)} aria-label={`${p.name} ürününü sil`}
                             className="p-2 rounded-lg text-slate-300 hover:bg-red-50 hover:text-red-500 transition-colors">
                             <Trash2 size={15} />
                           </button>
@@ -497,7 +497,7 @@ function UrunYonetimiInner() {
                       {i === 0 && (
                         <span className="absolute top-1 left-1 bg-[#0f75bc] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">Ana</span>
                       )}
-                      <button type="button"
+                      <button type="button" aria-label={`Görsel ${i + 1}'i kaldır`}
                         onClick={() => setExistingImages(prev => prev.filter((_, idx) => idx !== i))}
                         className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <X size={11} />
@@ -511,7 +511,7 @@ function UrunYonetimiInner() {
                       {existingImages.length === 0 && i === 0 && (
                         <span className="absolute top-1 left-1 bg-[#0f75bc] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">Ana</span>
                       )}
-                      <button type="button"
+                      <button type="button" aria-label={`Yeni görsel ${i + 1}'i kaldır`}
                         onClick={() => setNewFiles(prev => prev.filter((_, idx) => idx !== i))}
                         className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <X size={11} />
@@ -550,7 +550,7 @@ function UrunYonetimiInner() {
             <div className="space-y-4">
               {reviews.map((rev, i) => (
                 <div key={i} className="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 relative">
-                  <button type="button" onClick={() => setReviews(r => r.filter((_, idx) => idx !== i))}
+                  <button type="button" aria-label={`${i + 1}. yorumu sil`} onClick={() => setReviews(r => r.filter((_, idx) => idx !== i))}
                     className="absolute top-3 right-3 text-gray-300 hover:text-red-500 transition-colors">
                     <Trash2 size={14} />
                   </button>

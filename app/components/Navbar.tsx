@@ -226,6 +226,7 @@ export default function Navbar() {
               />
               <button
                 type="submit"
+                aria-label="Ara"
                 className="absolute right-0 top-0 h-10 w-12 flex items-center justify-center bg-[#0f75bc] hover:bg-[#07446c] text-white rounded-r-xl transition-colors"
               >
                 <Search size={17} />
@@ -237,12 +238,14 @@ export default function Navbar() {
           {/* Sağ ikonlar (mobil) */}
           <div className="flex items-center gap-1 ml-auto md:ml-0 flex-shrink-0">
             <button
+              aria-label={mobileSearchOpen ? "Aramayı kapat" : "Ara"}
               className="md:hidden p-2.5 rounded-xl text-gray-500 hover:bg-gray-100 transition-colors"
               onClick={() => { setMobileSearchOpen(!mobileSearchOpen); setMobileOpen(false); }}
             >
               <Search size={20} />
             </button>
             <button
+              aria-label={mobileOpen ? "Menüyü kapat" : "Menüyü aç"}
               className="md:hidden p-2.5 rounded-xl text-[#07446c] hover:bg-blue-50 transition-colors"
               onClick={() => { setMobileOpen(!mobileOpen); setMobileSearchOpen(false); }}
             >
@@ -266,6 +269,7 @@ export default function Navbar() {
               />
               <button
                 type="submit"
+                aria-label="Ara"
                 className="absolute right-0 top-0 h-11 w-12 flex items-center justify-center bg-[#0f75bc] text-white rounded-r-xl"
               >
                 <Search size={17} />

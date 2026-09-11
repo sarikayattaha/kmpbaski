@@ -141,11 +141,11 @@ function KategoriYonetimiInner() {
                     <td className="py-3 pr-4 text-gray-500">{c.navbar_order}</td>
                     <td className="py-3">
                       <div className="flex items-center gap-1">
-                        <button onClick={() => startEdit(c)}
+                        <button onClick={() => startEdit(c)} aria-label={`${c.name} kategorisini düzenle`}
                           className="p-2 rounded-lg text-slate-300 hover:bg-blue-50 hover:text-[#0f75bc] transition-colors">
                           <Pencil size={14} />
                         </button>
-                        <button onClick={() => handleDelete(c)}
+                        <button onClick={() => handleDelete(c)} aria-label={`${c.name} kategorisini sil`}
                           className="p-2 rounded-lg text-slate-300 hover:bg-red-50 hover:text-red-500 transition-colors">
                           <Trash2 size={15} />
                         </button>

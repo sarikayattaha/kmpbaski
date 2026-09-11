@@ -1,30 +1,37 @@
 export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import { getSupabase, type Product } from "@/lib/supabase";
 import { SITE_URL, toSlug, pickCities } from "@/lib/seo";
+
+const getProduct = cache(async (slug: string): Promise<Product | null> => {
+  const supabase = getSupabase();
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("slug", slug)
+    .single();
+  if (error) console.error(`[urun/${slug}] Supabase hatası:`, error.message);
+  return (data as Product) ?? null;
+});
 
 export async function generateMetadata(props: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await props.params;
-  const supabase = getSupabase();
-  if (!supabase) return {};
-  const { data } = await supabase
-    .from("products")
-    .select("name, description, image_url")
-    .eq("slug", slug)
-    .single();
-  if (!data) return {};
+  const product = await getProduct(slug);
+  if (!product) return {};
   return {
-    title: data.name,
-    description: data.description
-      ? String(data.description).slice(0, 160)
-      : `${data.name} baskı hizmeti — hızlı teslimat, kalite garantisi. KMP Baskı'dan fiyat alın.`,
+    title: product.name,
+    description: product.description
+      ? String(product.description).slice(0, 160)
+      : `${product.name} baskı hizmeti — hızlı teslimat, kalite garantisi. KMP Baskı'dan fiyat alın.`,
     alternates: { canonical: `${SITE_URL}/urun/${slug}` },
     openGraph: {
-      images: data.image_url ? [{ url: data.image_url }] : [],
+      images: product.image_url ? [{ url: product.image_url }] : [],
     },
   };
 }

@@ -57,6 +57,7 @@ export type Product = {
   slug: string
   image_url: string
   category: string
+  description?: string | null   // meta description için opsiyonel serbest metin
   price: string          // görüntülenecek fiyat metni (Ör: "₺120", "120,00 ₺")
   features: string       // satır satır özellikler (newline ile ayrılmış)
   is_featured: boolean

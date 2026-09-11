@@ -186,6 +186,7 @@ export default function LinkSearch({
         {(query || activeCat) && (
           <button
             onClick={handleClear}
+            aria-label="Aramayı temizle"
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
           >
             <X size={16} />
