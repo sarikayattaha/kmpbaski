@@ -123,7 +123,22 @@ CREATE POLICY "Authenticated delete product images" ON storage.objects
   FOR DELETE TO authenticated USING (bucket_id = 'product-images');
 
 -- ----------------------------------------------------------------
--- 5) DOĞRULAMA — migration'dan sonra bu sorguyu çalıştırıp kontrol edin:
+-- 6) TEMİZLİK — İlk çalıştırmada doğrulama sorgusu şu eski, herkese açık
+--    storage policy'lerinin hâlâ durduğunu ortaya çıkardı (adları 3/4.
+--    bölümdeki tahminlerle eşleşmediği için DROP edilmemişlerdi). Bunlar
+--    yeni authenticated-only policy'lerin YANINDA durup Postgres RLS'te
+--    "herhangi bir policy izin verirse geçer" mantığıyla storage'ı hâlâ
+--    herkese açık bırakıyordu — bu bölüm onları temizler.
+-- ----------------------------------------------------------------
+DROP POLICY IF EXISTS "Banner Politikası 1uz6zi1_0" ON storage.objects;
+DROP POLICY IF EXISTS "Banner Politikası 1uz6zi1_1" ON storage.objects;
+DROP POLICY IF EXISTS "Banner Politikası 1uz6zi1_2" ON storage.objects;
+DROP POLICY IF EXISTS "anon_upload_product_images" ON storage.objects;
+DROP POLICY IF EXISTS "public_read_product_images" ON storage.objects;
+DROP POLICY IF EXISTS "anon_delete_product_images" ON storage.objects;
+
+-- ----------------------------------------------------------------
+-- 7) DOĞRULAMA — migration'dan sonra bu sorguyu çalıştırıp kontrol edin:
 --    Her tabloda tam olarak 1 public SELECT + 1 authenticated-only
 --    yazma policy'si kalmış olmalı.
 -- ----------------------------------------------------------------
