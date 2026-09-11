@@ -332,13 +332,9 @@ function UrunYonetimiInner() {
                       <td className="py-3 pr-4 font-semibold text-[#07446c] max-w-[180px] truncate">{p.name}</td>
                       <td className="py-3 pr-4 text-gray-500 whitespace-nowrap">{p.category}</td>
                       <td className="py-3 pr-4">
-                        {p.category.toLowerCase() === "ambalaj" ? (
-                          <span className="flex items-center gap-1 text-xs font-bold text-[#0f75bc] bg-blue-50 px-2 py-0.5 rounded-full whitespace-nowrap">
-                            <Globe size={11} /> 81 il
-                          </span>
-                        ) : (
-                          <span className="text-gray-200">—</span>
-                        )}
+                        <span className="flex items-center gap-1 text-xs font-bold text-[#0f75bc] bg-blue-50 px-2 py-0.5 rounded-full whitespace-nowrap">
+                          <Globe size={11} /> 81 il
+                        </span>
                       </td>
                       <td className="py-3 pr-4 whitespace-nowrap">
                         {p.is_price_on_request
@@ -437,12 +433,10 @@ function UrunYonetimiInner() {
                       <option key={c.id} value={c.name}>{c.name}</option>
                     ))}
                   </select>
-                  {form.category.toLowerCase() === "ambalaj" && (
-                    <p className="flex items-center gap-1.5 text-xs text-[#0f75bc] font-semibold mt-2 bg-blue-50 px-3 py-1.5 rounded-xl">
-                      <Globe size={12} />
-                      Bu ürün kaydedildiğinde 81 ilde otomatik SEO sayfası oluşur.
-                    </p>
-                  )}
+                  <p className="flex items-center gap-1.5 text-xs text-[#0f75bc] font-semibold mt-2 bg-blue-50 px-3 py-1.5 rounded-xl">
+                    <Globe size={12} />
+                    Bu ürün için 81 ilin her birinde otomatik bir şehir sayfası oluşur (örn. /istanbul/{form.slug || "urun-slug"}).
+                  </p>
                 </Field>
               </div>
 

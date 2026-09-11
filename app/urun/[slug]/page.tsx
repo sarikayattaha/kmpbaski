@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getSupabase, type Product } from "@/lib/supabase";
-import { SITE_URL, toSlug } from "@/lib/seo";
+import { SITE_URL, toSlug, pickCities } from "@/lib/seo";
 
 export async function generateMetadata(props: {
   params: Promise<{ slug: string }>;
@@ -38,7 +38,7 @@ import { Tag, ArrowLeft, CheckCircle2, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-const PRODUCT_FAQS = [
+export const PRODUCT_FAQS = [
   {
     q: "Minimum sipariş adedi nedir?",
     a: "Minimum sipariş adedi ürüne göre farklılık göstermektedir. En doğru bilgi için müşteri hizmetlerimizi arayarak detaylı bilgi alabilirsiniz.",
@@ -257,6 +257,30 @@ export default async function ProductPage(props: {
                   {faq.a}
                 </p>
               </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Şehir bazlı sayfalara iç link — 81 il SEO */}
+      <section className="bg-white border-t border-gray-100 py-12">
+        <div className="max-w-5xl mx-auto px-4 md:px-6">
+          <h2 className="text-xl font-black text-[#07446c] mb-2">
+            Bu Ürünü Türkiye&apos;nin Her Yerine Gönderiyoruz
+          </h2>
+          <p className="text-sm text-gray-500 mb-5">
+            {product.name} ürününü Türkiye&apos;nin 81 iline kargo ile gönderiyoruz.
+            Bulunduğunuz şehre özel fiyat ve teslimat bilgisi için:
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {pickCities(slug, 10).map((city) => (
+              <Link
+                key={city.slug}
+                href={`/${city.slug}/${slug}`}
+                className="px-3 py-1.5 rounded-full bg-[#f0f9ff] text-[#0f75bc] text-xs font-semibold hover:bg-[#e0f2fe] transition-colors"
+              >
+                {city.name}
+              </Link>
             ))}
           </div>
         </div>

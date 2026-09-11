@@ -25,6 +25,11 @@ export const SITE_URL   = process.env.NEXT_PUBLIC_SITE_URL ?? "https://kmpbaski.
 export const SITE_NAME  = "KMP Baskı";
 export const SITE_PHONE = "+905541630031";
 
+/** true'ya çekip deploy edildiğinde TÜM şehir x ürün ve şehir hub sayfaları
+ *  noindex olur (route'lar ve veri silinmez, sadece robots meta'sı değişir).
+ *  Search Console'da kalite sorunu görülürse acil fren olarak kullanılır. */
+export const CITY_PAGES_NOINDEX = process.env.CITY_PAGES_NOINDEX === "true";
+
 export function currentMonthYear(): string {
   const d = new Date();
   return `${MONTHS_TR[d.getMonth()]} ${d.getFullYear()}`;
@@ -130,4 +135,21 @@ export const CITIES: City[] = [
 
 export function getCityBySlug(slug: string): City | null {
   return CITIES.find(c => c.slug === slug) ?? null;
+}
+
+/**
+ * `seed`'e göre deterministik ama seed'den seed'e farklılaşan bir şehir
+ * alt kümesi seçer — 81 il × ürün sayfalarında hep aynı "büyük şehir"
+ * linklerinin tekrarlanmaması için (iç link çeşitliliği).
+ */
+export function pickCities(seed: string, count: number, excludeSlug?: string): City[] {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  const pool = excludeSlug ? CITIES.filter((c) => c.slug !== excludeSlug) : CITIES;
+  const start = hash % pool.length;
+  const result: City[] = [];
+  for (let i = 0; i < count && i < pool.length; i++) {
+    result.push(pool[(start + i) % pool.length]);
+  }
+  return result;
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { SITE_URL, escapeXml } from "@/lib/seo";
+import { SITE_URL, escapeXml, CITIES, CITY_PAGES_NOINDEX } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +45,25 @@ export async function GET() {
           changefreq: "monthly",
           priority: "0.7",
         });
+      }
+    }
+
+    // 81 il × ürün sayfaları — CITY_PAGES_NOINDEX açıksa sitemap'e de eklenmez
+    if (!CITY_PAGES_NOINDEX) {
+      for (const city of CITIES) {
+        urls.push({ loc: `${SITE_URL}/${city.slug}`, lastmod: now, changefreq: "monthly", priority: "0.5" });
+      }
+      for (const city of CITIES) {
+        for (const prod of products ?? []) {
+          if (prod.slug) {
+            urls.push({
+              loc: `${SITE_URL}/${city.slug}/${prod.slug}`,
+              lastmod: now,
+              changefreq: "monthly",
+              priority: "0.4",
+            });
+          }
+        }
       }
     }
   }

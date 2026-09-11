@@ -1,10 +1,19 @@
 "use client";
 
 import { useState, useRef } from "react";
-import Image from "next/image";
+import SmartImage from "@/app/components/SmartImage";
 import { ImageOff, ChevronLeft, ChevronRight } from "lucide-react";
 
-export default function ProductGallery({ images, name }: { images: string[]; name: string }) {
+export default function ProductGallery({
+  images,
+  name,
+  city,
+}: {
+  images: string[];
+  name: string;
+  /** Verilirse alt/title metni şehre göre zenginleştirilir (81 il sayfaları için). */
+  city?: string;
+}) {
   const [active, setActive]   = useState(0);
   const [zoomed, setZoomed]   = useState(false);
   const [origin, setOrigin]   = useState("50% 50%");
@@ -71,9 +80,10 @@ export default function ProductGallery({ images, name }: { images: string[]; nam
             willChange:      "transform",
           }}
         >
-          <Image
+          <SmartImage
             src={images[active]}
-            alt={name}
+            product={name}
+            city={city}
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
             fetchPriority="high"
@@ -140,7 +150,7 @@ export default function ProductGallery({ images, name }: { images: string[]; nam
                 }`}
               >
                 <div className="relative w-full h-full bg-white">
-                  <Image
+                  <SmartImage
                     src={url}
                     alt={`${name} ${i + 1}`}
                     fill
