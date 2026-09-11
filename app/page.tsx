@@ -1,5 +1,7 @@
 export const revalidate = 60;
 
+import type { Metadata } from "next";
+import { SITE_URL, SITE_NAME } from "@/lib/seo";
 import Navbar from "@/app/components/Navbar";
 import HeroBanner from "@/app/components/HeroBanner";
 import InfoBar from "@/app/components/InfoBar";
@@ -9,6 +11,13 @@ import HowItWorksSection from "@/app/components/HowItWorksSection";
 import ContactFormSection from "@/app/components/ContactFormSection";
 import SectorGrid from "@/app/components/SectorGrid";
 import Footer from "@/app/components/Footer";
+
+export const metadata: Metadata = {
+  title: `${SITE_NAME} - Profesyonel Baskı ve Ambalaj Çözümleri`,
+  description:
+    "Kartvizit, broşür, katalog, tabela, ambalaj ve promosyon baskıda profesyonel çözümler. KMP Baskı ile kaliteyi keşfedin.",
+  alternates: { canonical: SITE_URL },
+};
 
 export default function Home() {
   return (

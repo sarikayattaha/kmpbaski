@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/tum-urunler" },
 };
 import { getSupabase, type Product } from "@/lib/supabase";
+import { SITE_URL } from "@/lib/seo";
+import { ItemListSchema } from "@/app/components/SEO/Schema";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import CatalogClient from "./CatalogClient";
@@ -39,6 +41,9 @@ export default async function TumUrunlerPage({
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] flex flex-col">
+      <ItemListSchema
+        items={products.slice(0, 200).map((p) => ({ name: p.name, url: `${SITE_URL}/urun/${p.slug}` }))}
+      />
       <Navbar />
 
       {/* Breadcrumb */}

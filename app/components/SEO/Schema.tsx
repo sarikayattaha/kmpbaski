@@ -132,6 +132,31 @@ export function BreadcrumbSchema({
   );
 }
 
+// ── ItemList — kategori/liste sayfaları için ─────────────────────────────────
+
+export function ItemListSchema({
+  items,
+}: {
+  items: { name: string; url: string }[];
+}) {
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: items.map((item, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: item.name,
+      url: item.url,
+    })),
+  };
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: ld(data) }}
+    />
+  );
+}
+
 // ── Product ───────────────────────────────────────────────────────────────────
 
 // Serbest metin fiyatları ("₺120", "120,00 ₺", "1.200,50 TL") schema.org'un

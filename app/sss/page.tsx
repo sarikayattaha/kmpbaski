@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
+import { FAQSchema } from "@/app/components/SEO/Schema";
 import { ChevronDown } from "lucide-react";
 
 const FAQS = [
@@ -74,6 +75,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 export default function SSSPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
+      <FAQSchema faqs={FAQS} />
       <Navbar />
 
       {/* Breadcrumb */}

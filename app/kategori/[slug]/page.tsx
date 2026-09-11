@@ -8,6 +8,7 @@ import { toSlug, SITE_NAME, SITE_URL } from "@/lib/seo";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import { Tag } from "lucide-react";
+import { ItemListSchema } from "@/app/components/SEO/Schema";
 
 export const dynamic = "force-dynamic";
 
@@ -58,6 +59,9 @@ export default async function KategoriPage(props: {
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] flex flex-col">
+      <ItemListSchema
+        items={products.map((p) => ({ name: p.name, url: `${SITE_URL}/urun/${p.slug}` }))}
+      />
       <Navbar />
 
       {/* Breadcrumb */}
