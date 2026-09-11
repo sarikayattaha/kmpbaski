@@ -78,7 +78,12 @@ function UrunYonetimiInner() {
     if (!confirm("Tüm ürün URL'leri Google'a gönderilsin mi?")) return;
     setIndexing(true);
     try {
-      const res = await fetch("/api/index-pages", { method: "POST" });
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      const res = await fetch("/api/index-pages", {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       const data = await res.json();
       showToast(`Google'a gönderildi: ${data.success} başarılı, ${data.failed} hatalı`, data.failed === 0 ? "success" : "error");
     } catch {

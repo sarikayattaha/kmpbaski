@@ -56,12 +56,25 @@ export async function GET(req: NextRequest) {
   });
 }
 
+// Yetki: ya CRON_SECRET (varsa, ileride bir cron/otomasyon için) ya da
+// admin panelinden gelen geçerli bir Supabase oturum token'ı.
+async function isAuthorized(req: NextRequest): Promise<boolean> {
+  const auth  = req.headers.get("authorization") ?? "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+  if (!token) return false;
+
+  const secret = process.env.CRON_SECRET;
+  if (secret && token === secret) return true;
+
+  const supabase = getSupabase();
+  if (!supabase) return false;
+  const { data, error } = await supabase.auth.getUser(token);
+  return !error && !!data.user;
+}
+
 // POST: Google'a gerçekten gönder
 export async function POST(req: NextRequest) {
-  const auth   = req.headers.get("authorization") ?? "";
-  const secret = process.env.CRON_SECRET;
-
-  if (!secret || auth !== `Bearer ${secret}`) {
+  if (!(await isAuthorized(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
